@@ -37,7 +37,7 @@ jobs:
 
       - name: Run h3daemon
         run: |
-          ${{github.workspace}}/h3daemon ${{github.workspace}}/test/assets/minifam.hmm &
+          ${{github.workspace}}/h3daemon ${{github.workspace}}/build/test/assets/minifam.hmm &
           sleep 15
 
       - name: Test
