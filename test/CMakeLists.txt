@@ -7,7 +7,13 @@ file(MAKE_DIRECTORY ${TMPDIR})
 add_compile_definitions(ASSETS=\"${ASSETS}\")
 add_compile_definitions(TMPDIR=\"${TMPDIR}\")
 
+set(URL "https://uk1s3.embassy.ebi.ac.uk/deciphon")
+
 file(COPY assets/ross.fasta DESTINATION ${ASSETS})
+
+file(DOWNLOAD ${URL}/minifam.hmm.7z ${ASSETS}/minifam.hmm.7z
+     EXPECTED_HASH MD5=cebacd72804ed51b895e697b0384dbb7)
+file(ARCHIVE_EXTRACT INPUT ${ASSETS}/minifam.hmm.7z DESTINATION ${ASSETS})
 
 add_executable(test_h3client h3client.c)
 target_link_libraries(test_h3client PRIVATE H3CLIENT::h3client)

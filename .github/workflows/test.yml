@@ -10,11 +10,19 @@ jobs:
       BUILD_TYPE: ${{ matrix.build_type }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, macos-11]
+        os: [ubuntu-22.04]
         build_type: [Release, Debug]
 
     steps:
       - uses: actions/checkout@v2
+
+      - name: Install podman
+        run: sudo apt-get install -y podman
+
+      - name: Download h3daemon
+        run: |
+          curl https://raw.githubusercontent.com/EBI-Metagenomics/h3daemon/main/h3daemon --output h3daemon
+          chmod +x h3daemon
 
       - name: Configure CMake
         if: runner.os == 'Linux'
@@ -26,6 +34,11 @@ jobs:
 
       - name: Build
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+      - name: Run h3daemon
+        run: |
+          ${{github.workspace}}/h3daemon ${{github.workspace}}/test/assets/minifam.hmm &
+          sleep 15
 
       - name: Test
         working-directory: ${{github.workspace}}/build

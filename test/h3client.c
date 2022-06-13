@@ -21,7 +21,7 @@ int main(void)
     // esl_getopts_Destroy(conn.go);
 
     printf("Connecting to master... ");
-    if (h3conn_open("192.168.1.10", 51371))
+    if (h3conn_open("127.0.0.1", 51371))
         DONE;
     else
         FAIL;
