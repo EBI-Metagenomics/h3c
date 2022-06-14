@@ -19,11 +19,6 @@ jobs:
       - name: Install podman
         run: sudo apt-get install -y podman
 
-      - name: Download h3daemon
-        run: |
-          curl https://raw.githubusercontent.com/EBI-Metagenomics/h3daemon/main/h3daemon --output h3daemon
-          chmod +x h3daemon
-
       - name: Configure CMake
         if: runner.os == 'Linux'
         run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DUSE_SANITIZER='Address;Undefined' -DENABLE_ALL_WARNINGS=ON
@@ -35,10 +30,13 @@ jobs:
       - name: Build
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
-      - name: Run h3daemon
+      - name: Download h3daemon
         run: |
-          ${{github.workspace}}/h3daemon ${{github.workspace}}/build/test/assets/minifam.hmm &
-          sleep 15
+          curl https://bit.ly/3NLWNki --output ${{github.workspace}}/h3daemon
+          chmod +x ${{github.workspace}}/h3daemon
+
+      - name: Run h3daemon
+        run: ${{github.workspace}}/h3daemon ${{github.workspace}}/build/test/assets/minifam.hmm --yes
 
       - name: Test
         working-directory: ${{github.workspace}}/build
