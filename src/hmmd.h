@@ -1,7 +1,7 @@
 #ifndef H3CLIENT_HMMD_H
 #define H3CLIENT_HMMD_H
 
-#include <stdbool.h>
+#include "h3client/h3client.h"
 #include <stdint.h>
 
 #define HMMD_STATUS_PACK_SIZE (sizeof(uint32_t) + sizeof(uint64_t))
@@ -47,6 +47,7 @@ void hmmd_status_unpack(struct hmmd_status *status, unsigned char const *data);
 
 void hmmd_stats_init(struct hmmd_stats *stats);
 void hmmd_stats_cleanup(struct hmmd_stats *stats);
-bool hmmd_stats_unpack(struct hmmd_stats *stats, unsigned char const *data);
+enum h3c_rc hmmd_stats_unpack(struct hmmd_stats *stats,
+                              unsigned char const *data);
 
 #endif

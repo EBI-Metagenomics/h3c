@@ -1,7 +1,6 @@
 #ifndef H3CLIENT_BUFF_H
 #define H3CLIENT_BUFF_H
 
-#include <stdbool.h>
 #include <stddef.h>
 
 struct buff

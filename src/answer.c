@@ -15,6 +15,7 @@ struct answer
     } status;
 
     struct buff *buff;
+    struct hmmd_stats stats;
 };
 
 struct answer *answer_new(void)
@@ -29,12 +30,14 @@ struct answer *answer_new(void)
         free(ans);
         return 0;
     }
+    hmmd_stats_init(&ans->stats);
     return ans;
 }
 
 void answer_del(struct answer const *ans)
 {
     buff_del(ans->buff);
+    hmmd_stats_cleanup((struct hmmd_stats *)&ans->stats);
     free((void *)ans);
 }
 
@@ -58,4 +61,7 @@ enum h3c_rc answer_ensure(struct answer *ans, size_t size)
 
 unsigned char *answer_data(struct answer *ans) { return ans->buff->data; }
 
-// bool answer_parse(struct answer *ans) {}
+enum h3c_rc answer_unpack(struct answer *ans)
+{
+    return hmmd_stats_unpack(&ans->stats, ans->status.data);
+}

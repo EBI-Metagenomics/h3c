@@ -7,14 +7,6 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#define DONE printf("done.\n")
-#define FAIL                                                                   \
-    do                                                                         \
-    {                                                                          \
-        printf("failed!\n");                                                   \
-        return 1;                                                              \
-    } while (0)
-
 static char const *h3master_address(void)
 {
     char const *addr = getenv("H3CLIENT_MASTER_ADDRESS");

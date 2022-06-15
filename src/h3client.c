@@ -72,8 +72,8 @@ cleanup:
     return rc;
 }
 
-static bool writen(int fd, void const *buf, size_t count);
-static bool readn(int fd, void *buf, size_t count);
+static enum h3c_rc writen(int fd, void const *buf, size_t count);
+static enum h3c_rc readn(int fd, void *buf, size_t count);
 
 enum h3c_rc h3c_call(char const *args, FILE *fasta)
 {
@@ -83,23 +83,24 @@ enum h3c_rc h3c_call(char const *args, FILE *fasta)
     if ((rc = request_set_seqs(conn.request, fasta))) goto cleanup;
 
     size_t size = request_size(conn.request);
-    if (!writen(conn.sockfd, request_data(conn.request), size)) return false;
+    if ((rc = writen(conn.sockfd, request_data(conn.request), size)))
+        goto cleanup;
 
     void *data = answer_status_data(conn.answer);
     size = answer_status_size();
-    if (!readn(conn.sockfd, data, size)) return false;
+    if ((rc = readn(conn.sockfd, data, size))) goto cleanup;
 
     struct hmmd_status const *status = answer_status_unpack(conn.answer);
 
     size = status->msg_size;
-    if (!answer_ensure(conn.answer, size)) return false;
+    if ((rc = answer_ensure(conn.answer, size))) goto cleanup;
 
     data = answer_data(conn.answer);
-    if (!readn(conn.sockfd, data, size)) return false;
+    if ((rc = readn(conn.sockfd, data, size))) goto cleanup;
 
     if (!status->status)
     {
-        // if (!answer_unpack(conn.answer)) return false;
+        if ((rc = answer_unpack(conn.answer))) goto cleanup;
     }
 
 cleanup:
@@ -111,7 +112,7 @@ enum h3c_rc h3c_close(void)
     return close(conn.sockfd) ? H3C_FAILED_CLOSE : H3C_OK;
 }
 
-static bool writen(int fd, void const *buf, size_t count)
+static enum h3c_rc writen(int fd, void const *buf, size_t count)
 {
     while (count > 0)
     {
@@ -126,17 +127,17 @@ static bool writen(int fd, void const *buf, size_t count)
             else
             {
                 errno = 0;
-                return false;
+                return H3C_FAILED_WRITE_SOCKET;
             }
         }
         count -= n;
         buf += n;
     }
 
-    return true;
+    return H3C_OK;
 }
 
-static bool readn(int fd, void *buf, size_t count)
+static enum h3c_rc readn(int fd, void *buf, size_t count)
 {
     while (count > 0)
     {
@@ -151,7 +152,7 @@ static bool readn(int fd, void *buf, size_t count)
             else
             {
                 errno = 0;
-                return false;
+                return H3C_FAILED_READ_SOCKET;
             }
         }
 
@@ -159,5 +160,5 @@ static bool readn(int fd, void *buf, size_t count)
         buf += n;
     }
 
-    return count == 0;
+    return count == 0 ? H3C_OK : H3C_FAILED_READ_SOCKET;
 }

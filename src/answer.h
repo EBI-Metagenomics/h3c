@@ -1,7 +1,6 @@
 #ifndef H3CLIENT_ANSWER_H
 #define H3CLIENT_ANSWER_H
 
-#include <stdbool.h>
 #include <stddef.h>
 
 struct answer;
@@ -15,6 +14,6 @@ struct hmmd_status const *answer_status_unpack(struct answer *ans);
 
 enum h3c_rc answer_ensure(struct answer *ans, size_t size);
 unsigned char *answer_data(struct answer *ans);
-bool answer_parse(struct answer *ans);
+enum h3c_rc answer_unpack(struct answer *ans);
 
 #endif

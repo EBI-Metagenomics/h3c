@@ -38,10 +38,10 @@ void hmmd_stats_init(struct hmmd_stats *stats)
 
 void hmmd_stats_cleanup(struct hmmd_stats *stats) { free(stats->hit_offsets); }
 
-static bool hmmd_zsetby_unpack(enum hmmd_zsetby *dst,
-                               unsigned char const **data)
+static enum h3c_rc hmmd_zsetby_unpack(enum hmmd_zsetby *dst,
+                                      unsigned char const **data)
 {
-    bool ok = true;
+    enum h3c_rc rc = H3C_OK;
     switch (**data)
     {
     case 0:
@@ -54,16 +54,21 @@ static bool hmmd_zsetby_unpack(enum hmmd_zsetby *dst,
         *dst = p7_ZSETBY_FILEINFO;
         break;
     default:
+        rc = H3C_FAILED_UNPACK;
         break;
     }
     (*data)++;
-    return ok;
+    return rc;
 }
 
-bool hmmd_stats_unpack(struct hmmd_stats *stats, unsigned char const *data)
+enum h3c_rc hmmd_stats_unpack(struct hmmd_stats *stats,
+                              unsigned char const *data)
 {
+    for (unsigned j = 0; j < 122; ++j) 
+        printf("0x%hhx ", data[j]);
+    printf("\n");
     uint64_t h64 = 0;
-    bool ok = true;
+    enum h3c_rc rc = H3C_OK;
 
     to_double(&stats->elapsed, eat64(&data));
     to_double(&stats->user, eat64(&data));
@@ -71,8 +76,8 @@ bool hmmd_stats_unpack(struct hmmd_stats *stats, unsigned char const *data)
     to_double(&stats->Z, eat64(&data));
     to_double(&stats->domZ, eat64(&data));
 
-    if (!(ok = hmmd_zsetby_unpack(&stats->Z_setby, &data))) goto cleanup;
-    if (!(ok = hmmd_zsetby_unpack(&stats->domZ_setby, &data))) goto cleanup;
+    if ((rc = hmmd_zsetby_unpack(&stats->Z_setby, &data))) goto cleanup;
+    if ((rc = hmmd_zsetby_unpack(&stats->domZ_setby, &data))) goto cleanup;
 
     stats->nmodels = eat64(&data);
     stats->nseqs = eat64(&data);
@@ -89,6 +94,11 @@ bool hmmd_stats_unpack(struct hmmd_stats *stats, unsigned char const *data)
     {
         stats->hit_offsets =
             ctb_realloc(stats->hit_offsets, stats->nhits * sizeof(uint64_t));
+        if (!stats->hit_offsets)
+        {
+            rc = H3C_NOT_ENOUGH_MEMORY;
+            goto cleanup;
+        }
 
         stats->hit_offsets[0] = h64;
         for (uint64_t i = 1; i < stats->nhits; i++)
@@ -96,5 +106,5 @@ bool hmmd_stats_unpack(struct hmmd_stats *stats, unsigned char const *data)
     }
 
 cleanup:
-    return ok;
+    return rc;
 }
