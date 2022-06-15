@@ -27,6 +27,21 @@ jobs:
       - name: Build
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
+      - name: Test podman 1
+        run: |
+          type podman
+          echo $?
+
+      - name: Test podman 2
+        run: |
+          which podman
+          echo $?
+
+      - name: Test podman 3
+        run: |
+          command -v podman
+          echo $?
+
       - name: Run h3daemon
         working-directory: ${{github.workspace}}/build
         run: bash -c "$(curl -fsSL https://app.danilohorta.me/h3daemon)" -s start test/assets/minifam.hmm --yes
