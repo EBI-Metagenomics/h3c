@@ -14,8 +14,8 @@ include(cmake/CPM.cmake)
 
 cpmaddpackage(NAME c_toolbelt VERSION 0.3.1 GITHUB_REPOSITORY horta/c-toolbelt)
 
-add_library(h3client src/buff.c src/answer.c src/conn.c
-                     src/request.c src/hmmd.c src/addr.c)
+add_library(h3client src/addr.c src/answer.c src/buff.c src/h3client.c
+                     src/hmmd.c src/request.c)
 target_link_libraries(h3client PUBLIC C_TOOLBELT::c_toolbelt)
 add_library(H3CLIENT::h3client ALIAS h3client)
 

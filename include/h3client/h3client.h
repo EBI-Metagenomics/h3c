@@ -1,11 +1,24 @@
-#ifndef H3CLIENT_H3CLIENT_H
-#define H3CLIENT_H3CLIENT_H
+#ifndef H3CLIENT_H
+#define H3CLIENT_H
 
-#include "h3client/addr.h"
-#include "h3client/answer.h"
-#include "h3client/buff.h"
-#include "h3client/conn.h"
-#include "h3client/hmmd.h"
-#include "h3client/request.h"
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+
+enum h3c_rc
+{
+    H3C_OK,
+    H3C_NOT_ENOUGH_MEMORY,
+    H3C_ARGS_TOO_LONG,
+    H3C_INVALID_ADDRESS,
+    H3C_FAILED_CLOSE,
+    H3C_FAILED_CREATE_SOCKET,
+    H3C_FAILED_CONNECT,
+    H3C_FAILED_READ_FILE,
+};
+
+enum h3c_rc h3c_open(char const *ip, uint16_t port);
+enum h3c_rc h3c_call(char const *args, FILE *fasta);
+enum h3c_rc h3c_close(void);
 
 #endif

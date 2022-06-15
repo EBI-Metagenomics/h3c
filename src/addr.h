@@ -11,20 +11,22 @@
 /* On OpenBSD, netinet/in.h is required for (must precede) arpa/inet.h  */
 #include <arpa/inet.h>
 
-enum h3addr_ipv
+#include "h3client/h3client.h"
+
+enum addr_ipv
 {
     IPV4,
     IPV6
 };
 
-struct h3addr
+struct addr
 {
     struct sockaddr_in addr;
 };
 
-void h3addr_setup(struct h3addr *, enum h3addr_ipv, char const *ip,
-                  uint16_t port);
+enum h3c_rc addr_setup(struct addr *, enum addr_ipv, char const *ip,
+                       uint16_t port);
 
-sa_family_t h3addr_family(struct h3addr const *h3addr);
+sa_family_t addr_family(struct addr const *addr);
 
 #endif

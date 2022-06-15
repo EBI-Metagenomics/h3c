@@ -1,4 +1,5 @@
-#include "h3client/buff.h"
+#include "buff.h"
+#include "h3client/h3client.h"
 #include <assert.h>
 #include <stdlib.h>
 
@@ -14,17 +15,17 @@ struct buff *buff_new(size_t capacity)
     return buff;
 }
 
-bool buff_ensure(struct buff **buff, size_t capacity)
+enum h3c_rc buff_ensure(struct buff **buff, size_t capacity)
 {
     if (capacity > (*buff)->capacity)
     {
         struct buff *tmp = realloc(*buff, sizeof(*tmp) + capacity);
-        if (!tmp) return false;
+        if (!tmp) return H3C_NOT_ENOUGH_MEMORY;
 
         *buff = tmp;
         (*buff)->capacity = capacity;
     }
-    return true;
+    return H3C_OK;
 }
 
 void buff_del(struct buff const *buff) { free((void *)buff); }

@@ -1,11 +1,11 @@
 #include "h3client/h3client.h"
 
-#include <signal.h>
+#define _POSIX_C_SOURCE 200112L
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-struct h3request request = {0};
-struct h3answer answer = {0};
+#include <string.h>
+#include <sys/stat.h>
 
 #define DONE printf("done.\n")
 #define FAIL                                                                   \
@@ -15,52 +15,39 @@ struct h3answer answer = {0};
         return 1;                                                              \
     } while (0)
 
+static char const *h3master_address(void)
+{
+    char const *addr = getenv("H3CLIENT_MASTER_ADDRESS");
+    return addr ? addr : "127.0.0.1";
+}
+
 int main(void)
 {
-    // conn.go = esl_getopts_Create(searchOpts);
-    // esl_getopts_Destroy(conn.go);
+    if (h3c_open(h3master_address(), 51371))
+    {
+        printf("Failed to h3c_open!");
+        return 1;
+    }
 
-    printf("Connecting to master... ");
-    if (h3conn_open("127.0.0.1", 51371))
-        DONE;
-    else
-        FAIL;
+    FILE *file = fopen(ASSETS "/ross.fasta", "r");
+    if (!file)
+    {
+        printf("Failed to fopen!");
+        return 1;
+    }
 
-    // h3request_setup(&request, "--hmmdb 1 --hmmdb_idx 12492 --acc --cut_ga");
+    if (h3c_call("--hmmdb 1 --acc --cut_ga", file))
+    {
+        printf("Failed to h3c_call!");
+        return 1;
+    }
+    fclose(file);
 
-    printf("Initing request... ");
-    if (h3request_init(&request))
-        DONE;
-    else
-        FAIL;
+    if (h3c_close())
+    {
+        printf("Failed to h3c_close!");
+        return 1;
+    }
 
-    printf("Initing answer... ");
-    if (h3answer_init(&answer))
-        DONE;
-    else
-        FAIL;
-
-    h3request_setup_args(&request, "--hmmdb 1 --acc --cut_ga");
-
-    printf("Openning fasta file... ");
-    FILE *fasta_file = fopen(ASSETS "/ross.fasta", "r");
-    if (fasta_file)
-        DONE;
-    else
-        FAIL;
-
-    printf("Loading fasta file... ");
-    if (h3request_setup_fasta(&request, fasta_file))
-        DONE;
-    else
-        FAIL;
-    fclose(fasta_file);
-
-    int rc = !h3conn_call(&request, &answer);
-
-    h3request_cleanup(&request);
-    h3answer_cleanup(&answer);
-    h3conn_close();
-
-    return rc;
+    return 0;
 }
