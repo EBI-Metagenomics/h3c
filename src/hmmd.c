@@ -64,9 +64,6 @@ static enum h3c_rc hmmd_zsetby_unpack(enum hmmd_zsetby *dst,
 enum h3c_rc hmmd_stats_unpack(struct hmmd_stats *stats,
                               unsigned char const *data)
 {
-    for (unsigned j = 0; j < 122; ++j) 
-        printf("0x%hhx ", data[j]);
-    printf("\n");
     uint64_t h64 = 0;
     enum h3c_rc rc = H3C_OK;
 
