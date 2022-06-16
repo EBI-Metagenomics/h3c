@@ -63,5 +63,6 @@ unsigned char *answer_data(struct answer *ans) { return ans->buff->data; }
 
 enum h3c_rc answer_unpack(struct answer *ans)
 {
-    return hmmd_stats_unpack(&ans->stats, ans->buff->data);
+    size_t read_size = 0;
+    return hmmd_stats_unpack(&ans->stats, &read_size, ans->buff->data);
 }
