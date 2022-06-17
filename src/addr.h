@@ -11,8 +11,6 @@
 /* On OpenBSD, netinet/in.h is required for (must precede) arpa/inet.h  */
 #include <arpa/inet.h>
 
-#include "h3client/h3client.h"
-
 enum addr_ipv
 {
     IPV4,

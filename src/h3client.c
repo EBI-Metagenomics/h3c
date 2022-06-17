@@ -16,7 +16,7 @@
 #include "addr.h"
 #include "answer.h"
 #include "h3client/h3client.h"
-#include "hmmd.h"
+#include "hmmd/hmmd.h"
 #include "request.h"
 
 struct conn
