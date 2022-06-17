@@ -1,9 +1,10 @@
-#ifndef H3CLIENT_TOPHITS_H
-#define H3CLIENT_TOPHITS_H
+#ifndef HMMD_TOPHITS_H
+#define HMMD_TOPHITS_H
 
-#include "hmmd/hit.h"
 #include <stdbool.h>
 #include <stdint.h>
+
+struct hmmd_hit;
 
 struct hmmd_tophits
 {
@@ -17,7 +18,7 @@ struct hmmd_tophits
     bool is_sorted_by_seqidx;
 };
 
-struct hmmd_tophits *hmmd_tophits_new(void);
-void hmmd_tophits_del(struct hmmd_tophits const *);
+enum h3c_rc hmmd_tophits_init(struct hmmd_tophits *);
+void hmmd_tophits_cleanup(struct hmmd_tophits *);
 
 #endif

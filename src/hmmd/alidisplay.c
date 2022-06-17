@@ -5,6 +5,17 @@
 #include <stdlib.h>
 #include <string.h>
 
+void hmmd_alidisplay_init(struct hmmd_alidisplay *ali)
+{
+    memset(ali, 0, sizeof(*ali));
+}
+
+void hmmd_alidisplay_cleanup(struct hmmd_alidisplay *ali)
+{
+    if (ali->mem) free(ali->mem);
+    hmmd_alidisplay_init(ali);
+}
+
 #define SER_BASE_SIZE ((5 * sizeof(int)) + (3 * sizeof(int64_t)) + 1)
 
 #define RFLINE_PRESENT (1 << 0)
@@ -41,7 +52,7 @@ enum h3c_rc hmmd_alidisplay_unpack(struct hmmd_alidisplay *ali,
     uint8_t presence = eat8(&ptr);
 
     memcpy(ali->mem, ptr, obj_size - SER_BASE_SIZE);
-    ptr += (obj_size - SER_BASE_SIZE);
+    ptr += obj_size - SER_BASE_SIZE;
 
     if (ptr != data + obj_size)
     {
@@ -58,6 +69,7 @@ enum h3c_rc hmmd_alidisplay_unpack(struct hmmd_alidisplay *ali,
     ali->aseq = presence & ASEQ_PRESENT ? strskip(&mem) : 0;
     ali->ntseq = presence & NTSEQ_PRESENT ? strskip(&mem) : 0;
     ali->ppline = presence & PPLINE_PRESENT ? strskip(&mem) : 0;
+
     ali->hmmname = strskip(&mem);
     ali->hmmacc = strskip(&mem);
     ali->hmmdesc = strskip(&mem);
@@ -71,8 +83,10 @@ enum h3c_rc hmmd_alidisplay_unpack(struct hmmd_alidisplay *ali,
         goto cleanup;
     }
 
+    *read_size = (size_t)(ptr - data);
     return H3C_OK;
 
 cleanup:
+    hmmd_alidisplay_cleanup(ali);
     return rc;
 }

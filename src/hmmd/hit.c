@@ -4,13 +4,19 @@
 #include "hmmd/domain.h"
 #include "hmmd/utils.h"
 #include <stdlib.h>
+#include <string.h>
+
+void hmmd_hit_init(struct hmmd_hit *hit) { memset(hit, 0, sizeof(*hit)); }
 
 void hmmd_hit_cleanup(struct hmmd_hit *hit)
 {
-    free(hit->name);
-    free(hit->acc);
-    free(hit->desc);
+    if (hit->name) free(hit->name);
+    if (hit->acc) free(hit->acc);
+    if (hit->desc) free(hit->desc);
+    for (unsigned i = 0; i < hit->ndom; i++)
+        hmmd_domain_cleanup(hit->dcl + i);
     free(hit->dcl);
+    hmmd_hit_init(hit);
 }
 
 #define ACC_PRESENT (1 << 0)
@@ -77,11 +83,10 @@ enum h3c_rc hmmd_hit_unpack(struct hmmd_hit *hit, size_t *read_size,
 
     hit->dcl = ctb_realloc(hit->dcl, hit->ndom * sizeof(*hit->dcl));
 
-    size_t size = 0;
-    for (int i = 0; i < hit->ndom; i++)
+    for (unsigned i = 0; i < hit->ndom; i++)
     {
-        hit->dcl[i].scores_per_pos = 0;
-        hit->dcl[i].ad = 0;
+        hmmd_domain_init(hit->dcl + i);
+        size_t size = 0;
         if ((rc = hmmd_domain_unpack(&(hit->dcl[i]), &size, ptr))) goto cleanup;
         ptr += size;
     }
@@ -90,5 +95,6 @@ enum h3c_rc hmmd_hit_unpack(struct hmmd_hit *hit, size_t *read_size,
     return H3C_OK;
 
 cleanup:
+    hmmd_hit_cleanup(hit);
     return rc;
 }

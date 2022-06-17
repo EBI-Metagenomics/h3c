@@ -4,6 +4,19 @@
 #include "hmmd/alidisplay.h"
 #include "hmmd/utils.h"
 #include <stdlib.h>
+#include <string.h>
+
+void hmmd_domain_init(struct hmmd_domain *dom)
+{
+    memset(dom, 0, offsetof(struct hmmd_domain, ad));
+    hmmd_alidisplay_init(&dom->ad);
+}
+
+void hmmd_domain_cleanup(struct hmmd_domain *dom)
+{
+    if (dom->scores_per_pos) free(dom->scores_per_pos);
+    hmmd_domain_init(dom);
+}
 
 enum h3c_rc hmmd_domain_unpack(struct hmmd_domain *dom, size_t *read_size,
                                unsigned char const *data)
@@ -32,12 +45,8 @@ enum h3c_rc hmmd_domain_unpack(struct hmmd_domain *dom, size_t *read_size,
 
     if (length > 0)
     {
-        if (dom->scores_per_pos != 0)
-        {
-            free(dom->scores_per_pos);
-        }
-        dom->scores_per_pos =
-            ctb_realloc(dom->scores_per_pos, length * sizeof(float));
+        size_t size = length * sizeof(float);
+        dom->scores_per_pos = ctb_realloc(dom->scores_per_pos, size);
 
         for (unsigned i = 0; i < length; i++)
         {
@@ -51,19 +60,14 @@ enum h3c_rc hmmd_domain_unpack(struct hmmd_domain *dom, size_t *read_size,
         goto cleanup;
     }
 
-    // TODO: finish this
-    // finally, the enclosed P7_ALIDISPLAY object
-    if (dom->ad == 0)
-    {
-        // domain->ad = p7_alidisplay_Create_empty();
-    }
     size_t size = 0;
-    if ((rc = hmmd_alidisplay_unpack(dom->ad, &size, ptr))) goto cleanup;
+    if ((rc = hmmd_alidisplay_unpack(&dom->ad, &size, ptr))) goto cleanup;
     ptr += size;
 
     *read_size = (size_t)(ptr - data);
     return H3C_OK;
 
 cleanup:
+    hmmd_domain_cleanup(dom);
     return rc;
 }

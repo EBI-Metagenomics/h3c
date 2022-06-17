@@ -8,11 +8,14 @@
 
 void hmmd_stats_init(struct hmmd_stats *stats)
 {
-    stats->elapsed = 0;
     memset(stats, 0, sizeof(*stats));
 }
 
-void hmmd_stats_cleanup(struct hmmd_stats *stats) { free(stats->hit_offsets); }
+void hmmd_stats_cleanup(struct hmmd_stats *stats)
+{
+    free(stats->hit_offsets);
+    stats->hit_offsets = 0;
+}
 
 enum h3c_rc hmmd_stats_unpack(struct hmmd_stats *stats, size_t *read_size,
                               unsigned char const *data)

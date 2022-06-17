@@ -1,10 +1,9 @@
 #ifndef HMMD_DOMAIN_H
 #define HMMD_DOMAIN_H
 
+#include "hmmd/alidisplay.h"
 #include <stddef.h>
 #include <stdint.h>
-
-struct hmmd_alidisplay;
 
 struct hmmd_domain
 {
@@ -17,13 +16,16 @@ struct hmmd_domain
     float oasc;
     float bitscore;
     double lnP;
-    int is_reported;
-    int is_included;
+    unsigned is_reported;
+    unsigned is_included;
     float *scores_per_pos;
-    struct hmmd_alidisplay *ad;
+    struct hmmd_alidisplay ad;
 };
 
-enum h3c_rc hmmd_domain_unpack(struct hmmd_domain *dom, size_t *read_size,
+void hmmd_domain_init(struct hmmd_domain *);
+void hmmd_domain_cleanup(struct hmmd_domain *);
+
+enum h3c_rc hmmd_domain_unpack(struct hmmd_domain *, size_t *read_size,
                                unsigned char const *data);
 
 #endif

@@ -30,12 +30,14 @@ struct hmmd_alidisplay
     int64_t sqto;
     int64_t L;
 
-    int memsize;
+    size_t memsize;
     char *mem;
 };
 
-enum h3c_rc hmmd_alidisplay_unpack(struct hmmd_alidisplay *ali,
-                                   size_t *read_size,
+void hmmd_alidisplay_init(struct hmmd_alidisplay *);
+void hmmd_alidisplay_cleanup(struct hmmd_alidisplay *);
+
+enum h3c_rc hmmd_alidisplay_unpack(struct hmmd_alidisplay *, size_t *read_size,
                                    unsigned char const *data);
 
 #endif

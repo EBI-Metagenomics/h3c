@@ -1,35 +1,45 @@
 #include "hmmd/tophits.h"
+#include "h3client/rc.h"
+#include "hmmd/hit.h"
 #include <stdlib.h>
+#include <string.h>
 
-struct hmmd_tophits *hmmd_tophits_new(void)
+enum h3c_rc hmmd_tophits_init(struct hmmd_tophits *th)
 {
-    struct hmmd_tophits *th = malloc(sizeof(*th));
-    if (!th) return 0;
+    enum h3c_rc rc = H3C_OK;
 
-    th->hit = 0;
-    th->unsrt = 0;
+    memset(th, 0, sizeof(*th));
 
     th->Nalloc = 16;
-    if (!(th->hit = malloc(sizeof(*th->hit) * th->Nalloc))) goto cleanup;
-    if (!(th->unsrt = malloc(sizeof(*th->unsrt) * th->Nalloc))) goto cleanup;
-    th->hit[0] = th->unsrt;
-    th->N = 0;
-    th->nreported = 0;
-    th->nincluded = 0;
-    th->is_sorted_by_sortkey = 1;
-    th->is_sorted_by_seqidx = 0;
 
-    return th;
+    if (!(th->hit = calloc(th->Nalloc, sizeof(*th->hit))))
+    {
+        rc = H3C_NOT_ENOUGH_MEMORY;
+        goto cleanup;
+    }
+
+    if (!(th->unsrt = calloc(th->Nalloc, sizeof(*th->unsrt))))
+    {
+        rc = H3C_NOT_ENOUGH_MEMORY;
+        goto cleanup;
+    }
+
+    th->hit[0] = th->unsrt;
+    th->is_sorted_by_sortkey = true;
+
+    return H3C_OK;
 
 cleanup:
     if (th->hit) free(th->hit);
     if (th->unsrt) free(th->unsrt);
-    return 0;
+    return rc;
 }
 
-void hmmd_tophits_del(struct hmmd_tophits const *th)
+void hmmd_tophits_cleanup(struct hmmd_tophits *th)
 {
+    for (uint64_t i = 0; i < th->Nalloc; ++i)
+        hmmd_hit_cleanup(th->unsrt + i);
     free(th->hit);
     free(th->unsrt);
-    free((void *)th);
+    hmmd_tophits_init(th);
 }
