@@ -24,30 +24,33 @@ enum h3c_rc hmmd_stats_unpack(struct hmmd_stats *stats, size_t *read_size,
     *read_size = 0;
     unsigned char const *ptr = data;
 
-    to_double(&stats->elapsed, eat64(&ptr));
-    to_double(&stats->user, eat64(&ptr));
-    to_double(&stats->sys, eat64(&ptr));
-    to_double(&stats->Z, eat64(&ptr));
-    to_double(&stats->domZ, eat64(&ptr));
+    stats->elapsed = eatf64(&ptr);
+    stats->user = eatf64(&ptr);
+    stats->sys = eatf64(&ptr);
+    stats->Z = eatf64(&ptr);
+    stats->domZ = eatf64(&ptr);
 
-    if ((rc = hmmd_zsetby_unpack(&stats->Z_setby, &ptr))) goto cleanup;
-    if ((rc = hmmd_zsetby_unpack(&stats->domZ_setby, &ptr))) goto cleanup;
+    size_t size = 0;
+    if ((rc = hmmd_zsetby_unpack(&stats->Z_setby, &size, ptr))) goto cleanup;
+    ptr += size;
+    if ((rc = hmmd_zsetby_unpack(&stats->domZ_setby, &size, ptr))) goto cleanup;
+    ptr += size;
 
-    stats->nmodels = eat64(&ptr);
-    stats->nseqs = eat64(&ptr);
-    stats->n_past_msv = eat64(&ptr);
-    stats->n_past_bias = eat64(&ptr);
-    stats->n_past_vit = eat64(&ptr);
-    stats->n_past_fwd = eat64(&ptr);
-    stats->nhits = eat64(&ptr);
-    stats->nreported = eat64(&ptr);
-    stats->nincluded = eat64(&ptr);
+    stats->nmodels = eatu64(&ptr);
+    stats->nseqs = eatu64(&ptr);
+    stats->n_past_msv = eatu64(&ptr);
+    stats->n_past_bias = eatu64(&ptr);
+    stats->n_past_vit = eatu64(&ptr);
+    stats->n_past_fwd = eatu64(&ptr);
+    stats->nhits = eatu64(&ptr);
+    stats->nreported = eatu64(&ptr);
+    stats->nincluded = eatu64(&ptr);
 
-    uint64_t hit_offset = eat64(&ptr);
+    uint64_t hit_offset = eatu64(&ptr);
     if (hit_offset != UINT64_MAX)
     {
-        stats->hit_offsets =
-            ctb_realloc(stats->hit_offsets, stats->nhits * sizeof(uint64_t));
+        size = stats->nhits * sizeof(uint64_t);
+        stats->hit_offsets = ctb_realloc(stats->hit_offsets, size);
         if (!stats->hit_offsets)
         {
             rc = H3C_NOT_ENOUGH_MEMORY;
@@ -56,7 +59,7 @@ enum h3c_rc hmmd_stats_unpack(struct hmmd_stats *stats, size_t *read_size,
 
         stats->hit_offsets[0] = hit_offset;
         for (uint64_t i = 1; i < stats->nhits; i++)
-            stats->hit_offsets[i] = eat64(&ptr);
+            stats->hit_offsets[i] = eatu64(&ptr);
     }
 
     *read_size = (size_t)(ptr - data);

@@ -3,6 +3,7 @@
 #include "h3client/rc.h"
 #include "hmmd/alidisplay.h"
 #include "hmmd/utils.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -25,23 +26,40 @@ enum h3c_rc hmmd_domain_unpack(struct hmmd_domain *dom, size_t *read_size,
     *read_size = 0;
     unsigned char const *ptr = data;
 
-    size_t obj_size = eat32(&ptr);
-    dom->ienv = eat64(&ptr);
-    dom->jenv = eat64(&ptr);
-    dom->iali = eat64(&ptr);
-    dom->jali = eat64(&ptr);
-    dom->iorf = eat64(&ptr);
-    dom->jorf = eat64(&ptr);
-    to_float(&dom->envsc, eat32(&ptr));
-    to_float(&dom->domcorrection, eat32(&ptr));
-    to_float(&dom->dombias, eat32(&ptr));
-    to_float(&dom->oasc, eat32(&ptr));
-    to_float(&dom->bitscore, eat32(&ptr));
-    to_double(&dom->lnP, eat32(&ptr));
-    dom->is_reported = eat32(&ptr);
-    dom->is_included = eat32(&ptr);
+    size_t obj_size = eatu32(&ptr);
+    dom->ienv = eatu64(&ptr);
+    dom->jenv = eatu64(&ptr);
+    dom->iali = eatu64(&ptr);
+    dom->jali = eatu64(&ptr);
+    dom->iorf = eatu64(&ptr);
+    dom->jorf = eatu64(&ptr);
+    dom->envsc = eatf32(&ptr);
+    dom->domcorrection = eatf32(&ptr);
+    dom->dombias = eatf32(&ptr);
+    dom->oasc = eatf32(&ptr);
+    dom->bitscore = eatf32(&ptr);
+    dom->lnP = eatf64(&ptr);
+    dom->is_reported = eatu32(&ptr);
+    dom->is_included = eatu32(&ptr);
 
-    unsigned length = eat32(&ptr);
+    printf("ienv: %lld\n", dom->ienv);
+    printf("jenv: %lld\n", dom->jenv);
+    printf("iali: %lld\n", dom->iali);
+    printf("jali: %lld\n", dom->jali);
+    printf("iorf: %lld\n", dom->iorf);
+    printf("jorf: %lld\n", dom->jorf);
+
+    printf("envsc: %f\n", dom->envsc);
+    printf("domcorrection: %f\n", dom->domcorrection);
+    printf("dombias: %f\n", dom->dombias);
+    printf("oasc: %f\n", dom->oasc);
+    printf("bitscore: %f\n", dom->bitscore);
+    printf("lnP: %f\n", dom->lnP);
+
+    printf("is_reported: %d\n", dom->is_reported);
+    printf("is_included: %d\n", dom->is_included);
+
+    unsigned length = eatu32(&ptr);
 
     if (length > 0)
     {
@@ -50,7 +68,7 @@ enum h3c_rc hmmd_domain_unpack(struct hmmd_domain *dom, size_t *read_size,
 
         for (unsigned i = 0; i < length; i++)
         {
-            to_float(&dom->scores_per_pos[i], eat32(&ptr));
+            dom->scores_per_pos[i] = eatf32(&ptr);
         }
     }
 

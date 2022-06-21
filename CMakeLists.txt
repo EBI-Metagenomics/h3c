@@ -14,6 +14,10 @@ include(cmake/sanitizers.cmake)
 include(cmake/CPM.cmake)
 
 cpmaddpackage(NAME c_toolbelt VERSION 0.3.1 GITHUB_REPOSITORY horta/c-toolbelt)
+cpmaddpackage(
+  NAME lite_pack VERSION 0.1.4 GITHUB_REPOSITORY
+  EBI-Metagenomics/lite-pack
+)
 
 add_library(
   h3client
@@ -32,6 +36,7 @@ add_library(
   src/request.c
 )
 target_link_libraries(h3client PUBLIC C_TOOLBELT::c_toolbelt)
+target_link_libraries(h3client PUBLIC LITE_PACK::lite_pack)
 add_library(H3CLIENT::h3client ALIAS h3client)
 
 set(EXPORT_FILE ${CMAKE_CURRENT_BINARY_DIR}/h3client/export.h)

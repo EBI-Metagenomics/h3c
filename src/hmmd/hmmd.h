@@ -3,6 +3,7 @@
 
 #include "hmmd/stats.h"
 #include "hmmd/status.h"
+#include "hmmd/tophits.h"
 #include <stdint.h>
 
 #define HMMD_STATUS_PACK_SIZE (sizeof(uint32_t) + sizeof(uint64_t))

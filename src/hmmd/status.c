@@ -12,7 +12,7 @@ void hmmd_status_unpack(struct hmmd_status *status, size_t *read_size,
                         unsigned char const *data)
 {
     unsigned char const *ptr = data;
-    status->status = eat32(&ptr);
-    status->msg_size = eat64(&ptr);
+    status->status = eatu32(&ptr);
+    status->msg_size = eatu64(&ptr);
     *read_size = (size_t)(ptr - data);
 }

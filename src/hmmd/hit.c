@@ -29,29 +29,29 @@ enum h3c_rc hmmd_hit_unpack(struct hmmd_hit *hit, size_t *read_size,
     *read_size = 0;
     unsigned char const *ptr = data;
 
-    uint32_t obj_size = eat32(&ptr);
-    hit->window_length = eat32(&ptr);
-    to_double(&hit->sortkey, eat64(&ptr));
-    to_float(&hit->score, eat32(&ptr));
-    to_float(&hit->pre_score, eat32(&ptr));
-    to_float(&hit->sum_score, eat32(&ptr));
-    to_double(&hit->lnP, eat64(&ptr));
-    to_double(&hit->pre_lnP, eat64(&ptr));
-    to_double(&hit->sum_lnP, eat64(&ptr));
-    to_float(&hit->nexpected, eat32(&ptr));
-    hit->nregions = eat32(&ptr);
-    hit->nclustered = eat32(&ptr);
-    hit->noverlaps = eat32(&ptr);
-    hit->nenvelopes = eat32(&ptr);
-    hit->ndom = eat32(&ptr);
-    hit->flags = eat32(&ptr);
-    hit->nreported = eat32(&ptr);
-    hit->nincluded = eat32(&ptr);
-    hit->best_domain = eat32(&ptr);
-    hit->seqidx = eat64(&ptr);
-    hit->subseq_start = eat64(&ptr);
+    uint32_t obj_size = eatu32(&ptr);
+    hit->window_length = eatu32(&ptr);
+    hit->sortkey = eatf64(&ptr);
+    hit->score = eatf32(&ptr);
+    hit->pre_score = eatf32(&ptr);
+    hit->sum_score = eatf32(&ptr);
+    hit->lnP = eatf64(&ptr);
+    hit->pre_lnP = eatf64(&ptr);
+    hit->sum_lnP = eatf64(&ptr);
+    hit->nexpected = eatf32(&ptr);
+    hit->nregions = eatu32(&ptr);
+    hit->nclustered = eatu32(&ptr);
+    hit->noverlaps = eatu32(&ptr);
+    hit->nenvelopes = eatu32(&ptr);
+    hit->ndom = eatu32(&ptr);
+    hit->flags = eatu32(&ptr);
+    hit->nreported = eatu32(&ptr);
+    hit->nincluded = eatu32(&ptr);
+    hit->best_domain = eatu32(&ptr);
+    hit->seqidx = eatu64(&ptr);
+    hit->subseq_start = eatu64(&ptr);
 
-    uint8_t presence = eat8(&ptr);
+    uint8_t presence = eatu8(&ptr);
 
     if ((rc = eatstr(&hit->name, &ptr))) goto cleanup;
 
@@ -82,6 +82,33 @@ enum h3c_rc hmmd_hit_unpack(struct hmmd_hit *hit, size_t *read_size,
     }
 
     hit->dcl = ctb_realloc(hit->dcl, hit->ndom * sizeof(*hit->dcl));
+
+    printf("name: %s\n", hit->name);
+    printf("acc: %s\n", hit->acc);
+    printf("desc: %s\n", hit->desc);
+    printf("window_length: %d\n", hit->window_length);
+    printf("sortkey: %f\n", hit->sortkey);
+    printf("score: %f\n", hit->score);
+    printf("pre_score: %f\n", hit->pre_score);
+    printf("sum_score: %f\n", hit->sum_score);
+    printf("lnP: %f\n", hit->lnP);
+    printf("pre_lnP: %f\n", hit->pre_lnP);
+    printf("sum_lnP: %f\n", hit->sum_lnP);
+
+    printf("nexpected: %f\n", hit->nexpected);
+    printf("nregions: %d\n", hit->nregions);
+    printf("nclustered: %d\n", hit->nclustered);
+    printf("noverlaps: %d\n", hit->noverlaps);
+    printf("nenvelopes: %d\n", hit->nenvelopes);
+    printf("ndom: %d\n", hit->ndom);
+
+    printf("flags: %d\n", hit->flags);
+    printf("nreported: %d\n", hit->nreported);
+    printf("nincluded: %d\n", hit->nincluded);
+    printf("best_domain: %d\n", hit->best_domain);
+
+    printf("seqidx: %lld\n", hit->seqidx);
+    printf("subseq_start: %lld\n", hit->subseq_start);
 
     for (unsigned i = 0; i < hit->ndom; i++)
     {

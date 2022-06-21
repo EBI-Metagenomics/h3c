@@ -16,6 +16,7 @@ struct answer
 
     struct buff *buff;
     struct hmmd_stats stats;
+    struct hmmd_tophits tophits;
 };
 
 struct answer *answer_new(void)
@@ -31,6 +32,7 @@ struct answer *answer_new(void)
         return 0;
     }
     hmmd_stats_init(&ans->stats);
+    hmmd_tophits_init(&ans->tophits);
     return ans;
 }
 
@@ -38,6 +40,7 @@ void answer_del(struct answer const *ans)
 {
     buff_del(ans->buff);
     hmmd_stats_cleanup((struct hmmd_stats *)&ans->stats);
+    hmmd_tophits_cleanup((struct hmmd_tophits *)&ans->tophits);
     free((void *)ans);
 }
 
@@ -50,7 +53,8 @@ size_t answer_status_size(void) { return HMMD_STATUS_PACK_SIZE; }
 
 struct hmmd_status const *answer_status_unpack(struct answer *ans)
 {
-    hmmd_status_unpack(&ans->status.value, ans->status.data);
+    size_t size = 0;
+    hmmd_status_unpack(&ans->status.value, &size, ans->status.data);
     return &ans->status.value;
 }
 
@@ -64,56 +68,17 @@ unsigned char *answer_data(struct answer *ans) { return ans->buff->data; }
 enum h3c_rc answer_unpack(struct answer *ans)
 {
     size_t read_size = 0;
-    return hmmd_stats_unpack(&ans->stats, &read_size, ans->buff->data);
+    enum h3c_rc rc = H3C_OK;
+    if ((rc = hmmd_stats_unpack(&ans->stats, &read_size, ans->buff->data)))
+        goto cleanup;
 
-#if 0
-    enum h3c_rc rc =
-        hmmd_stats_unpack(&ans->stats, &read_size, ans->buff->data);
-    struct hmmd_tophits *th = p7_tophits_Create();
+    rc = hmmd_tophits_setup(&ans->tophits, ans->buff->data + read_size,
+                            ans->stats.nhits, ans->stats.nreported,
+                            ans->stats.nincluded);
+    if (!rc) goto cleanup;
 
-    free(th->unsrt);
-    free(th->hit);
+    return H3C_OK;
 
-    th->N = stats->nhits;
-    if ((th->unsrt = malloc(stats->nhits * sizeof(P7_HIT))) == NULL)
-    {
-        fprintf(stderr, "[%s:%d] malloc error %d - %s\n", __FILE__, __LINE__,
-                errno, strerror(errno));
-        exit(1);
-    }
-    th->nreported = stats->nreported;
-    th->nincluded = stats->nincluded;
-    th->is_sorted_by_seqidx = FALSE;
-    th->is_sorted_by_sortkey = TRUE;
-
-    if ((th->hit = malloc(sizeof(void *) * stats->nhits)) == NULL)
-    {
-        fprintf(stderr, "[%s:%d] malloc error %d - %s\n", __FILE__, __LINE__,
-                errno, strerror(errno));
-        exit(1);
-    }
-    hits_start = buf_offset;
-    // deserialize the hits
-    for (i = 0; i < stats->nhits; ++i)
-    {
-        // set all internal pointers of the hit to NULL before deserializing
-        // into it
-        th->unsrt[i].name = NULL;
-        th->unsrt[i].acc = NULL;
-        th->unsrt[i].desc = NULL;
-        th->unsrt[i].dcl = NULL;
-        if ((buf_offset - hits_start) != stats->hit_offsets[i])
-        {
-            printf("Hit offset %d did not match expected.  Found %d, expected "
-                   "%" PRIu64 "\n",
-                   i, (buf_offset - hits_start), stats->hit_offsets[i]);
-        }
-        if (p7_hit_Deserialize(buf, &buf_offset, &(th->unsrt[i])) != eslOK)
-        {
-            printf("Unable to deserialize hit %d\n", i);
-            exit(0);
-        }
-        th->hit[i] = &(th->unsrt[i]);
-    }
-#endif
+cleanup:
+    return rc;
 }
