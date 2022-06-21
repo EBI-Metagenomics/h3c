@@ -119,7 +119,7 @@ cleanup:
     return rc;
 }
 
-enum h3c_rc hmmd_alidisplay_pack(struct hmmd_alidisplay *ali,
+enum h3c_rc hmmd_alidisplay_pack(struct hmmd_alidisplay const *ali,
                                  struct lip_file *f)
 {
     lip_write_cstr(f, ali->rfline);
@@ -138,4 +138,6 @@ enum h3c_rc hmmd_alidisplay_pack(struct hmmd_alidisplay *ali,
     lip_write_int(f, ali->sqfrom);
     lip_write_int(f, ali->sqto);
     lip_write_int(f, ali->L);
+
+    return f->error ? H3C_FAILED_PACK : H3C_OK;
 }

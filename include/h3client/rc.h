@@ -15,6 +15,7 @@ enum h3c_rc
     H3C_FAILED_WRITE_SOCKET,
     H3C_FAILED_READ_SOCKET,
     H3C_FAILED_UNPACK,
+    H3C_FAILED_PACK,
 };
 
 #endif

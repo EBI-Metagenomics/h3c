@@ -3,6 +3,8 @@
 #include "h3client/h3client.h"
 #include "hmmd/utils.h"
 #include "hmmd/zsetby.h"
+#include "lite_pack/file/file.h"
+#include "lite_pack/lite_pack.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -68,4 +70,33 @@ enum h3c_rc hmmd_stats_unpack(struct hmmd_stats *stats, size_t *read_size,
 cleanup:
     hmmd_stats_cleanup(stats);
     return rc;
+}
+
+enum h3c_rc hmmd_stats_pack(struct hmmd_stats const *stats, struct lip_file *f)
+{
+    lip_write_float(f, stats->elapsed);
+    lip_write_float(f, stats->user);
+    lip_write_float(f, stats->sys);
+
+    lip_write_float(f, stats->Z);
+    lip_write_float(f, stats->domZ);
+    lip_write_int(f, stats->Z_setby);
+    lip_write_int(f, stats->domZ_setby);
+
+    lip_write_int(f, stats->nmodels);
+    lip_write_int(f, stats->nseqs);
+    lip_write_int(f, stats->n_past_msv);
+    lip_write_int(f, stats->n_past_bias);
+    lip_write_int(f, stats->n_past_vit);
+    lip_write_int(f, stats->n_past_fwd);
+
+    lip_write_int(f, stats->nhits);
+    lip_write_int(f, stats->nreported);
+    lip_write_int(f, stats->nincluded);
+
+    lip_write_array_size(f, stats->nhits);
+    for (uint64_t i = 1; i < stats->nhits; i++)
+        lip_write_int(f, stats->hit_offsets[i]);
+
+    return f->error ? H3C_FAILED_PACK : H3C_OK;
 }

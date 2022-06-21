@@ -35,4 +35,8 @@ void hmmd_stats_cleanup(struct hmmd_stats *);
 enum h3c_rc hmmd_stats_unpack(struct hmmd_stats *stats, size_t *read_size,
                               unsigned char const *data);
 
+struct lip_file;
+
+enum h3c_rc hmmd_stats_pack(struct hmmd_stats const *, struct lip_file *);
+
 #endif

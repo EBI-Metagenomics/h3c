@@ -16,4 +16,8 @@ void hmmd_status_cleanup(struct hmmd_status *);
 void hmmd_status_unpack(struct hmmd_status *status, size_t *read_size,
                         unsigned char const *data);
 
+struct lip_file;
+
+enum h3c_rc hmmd_status_pack(struct hmmd_status const *, struct lip_file *);
+
 #endif

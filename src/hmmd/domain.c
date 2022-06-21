@@ -3,6 +3,8 @@
 #include "h3client/rc.h"
 #include "hmmd/alidisplay.h"
 #include "hmmd/utils.h"
+#include "lite_pack/file/file.h"
+#include "lite_pack/lite_pack.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -59,14 +61,14 @@ enum h3c_rc hmmd_domain_unpack(struct hmmd_domain *dom, size_t *read_size,
     printf("is_reported: %d\n", dom->is_reported);
     printf("is_included: %d\n", dom->is_included);
 
-    unsigned length = eatu32(&ptr);
+    dom->npos = eatu32(&ptr);
 
-    if (length > 0)
+    if (dom->npos > 0)
     {
-        size_t size = length * sizeof(float);
+        size_t size = dom->npos * sizeof(float);
         dom->scores_per_pos = ctb_realloc(dom->scores_per_pos, size);
 
-        for (unsigned i = 0; i < length; i++)
+        for (unsigned i = 0; i < dom->npos; i++)
         {
             dom->scores_per_pos[i] = eatf32(&ptr);
         }
@@ -88,4 +90,34 @@ enum h3c_rc hmmd_domain_unpack(struct hmmd_domain *dom, size_t *read_size,
 cleanup:
     hmmd_domain_cleanup(dom);
     return rc;
+}
+
+enum h3c_rc hmmd_domain_pack(struct hmmd_domain const *dom, struct lip_file *f)
+{
+    lip_write_int(f, dom->ienv);
+    lip_write_int(f, dom->jenv);
+
+    lip_write_int(f, dom->iali);
+    lip_write_int(f, dom->jali);
+
+    lip_write_int(f, dom->iorf);
+    lip_write_int(f, dom->jorf);
+
+    lip_write_float(f, dom->envsc);
+    lip_write_float(f, dom->domcorrection);
+    lip_write_float(f, dom->dombias);
+    lip_write_float(f, dom->oasc);
+    lip_write_float(f, dom->bitscore);
+    lip_write_float(f, dom->lnP);
+
+    lip_write_bool(f, dom->is_reported);
+    lip_write_bool(f, dom->is_included);
+
+    lip_write_array_size(f, dom->npos);
+    for (size_t i = 0; i < dom->npos; i++)
+        lip_write_float(f, dom->scores_per_pos[i]);
+
+    hmmd_alidisplay_pack(&dom->ad, f);
+
+    return f->error ? H3C_FAILED_PACK : H3C_OK;
 }

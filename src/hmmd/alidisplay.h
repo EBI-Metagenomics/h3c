@@ -42,6 +42,7 @@ enum h3c_rc hmmd_alidisplay_unpack(struct hmmd_alidisplay *, size_t *read_size,
 
 struct lip_file;
 
-enum h3c_rc hmmd_alidisplay_pack(struct hmmd_alidisplay *, struct lip_file *);
+enum h3c_rc hmmd_alidisplay_pack(struct hmmd_alidisplay const *,
+                                 struct lip_file *);
 
 #endif
