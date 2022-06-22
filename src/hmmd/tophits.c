@@ -11,29 +11,12 @@ enum h3c_rc hmmd_tophits_init(struct hmmd_tophits *th)
 
     memset(th, 0, sizeof(*th));
 
-    th->Nalloc = 16;
-
-    if (!(th->hit = calloc(th->Nalloc, sizeof(*th->hit))))
-    {
-        rc = H3C_NOT_ENOUGH_MEMORY;
-        goto cleanup;
-    }
-
-    if (!(th->unsrt = calloc(th->Nalloc, sizeof(*th->unsrt))))
-    {
-        rc = H3C_NOT_ENOUGH_MEMORY;
-        goto cleanup;
-    }
-
-    th->hit[0] = th->unsrt;
+    th->Nalloc = 0;
+    th->hit = 0;
+    th->unsrt= 0;
     th->is_sorted_by_sortkey = true;
 
     return H3C_OK;
-
-cleanup:
-    if (th->hit) free(th->hit);
-    if (th->unsrt) free(th->unsrt);
-    return rc;
 }
 
 enum h3c_rc hmmd_tophits_setup(struct hmmd_tophits *th,

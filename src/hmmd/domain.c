@@ -18,6 +18,7 @@ void hmmd_domain_init(struct hmmd_domain *dom)
 void hmmd_domain_cleanup(struct hmmd_domain *dom)
 {
     if (dom->scores_per_pos) free(dom->scores_per_pos);
+    hmmd_alidisplay_cleanup(&dom->ad);
     hmmd_domain_init(dom);
 }
 

@@ -109,6 +109,8 @@ cleanup:
 
 enum h3c_rc h3c_close(void)
 {
+    request_del(conn.request);
+    answer_del(conn.answer);
     return close(conn.sockfd) ? H3C_FAILED_CLOSE : H3C_OK;
 }
 

@@ -30,14 +30,22 @@ uint8_t eatu8(unsigned char const **data)
 
 double eatf64(unsigned char const **data)
 {
-    uint64_t u64 = eatu64(data);
-    return *((double *)&u64);
+    union
+    {
+        uint64_t u64;
+        double f64;
+    } v = {.u64 = eatu64(data)};
+    return v.f64;
 }
 
 float eatf32(unsigned char const **data)
 {
-    uint32_t u32 = eatu32(data);
-    return *((float *)&u32);
+    union
+    {
+        uint32_t u32;
+        float f32;
+    } v = {.u32 = eatu32(data)};
+    return v.f32;
 }
 
 enum h3c_rc eatstr(char **dst, unsigned char const **data)

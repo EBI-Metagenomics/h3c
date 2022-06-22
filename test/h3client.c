@@ -1,6 +1,14 @@
 #include "h3client/h3client.h"
 
+#ifdef _POSIX_C_SOURCE
+#if _POSIX_C_SOURCE < 200112L
+#undef _POSIX_C_SOURCE
 #define _POSIX_C_SOURCE 200112L
+#endif
+#else
+#define _POSIX_C_SOURCE 200112L
+#endif
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
