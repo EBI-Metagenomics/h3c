@@ -1,12 +1,10 @@
 name: Deploy
+
 on: push
 
 jobs:
   deploy:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-22.04]
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v2
@@ -20,11 +18,13 @@ jobs:
 
       - name: Run h3daemon
         working-directory: ${{github.workspace}}/build
-        run: curl -fsSL "https://app.danilohorta.me/h3daemon" | bash -s -- start test/assets/minifam.hmm --yes
+        run: |
+          loginctl enable-linger 1001
+          curl -fsSL "https://app.danilohorta.me/h3daemon" | bash -s -- start test/assets/minifam.hmm --yes
 
       - name: Test
         working-directory: ${{github.workspace}}/build
-        run: ctest -C Release
+        run: ctest -C Release --rerun-failed --output-on-failure
 
       - name: CPack
         working-directory: ${{github.workspace}}/build
