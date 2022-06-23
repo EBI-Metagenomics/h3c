@@ -6,6 +6,8 @@
 
 struct hmmd_alidisplay
 {
+    uint8_t presence;
+
     char *rfline;
     char *mmline;
     char *csline;
@@ -14,21 +16,21 @@ struct hmmd_alidisplay
     char *aseq;
     char *ntseq;
     char *ppline;
-    int N;
+    uint32_t N;
 
     char *hmmname;
     char *hmmacc;
     char *hmmdesc;
-    int hmmfrom;
-    int hmmto;
-    int M;
+    uint32_t hmmfrom;
+    uint32_t hmmto;
+    uint32_t M;
 
     char *sqname;
     char *sqacc;
     char *sqdesc;
-    int64_t sqfrom;
-    int64_t sqto;
-    int64_t L;
+    uint64_t sqfrom;
+    uint64_t sqto;
+    uint64_t L;
 
     size_t memsize;
     char *mem;

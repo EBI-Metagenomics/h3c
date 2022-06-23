@@ -17,6 +17,7 @@
 #include "answer.h"
 #include "h3client/h3client.h"
 #include "hmmd/hmmd.h"
+#include "lite_pack/lite_pack.h"
 #include "request.h"
 
 struct conn
@@ -105,6 +106,13 @@ enum h3c_rc h3c_call(char const *args, FILE *fasta)
 
 cleanup:
     return rc;
+}
+
+enum h3c_rc h3c_pack_answer(FILE *h3answer)
+{
+    struct lip_file f = {0};
+    lip_file_init(&f, h3answer);
+    return answer_pack(conn.answer, &f);
 }
 
 enum h3c_rc h3c_close(void)

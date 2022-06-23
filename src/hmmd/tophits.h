@@ -5,13 +5,13 @@
 #include <stdint.h>
 
 struct hmmd_hit;
+struct lip_file;
 
 struct hmmd_tophits
 {
     struct hmmd_hit **hit;
     struct hmmd_hit *unsrt;
-    uint64_t Nalloc;
-    uint64_t N;
+    uint64_t nhits;
     uint64_t nreported;
     uint64_t nincluded;
     bool is_sorted_by_sortkey;
@@ -23,5 +23,7 @@ enum h3c_rc hmmd_tophits_setup(struct hmmd_tophits *, unsigned char const *data,
                                uint64_t nhits, uint64_t nreported,
                                uint64_t nincluded);
 void hmmd_tophits_cleanup(struct hmmd_tophits *);
+
+enum h3c_rc hmmd_tophits_pack(struct hmmd_tophits const *, struct lip_file *);
 
 #endif

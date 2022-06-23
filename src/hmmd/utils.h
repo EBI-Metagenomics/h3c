@@ -4,7 +4,11 @@
 #include <stdint.h>
 
 uint64_t eatu64(unsigned char const **data);
+int64_t eati64(unsigned char const **data);
+
 uint32_t eatu32(unsigned char const **data);
+int32_t eati32(unsigned char const **data);
+
 uint8_t eatu8(unsigned char const **data);
 
 double eatf64(unsigned char const **data);

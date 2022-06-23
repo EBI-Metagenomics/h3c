@@ -4,49 +4,57 @@
 #include <stddef.h>
 #include <string.h>
 
-uint64_t eatu64(unsigned char const **data)
+union num64
 {
-    uint64_t n64 = 0;
-    memcpy(&n64, *data, sizeof(uint64_t));
-    *data += sizeof(uint64_t);
-    return ctb_ntohll(n64);
+    int64_t i;
+    uint64_t u;
+    double f;
+};
+
+union num32
+{
+    int32_t i;
+    uint32_t u;
+    float f;
+};
+
+static union num64 eatnum64(unsigned char const **data)
+{
+    union num64 ui = {.u = 0};
+    memcpy(&ui.u, *data, sizeof(ui.u));
+    *data += sizeof(ui.u);
+    ui.u = ctb_ntohll(ui.u);
+    return ui;
 }
 
-uint32_t eatu32(unsigned char const **data)
+static union num32 eatnum32(unsigned char const **data)
 {
-    uint32_t n32 = 0;
-    memcpy(&n32, *data, sizeof(uint32_t));
-    *data += sizeof(uint32_t);
-    return ctb_ntohl(n32);
+    union num32 ui = {.u = 0};
+    memcpy(&ui.u, *data, sizeof(ui.u));
+    *data += sizeof(ui.u);
+    ui.u = ctb_ntohl(ui.u);
+    return ui;
 }
+
+uint64_t eatu64(unsigned char const **data) { return eatnum64(data).u; }
+
+int64_t eati64(unsigned char const **data) { return eatnum64(data).i; }
+
+uint32_t eatu32(unsigned char const **data) { return eatnum32(data).u; }
+
+int32_t eati32(unsigned char const **data) { return eatnum32(data).i; }
 
 uint8_t eatu8(unsigned char const **data)
 {
-    uint8_t n8 = 0;
-    memcpy(&n8, *data, sizeof(uint8_t));
-    *data += sizeof(uint8_t);
-    return n8;
+    uint8_t u8 = 0;
+    memcpy(&u8, *data, sizeof(u8));
+    *data += sizeof(u8);
+    return u8;
 }
 
-double eatf64(unsigned char const **data)
-{
-    union
-    {
-        uint64_t u64;
-        double f64;
-    } v = {.u64 = eatu64(data)};
-    return v.f64;
-}
+double eatf64(unsigned char const **data) { return eatnum64(data).f; }
 
-float eatf32(unsigned char const **data)
-{
-    union
-    {
-        uint32_t u32;
-        float f32;
-    } v = {.u32 = eatu32(data)};
-    return v.f32;
-}
+float eatf32(unsigned char const **data) { return eatnum32(data).f; }
 
 enum h3c_rc eatstr(char **dst, unsigned char const **data)
 {

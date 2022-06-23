@@ -10,7 +10,9 @@ struct hmmd_domain
 {
     int64_t ienv, jenv;
     int64_t iali, jali;
-    int64_t iorf, jorf;
+    // The following two members seems to be receiving
+    // random numbers from daemon end. Skip them.
+    // int64_t iorf, jorf;
     float envsc;
     float domcorrection;
     float dombias;
@@ -19,7 +21,7 @@ struct hmmd_domain
     double lnP;
     bool is_reported;
     bool is_included;
-    size_t npos;
+    uint64_t npos;
     float *scores_per_pos;
     struct hmmd_alidisplay ad;
 };

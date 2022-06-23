@@ -11,7 +11,9 @@ struct hmmd_hit
     char *name;
     char *acc;
     char *desc;
-    int window_length;
+    // The following members seems to be receiving
+    // random numbers from daemon end. Skip them.
+    // int window_length;
     double sortkey;
 
     float score;
@@ -23,19 +25,19 @@ struct hmmd_hit
     double sum_lnP;
 
     float nexpected;
-    int nregions;
-    int nclustered;
-    int noverlaps;
-    int nenvelopes;
-    unsigned ndom;
+    uint32_t nregions;
+    uint32_t nclustered;
+    uint32_t noverlaps;
+    uint32_t nenvelopes;
+    uint32_t ndom;
 
     uint32_t flags;
-    int nreported;
-    int nincluded;
-    int best_domain;
+    uint32_t nreported;
+    uint32_t nincluded;
+    uint32_t best_domain;
 
-    int64_t seqidx;
-    int64_t subseq_start;
+    uint64_t seqidx;
+    uint64_t subseq_start;
 
     struct hmmd_domain *dcl;
 };

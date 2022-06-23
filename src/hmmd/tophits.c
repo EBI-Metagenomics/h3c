@@ -2,14 +2,13 @@
 #include "c_toolbelt/c_toolbelt.h"
 #include "h3client/rc.h"
 #include "hmmd/hit.h"
+#include "lite_pack/lite_pack.h"
 #include <stdlib.h>
 #include <string.h>
 
 void hmmd_tophits_init(struct hmmd_tophits *th)
 {
     memset(th, 0, sizeof(*th));
-
-    th->Nalloc = 0;
     th->hit = 0;
     th->unsrt = 0;
     th->is_sorted_by_sortkey = true;
@@ -36,7 +35,7 @@ enum h3c_rc hmmd_tophits_setup(struct hmmd_tophits *th,
         goto cleanup;
     }
 
-    th->N = nhits;
+    th->nhits = nhits;
     th->nreported = nreported;
     th->nincluded = nincluded;
     th->is_sorted_by_seqidx = false;
@@ -52,6 +51,8 @@ enum h3c_rc hmmd_tophits_setup(struct hmmd_tophits *th,
         th->hit[i] = th->unsrt + i;
     }
 
+    return H3C_OK;
+
 cleanup:
     hmmd_tophits_cleanup(th);
     return rc;
@@ -59,11 +60,28 @@ cleanup:
 
 void hmmd_tophits_cleanup(struct hmmd_tophits *th)
 {
-    for (uint64_t i = 0; i < th->N; ++i)
+    for (uint64_t i = 0; i < th->nhits; ++i)
     {
         hmmd_hit_cleanup(th->unsrt + i);
     }
     free(th->hit);
     free(th->unsrt);
     hmmd_tophits_init(th);
+}
+
+enum h3c_rc hmmd_tophits_pack(struct hmmd_tophits const *th, struct lip_file *f)
+{
+    lip_write_int(f, th->nhits);
+    lip_write_int(f, th->nreported);
+    lip_write_int(f, th->nincluded);
+    lip_write_bool(f, th->is_sorted_by_sortkey);
+    lip_write_bool(f, th->is_sorted_by_seqidx);
+
+    for (uint64_t i = 0; i < th->nhits; ++i)
+    {
+        enum h3c_rc rc = hmmd_hit_pack(th->unsrt + i, f);
+        if (rc) return rc;
+    }
+
+    return f->error ? H3C_FAILED_PACK : H3C_OK;
 }

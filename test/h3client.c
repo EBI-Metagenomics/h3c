@@ -43,6 +43,19 @@ int main(void)
     }
     fclose(file);
 
+    file = fopen(TMPDIR "/h3result.msgpack", "w");
+    if (!file)
+    {
+        printf("Failed to fopen!");
+        return 1;
+    }
+    if (h3c_pack_answer(file))
+    {
+        printf("Failed to h3c_pack_answer!");
+        return 1;
+    }
+    fclose(file);
+
     if (h3c_close())
     {
         printf("Failed to h3c_close!");

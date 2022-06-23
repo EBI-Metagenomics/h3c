@@ -32,20 +32,28 @@ enum h3c_rc hmmd_hit_unpack(struct hmmd_hit *hit, size_t *read_size,
     unsigned char const *ptr = data;
 
     uint32_t obj_size = eatu32(&ptr);
-    hit->window_length = eatu32(&ptr);
+
+    // Member window_length apparently being set with random values.
+    // Skipping it for now.
+    eati32(&ptr);
+    // hit->window_length = eati32(&ptr);
+
     hit->sortkey = eatf64(&ptr);
     hit->score = eatf32(&ptr);
     hit->pre_score = eatf32(&ptr);
     hit->sum_score = eatf32(&ptr);
+
     hit->lnP = eatf64(&ptr);
     hit->pre_lnP = eatf64(&ptr);
     hit->sum_lnP = eatf64(&ptr);
+
     hit->nexpected = eatf32(&ptr);
     hit->nregions = eatu32(&ptr);
     hit->nclustered = eatu32(&ptr);
     hit->noverlaps = eatu32(&ptr);
     hit->nenvelopes = eatu32(&ptr);
     hit->ndom = eatu32(&ptr);
+
     hit->flags = eatu32(&ptr);
     hit->nreported = eatu32(&ptr);
     hit->nincluded = eatu32(&ptr);
@@ -85,33 +93,6 @@ enum h3c_rc hmmd_hit_unpack(struct hmmd_hit *hit, size_t *read_size,
 
     hit->dcl = ctb_realloc(hit->dcl, hit->ndom * sizeof(*hit->dcl));
 
-    // printf("name: %s\n", hit->name);
-    // printf("acc: %s\n", hit->acc);
-    // printf("desc: %s\n", hit->desc);
-    // printf("window_length: %d\n", hit->window_length);
-    // printf("sortkey: %f\n", hit->sortkey);
-    // printf("score: %f\n", hit->score);
-    // printf("pre_score: %f\n", hit->pre_score);
-    // printf("sum_score: %f\n", hit->sum_score);
-    // printf("lnP: %f\n", hit->lnP);
-    // printf("pre_lnP: %f\n", hit->pre_lnP);
-    // printf("sum_lnP: %f\n", hit->sum_lnP);
-
-    // printf("nexpected: %f\n", hit->nexpected);
-    // printf("nregions: %d\n", hit->nregions);
-    // printf("nclustered: %d\n", hit->nclustered);
-    // printf("noverlaps: %d\n", hit->noverlaps);
-    // printf("nenvelopes: %d\n", hit->nenvelopes);
-    // printf("ndom: %d\n", hit->ndom);
-
-    // printf("flags: %d\n", hit->flags);
-    // printf("nreported: %d\n", hit->nreported);
-    // printf("nincluded: %d\n", hit->nincluded);
-    // printf("best_domain: %d\n", hit->best_domain);
-
-    // printf("seqidx: %lld\n", hit->seqidx);
-    // printf("subseq_start: %lld\n", hit->subseq_start);
-
     for (unsigned i = 0; i < hit->ndom; i++)
     {
         hmmd_domain_init(hit->dcl + i);
@@ -133,7 +114,6 @@ enum h3c_rc hmmd_hit_pack(struct hmmd_hit const *hit, struct lip_file *f)
     lip_write_cstr(f, hit->name);
     lip_write_cstr(f, hit->acc);
     lip_write_cstr(f, hit->desc);
-    lip_write_int(f, hit->window_length);
     lip_write_float(f, hit->sortkey);
 
     lip_write_float(f, hit->score);
@@ -160,7 +140,10 @@ enum h3c_rc hmmd_hit_pack(struct hmmd_hit const *hit, struct lip_file *f)
     lip_write_int(f, hit->subseq_start);
 
     for (unsigned i = 0; i < hit->ndom; ++i)
-        hmmd_domain_pack(hit->dcl + i, f);
+    {
+        enum h3c_rc rc = hmmd_domain_pack(hit->dcl + i, f);
+        if (rc) return rc;
+    }
 
     return f->error ? H3C_FAILED_PACK : H3C_OK;
 }

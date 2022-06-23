@@ -75,10 +75,16 @@ enum h3c_rc answer_unpack(struct answer *ans)
     rc = hmmd_tophits_setup(&ans->tophits, ans->buff->data + read_size,
                             ans->stats.nhits, ans->stats.nreported,
                             ans->stats.nincluded);
-    if (!rc) goto cleanup;
-
     return H3C_OK;
 
 cleanup:
     return rc;
+}
+
+enum h3c_rc answer_pack(struct answer const *ans, struct lip_file *f)
+{
+    enum h3c_rc rc = hmmd_stats_pack(&ans->stats, f);
+    if (rc) return rc;
+
+    return hmmd_tophits_pack(&ans->tophits, f);
 }

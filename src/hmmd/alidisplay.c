@@ -51,15 +51,7 @@ enum h3c_rc hmmd_alidisplay_unpack(struct hmmd_alidisplay *ali,
     ali->sqto = eatu64(&ptr);
     ali->L = eatu64(&ptr);
 
-    // printf("N: %d\n", ali->N);
-    // printf("hmmfrom: %d\n", ali->hmmfrom);
-    // printf("hmmto: %d\n", ali->hmmto);
-    // printf("M: %d\n", ali->M);
-    // printf("sqfrom: %lld\n", ali->sqfrom);
-    // printf("sqto: %lld\n", ali->sqto);
-    // printf("L: %lld\n", ali->L);
-
-    uint8_t presence = eatu8(&ptr);
+    ali->presence = eatu8(&ptr);
 
     memcpy(ali->mem, ptr, obj_size - SER_BASE_SIZE);
     ptr += obj_size - SER_BASE_SIZE;
@@ -71,25 +63,14 @@ enum h3c_rc hmmd_alidisplay_unpack(struct hmmd_alidisplay *ali,
     }
 
     char *mem = ali->mem;
-    ali->rfline = presence & RFLINE_PRESENT ? strskip(&mem) : 0;
-    ali->mmline = presence & MMLINE_PRESENT ? strskip(&mem) : 0;
-    ali->csline = presence & CSLINE_PRESENT ? strskip(&mem) : 0;
+    ali->rfline = ali->presence & RFLINE_PRESENT ? strskip(&mem) : 0;
+    ali->mmline = ali->presence & MMLINE_PRESENT ? strskip(&mem) : 0;
+    ali->csline = ali->presence & CSLINE_PRESENT ? strskip(&mem) : 0;
     ali->model = strskip(&mem);
     ali->mline = strskip(&mem);
-    ali->aseq = presence & ASEQ_PRESENT ? strskip(&mem) : 0;
-    ali->ntseq = presence & NTSEQ_PRESENT ? strskip(&mem) : 0;
-    ali->ppline = presence & PPLINE_PRESENT ? strskip(&mem) : 0;
-
-    if (presence & RFLINE_PRESENT) printf("rfline: %s\n", ali->rfline);
-    if (presence & MMLINE_PRESENT) printf("mmline: %s\n", ali->mmline);
-    if (presence & CSLINE_PRESENT) printf("csline: %s\n", ali->csline);
-
-    printf("model: %s\n", ali->model);
-    printf("mline: %s\n", ali->mline);
-
-    if (presence & ASEQ_PRESENT) printf("aseq: %s\n", ali->aseq);
-    if (presence & NTSEQ_PRESENT) printf("ntseq: %s\n", ali->ntseq);
-    if (presence & PPLINE_PRESENT) printf("ppline: %s\n", ali->ppline);
+    ali->aseq = ali->presence & ASEQ_PRESENT ? strskip(&mem) : 0;
+    ali->ntseq = ali->presence & NTSEQ_PRESENT ? strskip(&mem) : 0;
+    ali->ppline = ali->presence & PPLINE_PRESENT ? strskip(&mem) : 0;
 
     ali->hmmname = strskip(&mem);
     ali->hmmacc = strskip(&mem);
@@ -97,13 +78,6 @@ enum h3c_rc hmmd_alidisplay_unpack(struct hmmd_alidisplay *ali,
     ali->sqname = strskip(&mem);
     ali->sqacc = strskip(&mem);
     ali->sqdesc = strskip(&mem);
-
-    printf("hmmname: %s\n", ali->hmmname);
-    printf("hmmacc: %s\n", ali->hmmacc);
-    printf("hmmdesc: %s\n", ali->hmmdesc);
-    printf("sqname: %s\n", ali->sqname);
-    printf("sqacc: %s\n", ali->sqacc);
-    printf("sqdesc: %s\n", ali->sqdesc);
 
     if (mem != ali->mem + obj_size - SER_BASE_SIZE)
     {
@@ -119,17 +93,26 @@ cleanup:
     return rc;
 }
 
+static void write_cstr(struct lip_file *f, char const *str)
+{
+    if (str)
+        lip_write_cstr(f, str);
+    else
+        lip_write_cstr(f, "");
+}
+
 enum h3c_rc hmmd_alidisplay_pack(struct hmmd_alidisplay const *ali,
                                  struct lip_file *f)
 {
-    lip_write_cstr(f, ali->rfline);
-    lip_write_cstr(f, ali->mmline);
-    lip_write_cstr(f, ali->csline);
+    lip_write_int(f, ali->presence);
+    write_cstr(f, ali->rfline);
+    write_cstr(f, ali->mmline);
+    write_cstr(f, ali->csline);
     lip_write_cstr(f, ali->model);
     lip_write_cstr(f, ali->mline);
-    lip_write_cstr(f, ali->aseq);
-    lip_write_cstr(f, ali->ntseq);
-    lip_write_cstr(f, ali->ppline);
+    write_cstr(f, ali->aseq);
+    write_cstr(f, ali->ntseq);
+    write_cstr(f, ali->ppline);
     lip_write_int(f, ali->N);
 
     lip_write_cstr(f, ali->hmmname);

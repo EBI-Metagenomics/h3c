@@ -95,7 +95,7 @@ enum h3c_rc hmmd_stats_pack(struct hmmd_stats const *stats, struct lip_file *f)
     lip_write_int(f, stats->nincluded);
 
     lip_write_array_size(f, stats->nhits);
-    for (uint64_t i = 1; i < stats->nhits; i++)
+    for (uint64_t i = 0; i < stats->nhits; i++)
         lip_write_int(f, stats->hit_offsets[i]);
 
     return f->error ? H3C_FAILED_PACK : H3C_OK;
