@@ -13,8 +13,8 @@ struct hmmd_status
 void hmmd_status_init(struct hmmd_status *);
 void hmmd_status_cleanup(struct hmmd_status *);
 
-void hmmd_status_unpack(struct hmmd_status *status, size_t *read_size,
-                        unsigned char const *data);
+void hmmd_status_deserialize(struct hmmd_status *status, size_t *read_size,
+                             unsigned char const *data);
 
 struct lip_file;
 

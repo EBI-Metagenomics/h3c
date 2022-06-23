@@ -19,7 +19,7 @@ void hmmd_stats_cleanup(struct hmmd_stats *stats)
     stats->hit_offsets = 0;
 }
 
-enum h3c_rc hmmd_stats_unpack(struct hmmd_stats *stats, size_t *read_size,
+enum h3c_rc hmmd_stats_deserialize(struct hmmd_stats *stats, size_t *read_size,
                               unsigned char const *data)
 {
     enum h3c_rc rc = H3C_OK;

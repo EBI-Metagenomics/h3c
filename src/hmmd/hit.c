@@ -24,7 +24,7 @@ void hmmd_hit_cleanup(struct hmmd_hit *hit)
 #define ACC_PRESENT (1 << 0)
 #define DESC_PRESENT (1 << 1)
 
-enum h3c_rc hmmd_hit_unpack(struct hmmd_hit *hit, size_t *read_size,
+enum h3c_rc hmmd_hit_deserialize(struct hmmd_hit *hit, size_t *read_size,
                             unsigned char const *data)
 {
     enum h3c_rc rc = H3C_OK;
@@ -97,7 +97,7 @@ enum h3c_rc hmmd_hit_unpack(struct hmmd_hit *hit, size_t *read_size,
     {
         hmmd_domain_init(hit->dcl + i);
         size_t size = 0;
-        if ((rc = hmmd_domain_unpack(&(hit->dcl[i]), &size, ptr))) goto cleanup;
+        if ((rc = hmmd_domain_deserialize(&(hit->dcl[i]), &size, ptr))) goto cleanup;
         ptr += size;
     }
 

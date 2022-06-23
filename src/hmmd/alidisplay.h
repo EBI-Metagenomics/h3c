@@ -39,7 +39,7 @@ struct hmmd_alidisplay
 void hmmd_alidisplay_init(struct hmmd_alidisplay *);
 void hmmd_alidisplay_cleanup(struct hmmd_alidisplay *);
 
-enum h3c_rc hmmd_alidisplay_unpack(struct hmmd_alidisplay *, size_t *read_size,
+enum h3c_rc hmmd_alidisplay_deserialize(struct hmmd_alidisplay *, size_t *read_size,
                                    unsigned char const *data);
 
 struct lip_file;

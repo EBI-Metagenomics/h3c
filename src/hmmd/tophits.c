@@ -46,7 +46,7 @@ enum h3c_rc hmmd_tophits_setup(struct hmmd_tophits *th,
     {
         hmmd_hit_init(th->unsrt + i);
         size_t size = 0;
-        if ((rc = hmmd_hit_unpack(th->unsrt + i, &size, ptr))) goto cleanup;
+        if ((rc = hmmd_hit_deserialize(th->unsrt + i, &size, ptr))) goto cleanup;
         ptr += size;
         th->hit[i] = th->unsrt + i;
     }

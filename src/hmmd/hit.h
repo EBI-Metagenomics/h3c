@@ -45,8 +45,8 @@ struct hmmd_hit
 void hmmd_hit_init(struct hmmd_hit *);
 void hmmd_hit_cleanup(struct hmmd_hit *);
 
-enum h3c_rc hmmd_hit_unpack(struct hmmd_hit *hit, size_t *read_size,
-                            unsigned char const *data);
+enum h3c_rc hmmd_hit_deserialize(struct hmmd_hit *hit, size_t *read_size,
+                                 unsigned char const *data);
 
 struct lip_file;
 

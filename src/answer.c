@@ -54,7 +54,7 @@ size_t answer_status_size(void) { return HMMD_STATUS_PACK_SIZE; }
 struct hmmd_status const *answer_status_unpack(struct answer *ans)
 {
     size_t size = 0;
-    hmmd_status_unpack(&ans->status.value, &size, ans->status.data);
+    hmmd_status_deserialize(&ans->status.value, &size, ans->status.data);
     return &ans->status.value;
 }
 
@@ -69,7 +69,7 @@ enum h3c_rc answer_unpack(struct answer *ans)
 {
     size_t read_size = 0;
     enum h3c_rc rc = H3C_OK;
-    if ((rc = hmmd_stats_unpack(&ans->stats, &read_size, ans->buff->data)))
+    if ((rc = hmmd_stats_deserialize(&ans->stats, &read_size, ans->buff->data)))
         goto cleanup;
 
     rc = hmmd_tophits_setup(&ans->tophits, ans->buff->data + read_size,

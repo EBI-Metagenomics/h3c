@@ -27,7 +27,7 @@ void hmmd_alidisplay_cleanup(struct hmmd_alidisplay *ali)
 #define ASEQ_PRESENT (1 << 4)
 #define NTSEQ_PRESENT (1 << 5)
 
-enum h3c_rc hmmd_alidisplay_unpack(struct hmmd_alidisplay *ali,
+enum h3c_rc hmmd_alidisplay_deserialize(struct hmmd_alidisplay *ali,
                                    size_t *read_size, unsigned char const *data)
 {
     enum h3c_rc rc = H3C_OK;

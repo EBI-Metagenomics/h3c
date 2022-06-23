@@ -22,7 +22,7 @@ void hmmd_domain_cleanup(struct hmmd_domain *dom)
     hmmd_domain_init(dom);
 }
 
-enum h3c_rc hmmd_domain_unpack(struct hmmd_domain *dom, size_t *read_size,
+enum h3c_rc hmmd_domain_deserialize(struct hmmd_domain *dom, size_t *read_size,
                                unsigned char const *data)
 {
     enum h3c_rc rc = H3C_OK;
@@ -72,7 +72,7 @@ enum h3c_rc hmmd_domain_unpack(struct hmmd_domain *dom, size_t *read_size,
     }
 
     size_t size = 0;
-    if ((rc = hmmd_alidisplay_unpack(&dom->ad, &size, ptr))) goto cleanup;
+    if ((rc = hmmd_alidisplay_deserialize(&dom->ad, &size, ptr))) goto cleanup;
     ptr += size;
 
     *read_size = (size_t)(ptr - data);
