@@ -18,7 +18,7 @@ struct hmmd_tophits
     bool is_sorted_by_seqidx;
 };
 
-enum h3c_rc hmmd_tophits_init(struct hmmd_tophits *);
+void hmmd_tophits_init(struct hmmd_tophits *);
 enum h3c_rc hmmd_tophits_setup(struct hmmd_tophits *, unsigned char const *data,
                                uint64_t nhits, uint64_t nreported,
                                uint64_t nincluded);

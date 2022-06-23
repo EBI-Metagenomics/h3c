@@ -45,22 +45,22 @@ enum h3c_rc hmmd_domain_unpack(struct hmmd_domain *dom, size_t *read_size,
     dom->is_reported = eatu32(&ptr);
     dom->is_included = eatu32(&ptr);
 
-    printf("ienv: %lld\n", dom->ienv);
-    printf("jenv: %lld\n", dom->jenv);
-    printf("iali: %lld\n", dom->iali);
-    printf("jali: %lld\n", dom->jali);
-    printf("iorf: %lld\n", dom->iorf);
-    printf("jorf: %lld\n", dom->jorf);
+    // printf("ienv: %lld\n", dom->ienv);
+    // printf("jenv: %lld\n", dom->jenv);
+    // printf("iali: %lld\n", dom->iali);
+    // printf("jali: %lld\n", dom->jali);
+    // printf("iorf: %lld\n", dom->iorf);
+    // printf("jorf: %lld\n", dom->jorf);
 
-    printf("envsc: %f\n", dom->envsc);
-    printf("domcorrection: %f\n", dom->domcorrection);
-    printf("dombias: %f\n", dom->dombias);
-    printf("oasc: %f\n", dom->oasc);
-    printf("bitscore: %f\n", dom->bitscore);
-    printf("lnP: %f\n", dom->lnP);
+    // printf("envsc: %f\n", dom->envsc);
+    // printf("domcorrection: %f\n", dom->domcorrection);
+    // printf("dombias: %f\n", dom->dombias);
+    // printf("oasc: %f\n", dom->oasc);
+    // printf("bitscore: %f\n", dom->bitscore);
+    // printf("lnP: %f\n", dom->lnP);
 
-    printf("is_reported: %d\n", dom->is_reported);
-    printf("is_included: %d\n", dom->is_included);
+    // printf("is_reported: %d\n", dom->is_reported);
+    // printf("is_included: %d\n", dom->is_included);
 
     dom->npos = eatu32(&ptr);
 

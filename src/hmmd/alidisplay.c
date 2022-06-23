@@ -51,13 +51,13 @@ enum h3c_rc hmmd_alidisplay_unpack(struct hmmd_alidisplay *ali,
     ali->sqto = eatu64(&ptr);
     ali->L = eatu64(&ptr);
 
-    printf("N: %d\n", ali->N);
-    printf("hmmfrom: %d\n", ali->hmmfrom);
-    printf("hmmto: %d\n", ali->hmmto);
-    printf("M: %d\n", ali->M);
-    printf("sqfrom: %lld\n", ali->sqfrom);
-    printf("sqto: %lld\n", ali->sqto);
-    printf("L: %lld\n", ali->L);
+    // printf("N: %d\n", ali->N);
+    // printf("hmmfrom: %d\n", ali->hmmfrom);
+    // printf("hmmto: %d\n", ali->hmmto);
+    // printf("M: %d\n", ali->M);
+    // printf("sqfrom: %lld\n", ali->sqfrom);
+    // printf("sqto: %lld\n", ali->sqto);
+    // printf("L: %lld\n", ali->L);
 
     uint8_t presence = eatu8(&ptr);
 

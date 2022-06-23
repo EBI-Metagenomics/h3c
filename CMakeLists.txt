@@ -13,7 +13,6 @@ include(cmake/sanitizers.cmake)
 include(cmake/CPM.cmake)
 
 cpmaddpackage(NAME c_toolbelt VERSION 0.3.1 GITHUB_REPOSITORY horta/c-toolbelt)
-# cpmaddpackage("gh:EBI-Metagenomics/lite-pack@0.2.1")
 cpmaddpackage(NAME lite_pack VERSION 0.2.1 GITHUB_REPOSITORY
               EBI-Metagenomics/lite-pack)
 

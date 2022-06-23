@@ -85,32 +85,32 @@ enum h3c_rc hmmd_hit_unpack(struct hmmd_hit *hit, size_t *read_size,
 
     hit->dcl = ctb_realloc(hit->dcl, hit->ndom * sizeof(*hit->dcl));
 
-    printf("name: %s\n", hit->name);
-    printf("acc: %s\n", hit->acc);
-    printf("desc: %s\n", hit->desc);
-    printf("window_length: %d\n", hit->window_length);
-    printf("sortkey: %f\n", hit->sortkey);
-    printf("score: %f\n", hit->score);
-    printf("pre_score: %f\n", hit->pre_score);
-    printf("sum_score: %f\n", hit->sum_score);
-    printf("lnP: %f\n", hit->lnP);
-    printf("pre_lnP: %f\n", hit->pre_lnP);
-    printf("sum_lnP: %f\n", hit->sum_lnP);
+    // printf("name: %s\n", hit->name);
+    // printf("acc: %s\n", hit->acc);
+    // printf("desc: %s\n", hit->desc);
+    // printf("window_length: %d\n", hit->window_length);
+    // printf("sortkey: %f\n", hit->sortkey);
+    // printf("score: %f\n", hit->score);
+    // printf("pre_score: %f\n", hit->pre_score);
+    // printf("sum_score: %f\n", hit->sum_score);
+    // printf("lnP: %f\n", hit->lnP);
+    // printf("pre_lnP: %f\n", hit->pre_lnP);
+    // printf("sum_lnP: %f\n", hit->sum_lnP);
 
-    printf("nexpected: %f\n", hit->nexpected);
-    printf("nregions: %d\n", hit->nregions);
-    printf("nclustered: %d\n", hit->nclustered);
-    printf("noverlaps: %d\n", hit->noverlaps);
-    printf("nenvelopes: %d\n", hit->nenvelopes);
-    printf("ndom: %d\n", hit->ndom);
+    // printf("nexpected: %f\n", hit->nexpected);
+    // printf("nregions: %d\n", hit->nregions);
+    // printf("nclustered: %d\n", hit->nclustered);
+    // printf("noverlaps: %d\n", hit->noverlaps);
+    // printf("nenvelopes: %d\n", hit->nenvelopes);
+    // printf("ndom: %d\n", hit->ndom);
 
-    printf("flags: %d\n", hit->flags);
-    printf("nreported: %d\n", hit->nreported);
-    printf("nincluded: %d\n", hit->nincluded);
-    printf("best_domain: %d\n", hit->best_domain);
+    // printf("flags: %d\n", hit->flags);
+    // printf("nreported: %d\n", hit->nreported);
+    // printf("nincluded: %d\n", hit->nincluded);
+    // printf("best_domain: %d\n", hit->best_domain);
 
-    printf("seqidx: %lld\n", hit->seqidx);
-    printf("subseq_start: %lld\n", hit->subseq_start);
+    // printf("seqidx: %lld\n", hit->seqidx);
+    // printf("subseq_start: %lld\n", hit->subseq_start);
 
     for (unsigned i = 0; i < hit->ndom; i++)
     {

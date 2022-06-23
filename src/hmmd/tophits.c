@@ -5,18 +5,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-enum h3c_rc hmmd_tophits_init(struct hmmd_tophits *th)
+void hmmd_tophits_init(struct hmmd_tophits *th)
 {
-    enum h3c_rc rc = H3C_OK;
-
     memset(th, 0, sizeof(*th));
 
     th->Nalloc = 0;
     th->hit = 0;
-    th->unsrt= 0;
+    th->unsrt = 0;
     th->is_sorted_by_sortkey = true;
-
-    return H3C_OK;
 }
 
 enum h3c_rc hmmd_tophits_setup(struct hmmd_tophits *th,
