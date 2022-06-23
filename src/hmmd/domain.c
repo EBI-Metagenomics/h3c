@@ -23,7 +23,7 @@ void hmmd_domain_cleanup(struct hmmd_domain *dom)
 }
 
 enum h3c_rc hmmd_domain_deserialize(struct hmmd_domain *dom, size_t *read_size,
-                               unsigned char const *data)
+                                    unsigned char const *data)
 {
     enum h3c_rc rc = H3C_OK;
     *read_size = 0;
@@ -58,6 +58,11 @@ enum h3c_rc hmmd_domain_deserialize(struct hmmd_domain *dom, size_t *read_size,
     {
         size_t size = dom->npos * sizeof(float);
         dom->scores_per_pos = ctb_realloc(dom->scores_per_pos, size);
+        if (!dom->scores_per_pos)
+        {
+            rc = H3C_INVALID_PACK;
+            goto cleanup;
+        }
 
         for (uint64_t i = 0; i < dom->npos; i++)
         {

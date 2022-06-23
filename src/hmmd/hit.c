@@ -25,7 +25,7 @@ void hmmd_hit_cleanup(struct hmmd_hit *hit)
 #define DESC_PRESENT (1 << 1)
 
 enum h3c_rc hmmd_hit_deserialize(struct hmmd_hit *hit, size_t *read_size,
-                            unsigned char const *data)
+                                 unsigned char const *data)
 {
     enum h3c_rc rc = H3C_OK;
     *read_size = 0;
@@ -91,14 +91,23 @@ enum h3c_rc hmmd_hit_deserialize(struct hmmd_hit *hit, size_t *read_size,
         goto cleanup;
     }
 
-    hit->dcl = ctb_realloc(hit->dcl, hit->ndom * sizeof(*hit->dcl));
-
-    for (unsigned i = 0; i < hit->ndom; i++)
+    if (hit->ndom > 0)
     {
-        hmmd_domain_init(hit->dcl + i);
-        size_t size = 0;
-        if ((rc = hmmd_domain_deserialize(&(hit->dcl[i]), &size, ptr))) goto cleanup;
-        ptr += size;
+        hit->dcl = ctb_realloc(hit->dcl, hit->ndom * sizeof(*hit->dcl));
+        if (!hit->dcl)
+        {
+            rc = H3C_NOT_ENOUGH_MEMORY;
+            goto cleanup;
+        }
+
+        for (unsigned i = 0; i < hit->ndom; i++)
+        {
+            hmmd_domain_init(hit->dcl + i);
+            size_t size = 0;
+            if ((rc = hmmd_domain_deserialize(&(hit->dcl[i]), &size, ptr)))
+                goto cleanup;
+            ptr += size;
+        }
     }
 
     *read_size = (size_t)(ptr - data);
