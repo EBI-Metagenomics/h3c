@@ -102,4 +102,10 @@ void answer_print(struct answer const *ans)
     hmmd_tophits_print_targets(&ans->tophits, true, ans->stats.Z);
     hmmd_tophits_print_domains(&ans->tophits, true, ans->stats.Z,
                                ans->stats.domZ, true);
+
+    hmmd_tophits_print_tabular_targets("QNAME", "QACC", &ans->tophits, true,
+                                       ans->stats.Z);
+
+    hmmd_tophits_print_tabular_domains("QNAME", "QACC", &ans->tophits, true,
+                                       ans->stats.Z, ans->stats.domZ);
 }

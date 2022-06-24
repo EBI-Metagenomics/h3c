@@ -33,4 +33,12 @@ int hmmd_tophits_print_domains(struct hmmd_tophits const *th,
                                bool show_accessions, double Z, double domZ,
                                bool show_alignments);
 
+int hmmd_tophits_print_tabular_targets(char *qname, char *qacc,
+                                       struct hmmd_tophits const *th,
+                                       int show_header, double Z);
+
+void hmmd_tophits_print_tabular_domains(char *qname, char *qacc,
+                                        struct hmmd_tophits const *th,
+                                        int show_header, double Z, double domZ);
+
 #endif

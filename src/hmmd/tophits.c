@@ -458,3 +458,177 @@ int hmmd_tophits_print_domains(struct hmmd_tophits const *th,
     }
     return true;
 }
+
+static int GetMaxAccessionLength(struct hmmd_tophits const *th)
+{
+    uint32_t i, max, n;
+    for (max = 0, i = 0; i < th->nhits; i++)
+        if (th->unsrt[i].acc != NULL)
+        {
+            n = strlen(th->unsrt[i].acc);
+            max = ESL_MAX(n, max);
+        }
+    return max;
+}
+
+int hmmd_tophits_print_tabular_targets(char *qname, char *qacc,
+                                       struct hmmd_tophits const *th,
+                                       int show_header, double Z)
+{
+    int qnamew = ESL_MAX(20, strlen(qname));
+    int tnamew = ESL_MAX(20, GetMaxNameLength(th));
+    int qaccw = ((qacc != NULL) ? ESL_MAX(10, strlen(qacc)) : 10);
+    int taccw = ESL_MAX(10, GetMaxAccessionLength(th));
+    uint32_t h, d;
+
+    if (show_header)
+    {
+        if (printf("#%*s %22s %22s %33s\n", tnamew + qnamew + taccw + qaccw + 2,
+                   "", "--- full sequence ----", "--- best 1 domain ----",
+                   "--- domain number estimation ----") < 0)
+            fprintf(stderr, "tabular per-sequence hit list: write failed");
+        if (printf("#%-*s %-*s %-*s %-*s %9s %6s %5s %9s %6s %5s %5s %3s %3s "
+                   "%3s %3s %3s %3s %3s %s\n",
+                   tnamew - 1, " target name", taccw, "accession", qnamew,
+                   "query name", qaccw, "accession", "  E-value", " score",
+                   " bias", "  E-value", " score", " bias", "exp", "reg", "clu",
+                   " ov", "env", "dom", "rep", "inc",
+                   "description of target") < 0)
+            fprintf(stderr, "tabular per-sequence hit list: write failed");
+        if (printf("#%*s %*s %*s %*s %9s %6s %5s %9s %6s %5s %5s %3s %3s %3s "
+                   "%3s %3s %3s %3s %s\n",
+                   tnamew - 1, "-------------------", taccw, "----------",
+                   qnamew, "--------------------", qaccw, "----------",
+                   "---------", "------", "-----", "---------", "------",
+                   "-----", "---", "---", "---", "---", "---", "---", "---",
+                   "---", "---------------------") < 0)
+            fprintf(stderr, "tabular per-sequence hit list: write failed");
+    }
+
+    for (h = 0; h < th->nhits; h++)
+    {
+        if (th->hit[h]->flags & p7_IS_REPORTED)
+        {
+            d = th->hit[h]->best_domain;
+            if (printf("%-*s %-*s %-*s %-*s %9.2g %6.1f %5.1f %9.2g %6.1f "
+                       "%5.1f %5.1f %3d %3d %3d %3d %3d %3d %3d %s\n",
+                       tnamew, th->hit[h]->name, taccw,
+                       th->hit[h]->acc ? th->hit[h]->acc : "-", qnamew, qname,
+                       qaccw, ((qacc != NULL && qacc[0] != '\0') ? qacc : "-"),
+                       exp(th->hit[h]->lnP) * Z, th->hit[h]->score,
+                       th->hit[h]->pre_score -
+                           th->hit[h]->score, /* bias correction */
+                       exp(th->hit[h]->dcl[d].lnP) * Z,
+                       th->hit[h]->dcl[d].bitscore,
+                       th->hit[h]->dcl[d].dombias *
+                           eslCONST_LOG2R, /* convert NATS to BITS at last
+                                              moment */
+                       th->hit[h]->nexpected, th->hit[h]->nregions,
+                       th->hit[h]->nclustered, th->hit[h]->noverlaps,
+                       th->hit[h]->nenvelopes, th->hit[h]->ndom,
+                       th->hit[h]->nreported, th->hit[h]->nincluded,
+                       (th->hit[h]->desc == NULL ? "-" : th->hit[h]->desc)) < 0)
+                fprintf(stderr, "tabular per-sequence hit list: write failed");
+        }
+    }
+    return 0;
+}
+
+void hmmd_tophits_print_tabular_domains(char *qname, char *qacc,
+                                        struct hmmd_tophits const *th,
+                                        int show_header, double Z, double domZ)
+{
+
+    int qnamew = ESL_MAX(20, strlen(qname));
+    int tnamew = ESL_MAX(20, GetMaxNameLength(th));
+    int qaccw = (qacc ? ESL_MAX(10, strlen(qacc)) : 10);
+    int taccw = ESL_MAX(10, GetMaxAccessionLength(th));
+    int tlen, qlen;
+    uint32_t h, d, nd;
+    int mode = p7_SCAN_MODELS;
+
+    if (show_header)
+    {
+        if (printf("#%*s %22s %40s %11s %11s %11s\n",
+                   tnamew + qnamew - 1 + 15 + taccw + qaccw, "",
+                   "--- full sequence ---",
+                   "-------------- this domain -------------", "hmm coord",
+                   "ali coord", "env coord") < 0)
+            fprintf(stderr, "tabular per-domain hit list: write failed");
+        if (printf("#%-*s %-*s %5s %-*s %-*s %5s %9s %6s %5s %3s %3s %9s %9s "
+                   "%6s %5s %5s %5s %5s %5s %5s %5s %4s %s\n",
+                   tnamew - 1, " target name", taccw, "accession", "tlen",
+                   qnamew, "query name", qaccw, "accession", "qlen", "E-value",
+                   "score", "bias", "#", "of", "c-Evalue", "i-Evalue", "score",
+                   "bias", "from", "to", "from", "to", "from", "to", "acc",
+                   "description of target") < 0)
+            fprintf(stderr, "tabular per-domain hit list: write failed");
+        if (printf("#%*s %*s %5s %*s %*s %5s %9s %6s %5s %3s %3s %9s %9s %6s "
+                   "%5s %5s %5s %5s %5s %5s %5s %4s %s\n",
+                   tnamew - 1, "-------------------", taccw, "----------",
+                   "-----", qnamew, "--------------------", qaccw, "----------",
+                   "-----", "---------", "------", "-----", "---", "---",
+                   "---------", "---------", "------", "-----", "-----",
+                   "-----", "-----", "-----", "-----", "-----", "----",
+                   "---------------------") < 0)
+            fprintf(stderr, "tabular per-domain hit list: write failed");
+    }
+
+    for (h = 0; h < th->nhits; h++)
+        if (th->hit[h]->flags & p7_IS_REPORTED)
+        {
+            nd = 0;
+            for (d = 0; d < th->hit[h]->ndom; d++)
+                if (th->hit[h]->dcl[d].is_reported)
+                {
+                    nd++;
+
+                    /* in hmmsearch, targets are seqs and queries are HMMs;
+                     * in hmmscan, the reverse.  but in the ALIDISPLAY
+                     * structure, lengths L and M are for seq and HMMs, not
+                     * for query and target, so sort it out.
+                     */
+                    if (mode == p7_SEARCH_SEQS)
+                    {
+                        qlen = th->hit[h]->dcl[d].ad.M;
+                        tlen = th->hit[h]->dcl[d].ad.L;
+                    }
+                    else
+                    {
+                        qlen = th->hit[h]->dcl[d].ad.L;
+                        tlen = th->hit[h]->dcl[d].ad.M;
+                    }
+
+                    if (printf(
+                            "%-*s %-*s %5d %-*s %-*s %5d %9.2g %6.1f %5.1f %3d "
+                            "%3d %9.2g %9.2g %6.1f %5.1f %5d %5d %5" PRId64
+                            " %5" PRId64 " %5" PRId64 " %5" PRId64
+                            " %4.2f %s\n",
+                            tnamew, th->hit[h]->name, taccw,
+                            th->hit[h]->acc ? th->hit[h]->acc : "-", tlen,
+                            qnamew, qname, qaccw,
+                            ((qacc != NULL && qacc[0] != '\0') ? qacc : "-"),
+                            qlen, exp(th->hit[h]->lnP) * Z, th->hit[h]->score,
+                            th->hit[h]->pre_score -
+                                th->hit[h]->score, /* bias correction */
+                            nd, th->hit[h]->nreported,
+                            exp(th->hit[h]->dcl[d].lnP) * domZ,
+                            exp(th->hit[h]->dcl[d].lnP) * Z,
+                            th->hit[h]->dcl[d].bitscore,
+                            th->hit[h]->dcl[d].dombias *
+                                eslCONST_LOG2R, /* NATS to BITS at last moment
+                                                 */
+                            th->hit[h]->dcl[d].ad.hmmfrom,
+                            th->hit[h]->dcl[d].ad.hmmto,
+                            th->hit[h]->dcl[d].ad.sqfrom,
+                            th->hit[h]->dcl[d].ad.sqto, th->hit[h]->dcl[d].ienv,
+                            th->hit[h]->dcl[d].jenv,
+                            (th->hit[h]->dcl[d].oasc /
+                             (1.0 + fabs((float)(th->hit[h]->dcl[d].jenv -
+                                                 th->hit[h]->dcl[d].ienv)))),
+                            (th->hit[h]->desc ? th->hit[h]->desc : "-")) < 0)
+                        fprintf(stderr,
+                                "tabular per-domain hit list: write failed");
+                }
+        }
+}
