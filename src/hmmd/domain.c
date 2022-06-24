@@ -90,6 +90,8 @@ cleanup:
 
 enum h3c_rc hmmd_domain_pack(struct hmmd_domain const *dom, struct lip_file *f)
 {
+    lip_write_array_size(f, 14);
+
     lip_write_int(f, dom->ienv);
     lip_write_int(f, dom->jenv);
 
@@ -110,6 +112,8 @@ enum h3c_rc hmmd_domain_pack(struct hmmd_domain const *dom, struct lip_file *f)
     for (size_t i = 0; i < dom->npos; i++)
         lip_write_float(f, dom->scores_per_pos[i]);
 
+    lip_write_map_size(f, 1);
+    lip_write_cstr(f, "alidisplay");
     hmmd_alidisplay_pack(&dom->ad, f);
 
     return f->error ? H3C_FAILED_PACK : H3C_OK;

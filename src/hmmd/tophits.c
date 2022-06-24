@@ -46,7 +46,8 @@ enum h3c_rc hmmd_tophits_setup(struct hmmd_tophits *th,
     {
         hmmd_hit_init(th->unsrt + i);
         size_t size = 0;
-        if ((rc = hmmd_hit_deserialize(th->unsrt + i, &size, ptr))) goto cleanup;
+        if ((rc = hmmd_hit_deserialize(th->unsrt + i, &size, ptr)))
+            goto cleanup;
         ptr += size;
         th->hit[i] = th->unsrt + i;
     }
@@ -71,12 +72,16 @@ void hmmd_tophits_cleanup(struct hmmd_tophits *th)
 
 enum h3c_rc hmmd_tophits_pack(struct hmmd_tophits const *th, struct lip_file *f)
 {
+    lip_write_array_size(f, 6);
     lip_write_int(f, th->nhits);
     lip_write_int(f, th->nreported);
     lip_write_int(f, th->nincluded);
     lip_write_bool(f, th->is_sorted_by_sortkey);
     lip_write_bool(f, th->is_sorted_by_seqidx);
 
+    lip_write_map_size(f, 1);
+    lip_write_cstr(f, "hits");
+    lip_write_array_size(f, th->nhits);
     for (uint64_t i = 0; i < th->nhits; ++i)
     {
         enum h3c_rc rc = hmmd_hit_pack(th->unsrt + i, f);

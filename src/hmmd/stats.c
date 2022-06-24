@@ -20,7 +20,7 @@ void hmmd_stats_cleanup(struct hmmd_stats *stats)
 }
 
 enum h3c_rc hmmd_stats_deserialize(struct hmmd_stats *stats, size_t *read_size,
-                              unsigned char const *data)
+                                   unsigned char const *data)
 {
     enum h3c_rc rc = H3C_OK;
     *read_size = 0;
@@ -74,6 +74,7 @@ cleanup:
 
 enum h3c_rc hmmd_stats_pack(struct hmmd_stats const *stats, struct lip_file *f)
 {
+    lip_write_array_size(f, 17);
     lip_write_float(f, stats->elapsed);
     lip_write_float(f, stats->user);
     lip_write_float(f, stats->sys);

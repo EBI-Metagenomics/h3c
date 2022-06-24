@@ -28,7 +28,8 @@ void hmmd_alidisplay_cleanup(struct hmmd_alidisplay *ali)
 #define NTSEQ_PRESENT (1 << 5)
 
 enum h3c_rc hmmd_alidisplay_deserialize(struct hmmd_alidisplay *ali,
-                                   size_t *read_size, unsigned char const *data)
+                                        size_t *read_size,
+                                        unsigned char const *data)
 {
     enum h3c_rc rc = H3C_OK;
     *read_size = 0;
@@ -104,6 +105,8 @@ static void write_cstr(struct lip_file *f, char const *str)
 enum h3c_rc hmmd_alidisplay_pack(struct hmmd_alidisplay const *ali,
                                  struct lip_file *f)
 {
+    lip_write_array_size(f, 19);
+
     lip_write_int(f, ali->presence);
     write_cstr(f, ali->rfline);
     write_cstr(f, ali->mmline);
@@ -118,6 +121,9 @@ enum h3c_rc hmmd_alidisplay_pack(struct hmmd_alidisplay const *ali,
     lip_write_cstr(f, ali->hmmname);
     lip_write_cstr(f, ali->hmmacc);
     lip_write_cstr(f, ali->hmmdesc);
+    lip_write_int(f, ali->hmmfrom);
+    lip_write_int(f, ali->hmmto);
+    lip_write_int(f, ali->M);
     lip_write_int(f, ali->sqfrom);
     lip_write_int(f, ali->sqto);
     lip_write_int(f, ali->L);

@@ -2,6 +2,7 @@
 #include "buff.h"
 #include "h3client/rc.h"
 #include "hmmd/hmmd.h"
+#include "lite_pack/lite_pack.h"
 #include <stdlib.h>
 
 #define BUFF_SIZE 2048
@@ -83,8 +84,15 @@ cleanup:
 
 enum h3c_rc answer_pack(struct answer const *ans, struct lip_file *f)
 {
-    enum h3c_rc rc = hmmd_stats_pack(&ans->stats, f);
-    if (rc) return rc;
+    enum h3c_rc rc = H3C_OK;
 
+    lip_write_map_size(f, 1);
+    lip_write_cstr(f, "h3result");
+
+    lip_write_map_size(f, 2);
+    lip_write_cstr(f, "stats");
+    if ((rc = hmmd_stats_pack(&ans->stats, f))) return rc;
+
+    lip_write_cstr(f, "tophits");
     return hmmd_tophits_pack(&ans->tophits, f);
 }

@@ -11,7 +11,7 @@ struct hmmd_hit
     char *name;
     char *acc;
     char *desc;
-    // The following members seems to be receiving
+    // The following members seem to be receiving
     // random numbers from daemon end. Skip them.
     // int window_length;
     double sortkey;
@@ -37,7 +37,9 @@ struct hmmd_hit
     uint32_t best_domain;
 
     uint64_t seqidx;
-    uint64_t subseq_start;
+    // The following member seems to be receiving
+    // random numbers from daemon end. Skip it.
+    // uint64_t subseq_start;
 
     struct hmmd_domain *dcl;
 };

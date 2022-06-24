@@ -59,7 +59,10 @@ enum h3c_rc hmmd_hit_deserialize(struct hmmd_hit *hit, size_t *read_size,
     hit->nincluded = eatu32(&ptr);
     hit->best_domain = eatu32(&ptr);
     hit->seqidx = eatu64(&ptr);
-    hit->subseq_start = eatu64(&ptr);
+    // Member window_length apparently being set with random values.
+    // Skipping it for now.
+    eatu64(&ptr);
+    // hit->subseq_start = eatu64(&ptr);
 
     uint8_t presence = eatu8(&ptr);
 
@@ -120,6 +123,8 @@ cleanup:
 
 enum h3c_rc hmmd_hit_pack(struct hmmd_hit const *hit, struct lip_file *f)
 {
+    lip_write_array_size(f, 22);
+
     lip_write_cstr(f, hit->name);
     lip_write_cstr(f, hit->acc);
     lip_write_cstr(f, hit->desc);
@@ -146,8 +151,10 @@ enum h3c_rc hmmd_hit_pack(struct hmmd_hit const *hit, struct lip_file *f)
     lip_write_int(f, hit->best_domain);
 
     lip_write_int(f, hit->seqidx);
-    lip_write_int(f, hit->subseq_start);
 
+    lip_write_map_size(f, 1);
+    lip_write_cstr(f, "domains");
+    lip_write_array_size(f, hit->ndom);
     for (unsigned i = 0; i < hit->ndom; ++i)
     {
         enum h3c_rc rc = hmmd_domain_pack(hit->dcl + i, f);
