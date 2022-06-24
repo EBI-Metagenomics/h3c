@@ -56,6 +56,8 @@ int main(void)
     }
     fclose(file);
 
+    h3c_pack_print();
+
     if (h3c_close())
     {
         printf("Failed to h3c_close!");

@@ -96,3 +96,8 @@ enum h3c_rc answer_pack(struct answer const *ans, struct lip_file *f)
     lip_write_cstr(f, "tophits");
     return hmmd_tophits_pack(&ans->tophits, f);
 }
+
+void answer_print(struct answer const *ans)
+{
+    hmmd_tophits_print(&ans->tophits, true, ans->stats.Z);
+}

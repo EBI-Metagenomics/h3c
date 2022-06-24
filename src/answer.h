@@ -20,4 +20,6 @@ enum h3c_rc answer_unpack(struct answer *ans);
 
 enum h3c_rc answer_pack(struct answer const *ans, struct lip_file *);
 
+void answer_print(struct answer const *ans);
+
 #endif
