@@ -36,6 +36,7 @@ enum h3c_rc hmmd_alidisplay_deserialize(struct hmmd_alidisplay *ali,
     unsigned char const *ptr = data;
 
     size_t obj_size = eatu32(&ptr);
+    assert(obj_size > SER_BASE_SIZE);
 
     if (!(ali->mem = ctb_realloc(ali->mem, obj_size - SER_BASE_SIZE)))
     {

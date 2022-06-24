@@ -15,8 +15,10 @@ void hmmd_hit_cleanup(struct hmmd_hit *hit)
     if (hit->name) free(hit->name);
     if (hit->acc) free(hit->acc);
     if (hit->desc) free(hit->desc);
+
     for (unsigned i = 0; i < hit->ndom; i++)
         hmmd_domain_cleanup(hit->dcl + i);
+
     free(hit->dcl);
     hmmd_hit_init(hit);
 }

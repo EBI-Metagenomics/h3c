@@ -49,8 +49,10 @@ enum h3c_rc hmmd_stats_deserialize(struct hmmd_stats *stats, size_t *read_size,
     stats->nincluded = eatu64(&ptr);
 
     uint64_t hit_offset = eatu64(&ptr);
+    assert(!(hit_offset == UINT64_MAX && stats->nhits > 0));
     if (hit_offset != UINT64_MAX)
     {
+        assert(stats->nhits > 0);
         size = stats->nhits * sizeof(uint64_t);
         stats->hit_offsets = ctb_realloc(stats->hit_offsets, size);
         if (!stats->hit_offsets)

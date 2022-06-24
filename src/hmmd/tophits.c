@@ -23,16 +23,26 @@ enum h3c_rc hmmd_tophits_setup(struct hmmd_tophits *th,
     th->hit = 0;
     th->unsrt = 0;
 
-    if (!(th->hit = ctb_realloc(th->hit, sizeof(*th->hit) * nhits)))
+    if (nhits > 0)
     {
-        rc = H3C_NOT_ENOUGH_MEMORY;
-        goto cleanup;
-    }
+        if (!(th->hit = ctb_realloc(th->hit, sizeof(*th->hit) * nhits)))
+        {
+            rc = H3C_NOT_ENOUGH_MEMORY;
+            goto cleanup;
+        }
 
-    if (!(th->unsrt = ctb_realloc(th->unsrt, sizeof(*th->unsrt) * nhits)))
+        if (!(th->unsrt = ctb_realloc(th->unsrt, sizeof(*th->unsrt) * nhits)))
+        {
+            rc = H3C_NOT_ENOUGH_MEMORY;
+            goto cleanup;
+        }
+    }
+    else
     {
-        rc = H3C_NOT_ENOUGH_MEMORY;
-        goto cleanup;
+        free(th->hit);
+        free(th->unsrt);
+        th->hit = 0;
+        th->unsrt = 0;
     }
 
     th->nhits = nhits;
