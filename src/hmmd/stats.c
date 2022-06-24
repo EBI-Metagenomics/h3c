@@ -26,9 +26,13 @@ enum h3c_rc hmmd_stats_deserialize(struct hmmd_stats *stats, size_t *read_size,
     *read_size = 0;
     unsigned char const *ptr = data;
 
-    stats->elapsed = eatf64(&ptr);
-    stats->user = eatf64(&ptr);
-    stats->sys = eatf64(&ptr);
+    (void)eatf64(&ptr);
+    (void)eatf64(&ptr);
+    (void)eatf64(&ptr);
+    // stats->elapsed = eatf64(&ptr);
+    // stats->user = eatf64(&ptr);
+    // stats->sys = eatf64(&ptr);
+
     stats->Z = eatf64(&ptr);
     stats->domZ = eatf64(&ptr);
 
@@ -76,10 +80,7 @@ cleanup:
 
 enum h3c_rc hmmd_stats_pack(struct hmmd_stats const *stats, struct lip_file *f)
 {
-    lip_write_array_size(f, 17);
-    lip_write_float(f, stats->elapsed);
-    lip_write_float(f, stats->user);
-    lip_write_float(f, stats->sys);
+    lip_write_array_size(f, 14);
 
     lip_write_float(f, stats->Z);
     lip_write_float(f, stats->domZ);

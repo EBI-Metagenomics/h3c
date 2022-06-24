@@ -7,9 +7,10 @@
 
 struct hmmd_stats
 {
-    double elapsed;
-    double user;
-    double sys;
+    // Don't need those values.
+    // double elapsed;
+    // double user;
+    // double sys;
 
     double Z;
     double domZ;
