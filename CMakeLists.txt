@@ -33,6 +33,7 @@ add_library(
   src/request.c)
 target_link_libraries(h3client PUBLIC C_TOOLBELT::c_toolbelt)
 target_link_libraries(h3client PUBLIC LITE_PACK::lite_pack)
+target_link_libraries(h3client INTERFACE $<$<BOOL:${UNIX}>:m>)
 add_library(H3CLIENT::h3client ALIAS h3client)
 
 set(EXPORT_FILE ${CMAKE_CURRENT_BINARY_DIR}/h3client/export.h)
