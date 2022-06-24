@@ -4,6 +4,7 @@
 #include "hmmd/domain.h"
 #include "hmmd/hit.h"
 #include "lite_pack/lite_pack.h"
+#include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
 #include <tgmath.h>
@@ -155,11 +156,11 @@ enum p7_pipemodes_e
 
 #define eslCONST_LOG2R 1.44269504088896341
 
-enum h3c_rc hmmd_tophits_print(struct hmmd_tophits const *th,
-                               bool show_accessions, double Z)
+enum h3c_rc hmmd_tophits_print_targets(struct hmmd_tophits const *th,
+                                       bool show_accessions, double Z)
 {
     char newness;
-    int h;
+    uint32_t h;
     int d;
     int namew;
     int descw;
@@ -274,4 +275,186 @@ enum h3c_rc hmmd_tophits_print(struct hmmd_tophits const *th,
             fprintf(stderr, "per-sequence hit list: write failed");
     }
     return H3C_OK;
+}
+
+int hmmd_tophits_print_domains(struct hmmd_tophits const *th,
+                               bool show_accessions, double Z, double domZ,
+                               bool show_alignments)
+{
+    uint64_t h = 0;
+    uint32_t d = 0;
+    int nd;
+    int namew, descw;
+    int textw = 120;
+    char *showname;
+    int status;
+    int mode = p7_SCAN_MODELS;
+
+    if (printf("Domain annotation for each %s%s:\n",
+               mode == p7_SEARCH_SEQS ? "sequence" : "model",
+               show_alignments ? " (and alignments)" : "") < 0)
+        fprintf(stderr, "domain hit list: write failed");
+
+    for (h = 0; h < th->nhits; h++)
+    {
+        if (th->hit[h]->flags & p7_IS_REPORTED)
+        {
+            if (show_accessions && th->hit[h]->acc != NULL &&
+                th->hit[h]->acc[0] != '\0')
+            {
+                showname = th->hit[h]->acc;
+                namew = strlen(th->hit[h]->acc);
+            }
+            else
+            {
+                showname = th->hit[h]->name;
+                namew = strlen(th->hit[h]->name);
+            }
+
+            if (textw > 0)
+            {
+                descw = ESL_MAX(32, textw - namew - 5);
+                if (printf(">> %s  %-.*s\n", showname, descw,
+                           (th->hit[h]->desc == NULL ? "" : th->hit[h]->desc)) <
+                    0)
+                    fprintf(stderr, "domain hit list: write failed");
+            }
+            else
+            {
+                if (printf(">> %s  %s\n", showname,
+                           (th->hit[h]->desc == NULL ? "" : th->hit[h]->desc)) <
+                    0)
+                    fprintf(stderr, "domain hit list: write failed");
+            }
+
+            if (th->hit[h]->nreported == 0)
+            {
+                if (printf("   [No individual domains that satisfy reporting "
+                           "thresholds (although complete target did)]\n\n") <
+                    0)
+                    fprintf(stderr, "domain hit list: write failed");
+                continue;
+            }
+
+            /* The domain table is 101 char wide:
+                    #     score  bias  c-Evalue  i-Evalue hmmfrom   hmmto
+               alifrom  ali to    envfrom  env to     acc
+                   ---   ------ ----- --------- --------- ------- -------
+               ------- -------    ------- -------    ---- 1 ?
+               123.4  23.1   9.7e-11    6.8e-9       3    1230 ..       1 492 []
+               2     490 .] 0.90 123 ! 1234.5 123.4 123456789 123456789 1234567
+               1234567 .. 1234567 1234567 [] 1234567 1234568 .] 0.12
+            */
+            if (printf(" %3s   %6s %5s %9s %9s %7s %7s %2s %7s %7s %2s %7s %7s "
+                       "%2s %4s\n",
+                       "#", "score", "bias", "c-Evalue", "i-Evalue", "hmmfrom",
+                       "hmm to", "  ", "alifrom", "ali to", "  ", "envfrom",
+                       "env to", "  ", "acc") < 0)
+                fprintf(stderr, "domain hit list: write failed");
+            if (printf(" %3s   %6s %5s %9s %9s %7s %7s %2s %7s %7s %2s %7s %7s "
+                       "%2s %4s\n",
+                       "---", "------", "-----", "---------", "---------",
+                       "-------", "-------", "  ", "-------", "-------", "  ",
+                       "-------", "-------", "  ", "----") < 0)
+                fprintf(stderr, "domain hit list: write failed");
+
+            /* Domain hit table for each reported domain in this reported
+             * sequence. */
+            nd = 0;
+            for (d = 0; d < th->hit[h]->ndom; d++)
+            {
+                if (th->hit[h]->dcl[d].is_reported)
+                {
+                    nd++;
+
+                    if (printf(" %3d %c %6.1f %5.1f %9.2g %9.2g %7d %7d %c%c",
+                               nd, th->hit[h]->dcl[d].is_included ? '!' : '?',
+                               th->hit[h]->dcl[d].bitscore,
+                               th->hit[h]->dcl[d].dombias *
+                                   eslCONST_LOG2R, /* convert NATS to BITS at
+                                                      last moment */
+                               exp(th->hit[h]->dcl[d].lnP) * domZ,
+                               exp(th->hit[h]->dcl[d].lnP) * Z,
+                               th->hit[h]->dcl[d].ad.hmmfrom,
+                               th->hit[h]->dcl[d].ad.hmmto,
+                               (th->hit[h]->dcl[d].ad.hmmfrom == 1) ? '[' : '.',
+                               (th->hit[h]->dcl[d].ad.hmmto ==
+                                th->hit[h]->dcl[d].ad.M)
+                                   ? ']'
+                                   : '.') < 0)
+                        fprintf(stderr, "domain hit list: write failed");
+
+                    if (printf(" %7" PRId64 " %7" PRId64 " %c%c",
+                               th->hit[h]->dcl[d].ad.sqfrom,
+                               th->hit[h]->dcl[d].ad.sqto,
+                               (th->hit[h]->dcl[d].ad.sqfrom == 1) ? '[' : '.',
+                               (th->hit[h]->dcl[d].ad.sqto ==
+                                th->hit[h]->dcl[d].ad.L)
+                                   ? ']'
+                                   : '.') < 0)
+                        fprintf(stderr, "domain hit list: write failed");
+
+                    if (printf(
+                            " %7" PRId64 " %7" PRId64 " %c%c",
+                            th->hit[h]->dcl[d].ienv, th->hit[h]->dcl[d].jenv,
+                            (th->hit[h]->dcl[d].ienv == 1) ? '[' : '.',
+                            (th->hit[h]->dcl[d].jenv == th->hit[h]->dcl[d].ad.L)
+                                ? ']'
+                                : '.') < 0)
+                        fprintf(stderr, "domain hit list: write failed");
+
+                    if (printf(" %4.2f\n",
+                               (th->hit[h]->dcl[d].oasc /
+                                (1.0 +
+                                 fabs((float)(th->hit[h]->dcl[d].jenv -
+                                              th->hit[h]->dcl[d].ienv))))) < 0)
+                        fprintf(stderr, "domain hit list: write failed");
+                }
+            } // end of domain table in this reported sequence.
+
+            /* Alignment data for each reported domain in this reported
+             * sequence. */
+            if (show_alignments)
+            {
+
+                if (printf("\n  Alignments for each domain:\n") < 0)
+                    fprintf(stderr, "domain hit list: write failed");
+                nd = 0;
+
+                for (d = 0; d < th->hit[h]->ndom; d++)
+                    if (th->hit[h]->dcl[d].is_reported)
+                    {
+                        nd++;
+                        if (printf("  score: %.1f bits",
+                                   th->hit[h]->dcl[d].bitscore) < 0)
+                            fprintf(stderr, "domain hit list: write failed");
+
+                        if (printf("\n") < 0)
+                            fprintf(stderr, "domain hit list: write failed");
+
+                        if ((status = hmmd_alidisplay_print(
+                                 &th->hit[h]->dcl[d].ad, 40, textw,
+                                 show_accessions)))
+                            return status;
+
+                        if (printf("\n") < 0)
+                            fprintf(stderr, "domain hit list: write failed");
+                    }
+            }
+            else // alignment reporting is off:
+            {
+                if (printf("\n") < 0)
+                    fprintf(stderr, "domain hit list: write failed");
+            }
+
+        } // end, loop over all reported hits
+    }
+
+    if (th->nreported == 0)
+    {
+        if (printf("\n   [No targets detected that satisfy reporting "
+                   "thresholds]\n") < 0)
+            fprintf(stderr, "domain hit list: write failed");
+    }
+    return true;
 }

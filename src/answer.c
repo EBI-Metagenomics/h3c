@@ -99,5 +99,7 @@ enum h3c_rc answer_pack(struct answer const *ans, struct lip_file *f)
 
 void answer_print(struct answer const *ans)
 {
-    hmmd_tophits_print(&ans->tophits, true, ans->stats.Z);
+    hmmd_tophits_print_targets(&ans->tophits, true, ans->stats.Z);
+    hmmd_tophits_print_domains(&ans->tophits, true, ans->stats.Z,
+                               ans->stats.domZ, true);
 }

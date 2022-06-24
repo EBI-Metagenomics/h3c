@@ -30,10 +30,10 @@ enum h3c_rc hmmd_domain_deserialize(struct hmmd_domain *dom, size_t *read_size,
     unsigned char const *ptr = data;
 
     size_t obj_size = eatu32(&ptr);
-    dom->ienv = eati64(&ptr);
-    dom->jenv = eati64(&ptr);
-    dom->iali = eati64(&ptr);
-    dom->jali = eati64(&ptr);
+    dom->ienv = eatu64(&ptr);
+    dom->jenv = eatu64(&ptr);
+    dom->iali = eatu64(&ptr);
+    dom->jali = eatu64(&ptr);
 
     // Members iorf and jorf apparently being set with random values.
     // Skipping them for now.

@@ -26,7 +26,11 @@ void hmmd_tophits_cleanup(struct hmmd_tophits *);
 
 enum h3c_rc hmmd_tophits_pack(struct hmmd_tophits const *, struct lip_file *);
 
-enum h3c_rc hmmd_tophits_print(struct hmmd_tophits const *th,
-                               bool show_accessions, double Z);
+enum h3c_rc hmmd_tophits_print_targets(struct hmmd_tophits const *th,
+                                       bool show_accessions, double Z);
+
+int hmmd_tophits_print_domains(struct hmmd_tophits const *th,
+                               bool show_accessions, double Z, double domZ,
+                               bool show_alignments);
 
 #endif
