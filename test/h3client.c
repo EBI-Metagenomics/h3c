@@ -61,8 +61,7 @@ int main(void)
     if (!result_file) FAIL("Failed to fopen!");
     int64_t hash = 0;
     if (!file_hash(result_file, &hash)) FAIL("Failed to file_hash!");
-    printf("hash: %lld\n", hash);
-    if (hash != 6744319896512311420LL)
+    if (hash != -5495790405787621702LL)
         FAIL("Wrong file hash for h3result.msgpack!");
     fclose(result_file);
 
