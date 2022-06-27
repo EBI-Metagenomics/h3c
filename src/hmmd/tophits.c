@@ -3,8 +3,8 @@
 #include "h3client/rc.h"
 #include "hmmd/domain.h"
 #include "hmmd/hit.h"
-#include "lite_pack/lite_pack.h"
 #include <inttypes.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <tgmath.h>
@@ -59,7 +59,7 @@ enum h3c_rc hmmd_tophits_setup(struct hmmd_tophits *th,
     {
         hmmd_hit_init(th->unsrt + i);
         size_t size = 0;
-        if ((rc = hmmd_hit_deserialize(th->unsrt + i, &size, ptr)))
+        if ((rc = hmmd_hit_parse(th->unsrt + i, &size, ptr)))
             goto cleanup;
         ptr += size;
         th->hit[i] = th->unsrt + i;
@@ -81,27 +81,6 @@ void hmmd_tophits_cleanup(struct hmmd_tophits *th)
     free(th->hit);
     free(th->unsrt);
     hmmd_tophits_init(th);
-}
-
-enum h3c_rc hmmd_tophits_pack(struct hmmd_tophits const *th, struct lip_file *f)
-{
-    lip_write_array_size(f, 6);
-    lip_write_int(f, th->nhits);
-    lip_write_int(f, th->nreported);
-    lip_write_int(f, th->nincluded);
-    lip_write_bool(f, th->is_sorted_by_sortkey);
-    lip_write_bool(f, th->is_sorted_by_seqidx);
-
-    lip_write_map_size(f, 1);
-    lip_write_cstr(f, "hits");
-    lip_write_array_size(f, th->nhits);
-    for (uint64_t i = 0; i < th->nhits; ++i)
-    {
-        enum h3c_rc rc = hmmd_hit_pack(th->unsrt + i, f);
-        if (rc) return rc;
-    }
-
-    return f->error ? H3C_FAILED_PACK : H3C_OK;
 }
 
 #define ESL_MAX(a, b) (((a) > (b)) ? (a) : (b))

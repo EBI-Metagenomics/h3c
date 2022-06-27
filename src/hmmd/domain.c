@@ -3,8 +3,6 @@
 #include "h3client/rc.h"
 #include "hmmd/alidisplay.h"
 #include "hmmd/utils.h"
-#include "lite_pack/file/file.h"
-#include "lite_pack/lite_pack.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,7 +20,7 @@ void hmmd_domain_cleanup(struct hmmd_domain *dom)
     hmmd_domain_init(dom);
 }
 
-enum h3c_rc hmmd_domain_deserialize(struct hmmd_domain *dom, size_t *read_size,
+enum h3c_rc hmmd_domain_parse(struct hmmd_domain *dom, size_t *read_size,
                                     unsigned char const *data)
 {
     enum h3c_rc rc = H3C_OK;
@@ -60,7 +58,7 @@ enum h3c_rc hmmd_domain_deserialize(struct hmmd_domain *dom, size_t *read_size,
         dom->scores_per_pos = ctb_realloc(dom->scores_per_pos, size);
         if (!dom->scores_per_pos)
         {
-            rc = H3C_INVALID_PACK;
+            rc = H3C_FAILED_PARSE;
             goto cleanup;
         }
 
@@ -72,12 +70,12 @@ enum h3c_rc hmmd_domain_deserialize(struct hmmd_domain *dom, size_t *read_size,
 
     if (ptr != obj_size + data)
     {
-        rc = H3C_INVALID_PACK;
+        rc = H3C_FAILED_PARSE;
         goto cleanup;
     }
 
     size_t size = 0;
-    if ((rc = hmmd_alidisplay_deserialize(&dom->ad, &size, ptr))) goto cleanup;
+    if ((rc = hmmd_alidisplay_parse(&dom->ad, &size, ptr))) goto cleanup;
     ptr += size;
 
     *read_size = (size_t)(ptr - data);
@@ -86,35 +84,4 @@ enum h3c_rc hmmd_domain_deserialize(struct hmmd_domain *dom, size_t *read_size,
 cleanup:
     hmmd_domain_cleanup(dom);
     return rc;
-}
-
-enum h3c_rc hmmd_domain_pack(struct hmmd_domain const *dom, struct lip_file *f)
-{
-    lip_write_array_size(f, 14);
-
-    lip_write_int(f, dom->ienv);
-    lip_write_int(f, dom->jenv);
-
-    lip_write_int(f, dom->iali);
-    lip_write_int(f, dom->jali);
-
-    lip_write_float(f, dom->envsc);
-    lip_write_float(f, dom->domcorrection);
-    lip_write_float(f, dom->dombias);
-    lip_write_float(f, dom->oasc);
-    lip_write_float(f, dom->bitscore);
-    lip_write_float(f, dom->lnP);
-
-    lip_write_bool(f, dom->is_reported);
-    lip_write_bool(f, dom->is_included);
-
-    lip_write_array_size(f, dom->npos);
-    for (size_t i = 0; i < dom->npos; i++)
-        lip_write_float(f, dom->scores_per_pos[i]);
-
-    lip_write_map_size(f, 1);
-    lip_write_cstr(f, "alidisplay");
-    hmmd_alidisplay_pack(&dom->ad, f);
-
-    return f->error ? H3C_FAILED_PACK : H3C_OK;
 }

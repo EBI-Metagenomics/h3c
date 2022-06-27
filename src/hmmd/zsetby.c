@@ -1,7 +1,7 @@
 #include "hmmd/zsetby.h"
 #include "h3client/h3client.h"
 
-enum h3c_rc hmmd_zsetby_unpack(enum hmmd_zsetby *dst, size_t *read_size,
+enum h3c_rc hmmd_zsetby_parse(enum hmmd_zsetby *dst, size_t *read_size,
                                unsigned char const *data)
 {
     enum h3c_rc rc = H3C_OK;

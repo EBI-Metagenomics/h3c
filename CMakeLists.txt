@@ -13,15 +13,18 @@ include(cmake/sanitizers.cmake)
 include(cmake/CPM.cmake)
 
 cpmaddpackage(NAME c_toolbelt VERSION 0.3.1 GITHUB_REPOSITORY horta/c-toolbelt)
-cpmaddpackage(NAME lite_pack VERSION 0.2.2 GITHUB_REPOSITORY
+cpmaddpackage(NAME lite_pack VERSION 0.3.0 GITHUB_REPOSITORY
               EBI-Metagenomics/lite-pack)
 
 add_library(
   h3client
   src/addr.c
+  src/alidisplay.c
   src/answer.c
   src/buff.c
+  src/domain.c
   src/h3client.c
+  src/hit.c
   src/hmmd/alidisplay.c
   src/hmmd/domain.c
   src/hmmd/hit.c
@@ -30,7 +33,11 @@ add_library(
   src/hmmd/tophits.c
   src/hmmd/utils.c
   src/hmmd/zsetby.c
-  src/request.c)
+  src/request.c
+  src/result.c
+  src/stats.c
+  src/strxdup.c
+  src/tophits.c)
 target_link_libraries(h3client PUBLIC C_TOOLBELT::c_toolbelt)
 target_link_libraries(h3client PUBLIC LITE_PACK::lite_pack)
 target_link_libraries(h3client INTERFACE $<$<BOOL:${UNIX}>:m>)

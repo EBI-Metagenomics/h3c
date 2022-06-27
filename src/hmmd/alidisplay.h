@@ -40,14 +40,8 @@ struct hmmd_alidisplay
 void hmmd_alidisplay_init(struct hmmd_alidisplay *);
 void hmmd_alidisplay_cleanup(struct hmmd_alidisplay *);
 
-enum h3c_rc hmmd_alidisplay_deserialize(struct hmmd_alidisplay *,
-                                        size_t *read_size,
-                                        unsigned char const *data);
-
-struct lip_file;
-
-enum h3c_rc hmmd_alidisplay_pack(struct hmmd_alidisplay const *,
-                                 struct lip_file *);
+enum h3c_rc hmmd_alidisplay_parse(struct hmmd_alidisplay *, size_t *read_size,
+                                  unsigned char const *data);
 
 int hmmd_alidisplay_print(struct hmmd_alidisplay *ad, int min_aliwidth,
                           int linewidth, bool show_accessions);

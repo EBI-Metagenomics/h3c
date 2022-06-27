@@ -17,7 +17,6 @@
 #include "answer.h"
 #include "h3client/h3client.h"
 #include "hmmd/hmmd.h"
-#include "lite_pack/lite_pack.h"
 #include "request.h"
 
 struct conn
@@ -76,7 +75,7 @@ cleanup:
 static enum h3c_rc writen(int fd, void const *buf, size_t count);
 static enum h3c_rc readn(int fd, void *buf, size_t count);
 
-enum h3c_rc h3c_call(char const *args, FILE *fasta)
+enum h3c_rc h3c_call(char const *args, FILE *fasta, struct h3c_result *result)
 {
     enum h3c_rc rc = H3C_OK;
 
@@ -91,7 +90,7 @@ enum h3c_rc h3c_call(char const *args, FILE *fasta)
     size = answer_status_size();
     if ((rc = readn(conn.sockfd, data, size))) goto cleanup;
 
-    struct hmmd_status const *status = answer_status_unpack(conn.answer);
+    struct hmmd_status const *status = answer_status_parse(conn.answer);
 
     size = status->msg_size;
     if ((rc = answer_ensure(conn.answer, size))) goto cleanup;
@@ -101,18 +100,12 @@ enum h3c_rc h3c_call(char const *args, FILE *fasta)
 
     if (!status->status)
     {
-        if ((rc = answer_unpack(conn.answer))) goto cleanup;
+        if ((rc = answer_parse(conn.answer))) goto cleanup;
+        if ((rc = answer_copy(conn.answer, result))) goto cleanup;
     }
 
 cleanup:
     return rc;
-}
-
-enum h3c_rc h3c_pack_answer(FILE *h3answer)
-{
-    struct lip_file f = {0};
-    lip_file_init(&f, h3answer);
-    return answer_pack(conn.answer, &f);
 }
 
 enum h3c_rc h3c_close(void)

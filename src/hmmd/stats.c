@@ -3,8 +3,7 @@
 #include "h3client/h3client.h"
 #include "hmmd/utils.h"
 #include "hmmd/zsetby.h"
-#include "lite_pack/file/file.h"
-#include "lite_pack/lite_pack.h"
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -19,7 +18,7 @@ void hmmd_stats_cleanup(struct hmmd_stats *stats)
     stats->hit_offsets = 0;
 }
 
-enum h3c_rc hmmd_stats_deserialize(struct hmmd_stats *stats, size_t *read_size,
+enum h3c_rc hmmd_stats_parse(struct hmmd_stats *stats, size_t *read_size,
                                    unsigned char const *data)
 {
     enum h3c_rc rc = H3C_OK;
@@ -37,9 +36,9 @@ enum h3c_rc hmmd_stats_deserialize(struct hmmd_stats *stats, size_t *read_size,
     stats->domZ = eatf64(&ptr);
 
     size_t size = 0;
-    if ((rc = hmmd_zsetby_unpack(&stats->Z_setby, &size, ptr))) goto cleanup;
+    if ((rc = hmmd_zsetby_parse(&stats->Z_setby, &size, ptr))) goto cleanup;
     ptr += size;
-    if ((rc = hmmd_zsetby_unpack(&stats->domZ_setby, &size, ptr))) goto cleanup;
+    if ((rc = hmmd_zsetby_parse(&stats->domZ_setby, &size, ptr))) goto cleanup;
     ptr += size;
 
     stats->nmodels = eatu64(&ptr);
@@ -76,31 +75,4 @@ enum h3c_rc hmmd_stats_deserialize(struct hmmd_stats *stats, size_t *read_size,
 cleanup:
     hmmd_stats_cleanup(stats);
     return rc;
-}
-
-enum h3c_rc hmmd_stats_pack(struct hmmd_stats const *stats, struct lip_file *f)
-{
-    lip_write_array_size(f, 14);
-
-    lip_write_float(f, stats->Z);
-    lip_write_float(f, stats->domZ);
-    lip_write_int(f, stats->Z_setby);
-    lip_write_int(f, stats->domZ_setby);
-
-    lip_write_int(f, stats->nmodels);
-    lip_write_int(f, stats->nseqs);
-    lip_write_int(f, stats->n_past_msv);
-    lip_write_int(f, stats->n_past_bias);
-    lip_write_int(f, stats->n_past_vit);
-    lip_write_int(f, stats->n_past_fwd);
-
-    lip_write_int(f, stats->nhits);
-    lip_write_int(f, stats->nreported);
-    lip_write_int(f, stats->nincluded);
-
-    lip_write_array_size(f, stats->nhits);
-    for (uint64_t i = 0; i < stats->nhits; i++)
-        lip_write_int(f, stats->hit_offsets[i]);
-
-    return f->error ? H3C_FAILED_PACK : H3C_OK;
 }

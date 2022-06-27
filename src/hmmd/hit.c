@@ -3,8 +3,6 @@
 #include "h3client/h3client.h"
 #include "hmmd/domain.h"
 #include "hmmd/utils.h"
-#include "lite_pack/file/file.h"
-#include "lite_pack/lite_pack.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -26,8 +24,8 @@ void hmmd_hit_cleanup(struct hmmd_hit *hit)
 #define ACC_PRESENT (1 << 0)
 #define DESC_PRESENT (1 << 1)
 
-enum h3c_rc hmmd_hit_deserialize(struct hmmd_hit *hit, size_t *read_size,
-                                 unsigned char const *data)
+enum h3c_rc hmmd_hit_parse(struct hmmd_hit *hit, size_t *read_size,
+                           unsigned char const *data)
 {
     enum h3c_rc rc = H3C_OK;
     *read_size = 0;
@@ -92,7 +90,7 @@ enum h3c_rc hmmd_hit_deserialize(struct hmmd_hit *hit, size_t *read_size,
 
     if (ptr != obj_size + data)
     {
-        rc = H3C_INVALID_PACK;
+        rc = H3C_FAILED_PARSE;
         goto cleanup;
     }
 
@@ -109,7 +107,7 @@ enum h3c_rc hmmd_hit_deserialize(struct hmmd_hit *hit, size_t *read_size,
         {
             hmmd_domain_init(hit->dcl + i);
             size_t size = 0;
-            if ((rc = hmmd_domain_deserialize(&(hit->dcl[i]), &size, ptr)))
+            if ((rc = hmmd_domain_parse(&(hit->dcl[i]), &size, ptr)))
                 goto cleanup;
             ptr += size;
         }
@@ -121,47 +119,4 @@ enum h3c_rc hmmd_hit_deserialize(struct hmmd_hit *hit, size_t *read_size,
 cleanup:
     hmmd_hit_cleanup(hit);
     return rc;
-}
-
-enum h3c_rc hmmd_hit_pack(struct hmmd_hit const *hit, struct lip_file *f)
-{
-    lip_write_array_size(f, 22);
-
-    lip_write_cstr(f, hit->name);
-    lip_write_cstr(f, hit->acc);
-    lip_write_cstr(f, hit->desc);
-    lip_write_float(f, hit->sortkey);
-
-    lip_write_float(f, hit->score);
-    lip_write_float(f, hit->pre_score);
-    lip_write_float(f, hit->sum_score);
-
-    lip_write_float(f, hit->lnP);
-    lip_write_float(f, hit->pre_lnP);
-    lip_write_float(f, hit->sum_lnP);
-
-    lip_write_float(f, hit->nexpected);
-    lip_write_int(f, hit->nregions);
-    lip_write_int(f, hit->nclustered);
-    lip_write_int(f, hit->noverlaps);
-    lip_write_int(f, hit->nenvelopes);
-    lip_write_int(f, hit->ndom);
-
-    lip_write_int(f, hit->flags);
-    lip_write_int(f, hit->nreported);
-    lip_write_int(f, hit->nincluded);
-    lip_write_int(f, hit->best_domain);
-
-    lip_write_int(f, hit->seqidx);
-
-    lip_write_map_size(f, 1);
-    lip_write_cstr(f, "domains");
-    lip_write_array_size(f, hit->ndom);
-    for (unsigned i = 0; i < hit->ndom; ++i)
-    {
-        enum h3c_rc rc = hmmd_domain_pack(hit->dcl + i, f);
-        if (rc) return rc;
-    }
-
-    return f->error ? H3C_FAILED_PACK : H3C_OK;
 }
