@@ -39,18 +39,18 @@ static struct h3c_result *result = 0;
 static int exit_status = 0;
 static char const cmd[] = "--hmmdb 1 --acc --cut_ga";
 
-static int test_open_close_connection(void)
+static int test_open_close_connection(uint16_t ross_id)
 {
-    if (h3c_open(h3master_address(), 51371)) FAIL("h3c_open");
+    if (h3c_open(h3master_address(), 51370 + ross_id)) FAIL("h3c_open");
     if (h3c_close()) FAIL("h3c_close");
 
 cleanup:
     return exit_status;
 }
 
-static int create_result_ross(void)
+static int create_result_ross(uint16_t ross_id)
 {
-    if (h3c_open(h3master_address(), 51371)) FAIL("h3c_open");
+    if (h3c_open(h3master_address(), 51370 + ross_id)) FAIL("h3c_open");
 
     FILE *file = 0;
     if (!(file = fopen(ASSETS "/ross.fasta", "r"))) FAIL("fopen");
@@ -81,9 +81,9 @@ cleanup:
 
 #define CHECK_HASH(F, H) check_hash(F, H, __FILE__, __LINE__)
 
-static int test_pack_result(void)
+static int test_pack_result(uint16_t ross_id)
 {
-    if (create_result_ross()) goto cleanup;
+    if (create_result_ross(ross_id)) goto cleanup;
 
     FILE *file = 0;
     if (!(file = fopen(TMPDIR "/h3result.mp", "wb"))) FAIL("fopen");
@@ -97,9 +97,9 @@ cleanup:
     return exit_status;
 }
 
-static int test_print_targets(void)
+static int test_print_targets(uint16_t ross_id)
 {
-    if (create_result_ross()) goto cleanup;
+    if (create_result_ross(ross_id)) goto cleanup;
 
     FILE *file = 0;
     if (!(file = fopen(TMPDIR "/targets.txt", "wb"))) FAIL("fopen");
@@ -113,9 +113,9 @@ cleanup:
     return exit_status;
 }
 
-static int test_print_domains(void)
+static int test_print_domains(uint16_t ross_id)
 {
-    if (create_result_ross()) goto cleanup;
+    if (create_result_ross(ross_id)) goto cleanup;
 
     FILE *file = 0;
     if (!(file = fopen(TMPDIR "/domains.txt", "wb"))) FAIL("fopen");
@@ -131,10 +131,10 @@ cleanup:
 
 int main(void)
 {
-    if (test_open_close_connection()) goto cleanup;
-    if (test_pack_result()) goto cleanup;
-    if (test_print_targets()) goto cleanup;
-    if (test_print_domains()) goto cleanup;
+    if (test_open_close_connection(5)) goto cleanup;
+    if (test_pack_result(5)) goto cleanup;
+    if (test_print_targets(5)) goto cleanup;
+    if (test_print_domains(5)) goto cleanup;
 
 cleanup:
     return exit_status;
