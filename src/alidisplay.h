@@ -2,6 +2,7 @@
 #define ALIDISPLAY_H
 
 #include <stdint.h>
+#include <stdio.h>
 
 struct lip_file;
 
@@ -37,5 +38,6 @@ struct h3c_alidisplay
 enum h3c_rc alidisplay_init(struct h3c_alidisplay *);
 void alidisplay_cleanup(struct h3c_alidisplay *);
 enum h3c_rc alidisplay_pack(struct h3c_alidisplay const *, struct lip_file *);
+void alidisplay_print(struct h3c_alidisplay const *, FILE *file);
 
 #endif

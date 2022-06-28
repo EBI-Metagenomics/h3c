@@ -40,3 +40,29 @@ enum h3c_rc h3c_result_pack(struct h3c_result const *result, FILE *file)
 
     return tophits_pack(&result->tophits, &f);
 }
+
+void h3c_result_print_targets(struct h3c_result const *result, FILE *file)
+{
+    tophits_print_targets(&result->tophits, file, result->stats.Z);
+}
+
+void h3c_result_print_domains(struct h3c_result const *result, FILE *file)
+{
+    tophits_print_domains(&result->tophits, file, result->stats.Z,
+                          result->stats.domZ);
+}
+
+#if 0
+void answer_print(struct answer const *ans)
+{
+    hmmd_tophits_print_targets(&ans->tophits, true, ans->stats.Z);
+    hmmd_tophits_print_domains(&ans->tophits, true, ans->stats.Z,
+                               ans->stats.domZ, true);
+
+    hmmd_tophits_print_tabular_targets("QNAME", "QACC", &ans->tophits, true,
+                                       ans->stats.Z);
+
+    hmmd_tophits_print_tabular_domains("QNAME", "QACC", &ans->tophits, true,
+                                       ans->stats.Z, ans->stats.domZ);
+}
+#endif

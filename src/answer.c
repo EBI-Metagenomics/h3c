@@ -110,16 +110,16 @@ static enum h3c_rc copy_alidisplay(struct h3c_alidisplay *dst,
     if (!STRXDUP(dst->hmmname, src->hmmname)) goto cleanup;
     if (!STRXDUP(dst->hmmacc, src->hmmacc)) goto cleanup;
     if (!STRXDUP(dst->hmmdesc, src->hmmdesc)) goto cleanup;
-    dst->hmmfrom = dst->hmmfrom;
-    dst->hmmto = dst->hmmto;
-    dst->M = dst->M;
+    dst->hmmfrom = src->hmmfrom;
+    dst->hmmto = src->hmmto;
+    dst->M = src->M;
 
     if (!STRXDUP(dst->sqname, src->sqname)) goto cleanup;
     if (!STRXDUP(dst->sqacc, src->sqacc)) goto cleanup;
     if (!STRXDUP(dst->sqdesc, src->sqdesc)) goto cleanup;
-    dst->sqfrom = dst->sqfrom;
-    dst->sqto = dst->sqto;
-    dst->L = dst->L;
+    dst->sqfrom = src->sqfrom;
+    dst->sqto = src->sqto;
+    dst->L = src->L;
 
     return H3C_OK;
 
@@ -248,17 +248,4 @@ enum h3c_rc answer_copy(struct answer *ans, struct h3c_result *r)
 {
     copy_stats(&r->stats, &ans->stats);
     return copy_tophits(&r->tophits, &ans->tophits);
-}
-
-void answer_print(struct answer const *ans)
-{
-    hmmd_tophits_print_targets(&ans->tophits, true, ans->stats.Z);
-    hmmd_tophits_print_domains(&ans->tophits, true, ans->stats.Z,
-                               ans->stats.domZ, true);
-
-    hmmd_tophits_print_tabular_targets("QNAME", "QACC", &ans->tophits, true,
-                                       ans->stats.Z);
-
-    hmmd_tophits_print_tabular_domains("QNAME", "QACC", &ans->tophits, true,
-                                       ans->stats.Z, ans->stats.domZ);
 }

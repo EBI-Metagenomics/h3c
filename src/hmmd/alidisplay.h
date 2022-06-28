@@ -43,7 +43,4 @@ void hmmd_alidisplay_cleanup(struct hmmd_alidisplay *);
 enum h3c_rc hmmd_alidisplay_parse(struct hmmd_alidisplay *, size_t *read_size,
                                   unsigned char const *data);
 
-int hmmd_alidisplay_print(struct hmmd_alidisplay *ad, int min_aliwidth,
-                          int linewidth, bool show_accessions);
-
 #endif

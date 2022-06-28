@@ -165,5 +165,3 @@ static enum h3c_rc readn(int fd, void *buf, size_t count)
 
     return count == 0 ? H3C_OK : H3C_FAILED_READ_SOCKET;
 }
-
-void h3c_pack_print(void) { answer_print(conn.answer); }

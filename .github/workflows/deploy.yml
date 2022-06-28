@@ -20,7 +20,7 @@ jobs:
         working-directory: ${{github.workspace}}/build
         run: |
           loginctl enable-linger 1001
-          curl -fsSL "https://app.danilohorta.me/h3daemon" | bash -s -- start test/assets/minifam.hmm --yes
+          curl -fsSL "https://app.danilohorta.me/h3daemon" | bash -s -- start test/assets/ross.hmm --yes
 
       - name: Test
         working-directory: ${{github.workspace}}/build

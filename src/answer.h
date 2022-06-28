@@ -19,6 +19,4 @@ unsigned char *answer_data(struct answer *ans);
 enum h3c_rc answer_parse(struct answer *ans);
 enum h3c_rc answer_copy(struct answer *ans, struct h3c_result *);
 
-void answer_print(struct answer const *ans);
-
 #endif

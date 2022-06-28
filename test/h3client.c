@@ -38,6 +38,8 @@ int main(void)
     int exit_status = 0;
     FILE *fasta_file = 0;
     FILE *result_file = 0;
+    FILE *targets_file = 0;
+    FILE *domains_file = 0;
 
     if (h3c_open(h3master_address(), 51371)) FAIL("Failed to h3c_open!");
 
@@ -61,13 +63,30 @@ int main(void)
     if (!result_file) FAIL("Failed to fopen!");
     int64_t hash = 0;
     if (!file_hash(result_file, &hash)) FAIL("Failed to file_hash!");
-    if (hash != -5495790405787621702LL)
+    if (hash != -7580715214164890760LL)
         FAIL("Wrong file hash for h3result.msgpack!");
     fclose(result_file);
 
-    h3c_pack_print();
-
     if (h3c_close()) FAIL("Failed to h3c_close!");
+
+    targets_file = fopen(TMPDIR "/targets.txt", "wb");
+    h3c_result_print_targets(result, targets_file);
+    fclose(targets_file);
+
+    domains_file = fopen(TMPDIR "/domains.txt", "wb");
+    h3c_result_print_domains(result, domains_file);
+    fclose(domains_file);
+
+    targets_file = fopen(TMPDIR "/targets.txt", "rb");
+    if (!file_hash(targets_file, &hash)) FAIL("Failed to file_hash!");
+    if (hash != 2235430570033520642LL) FAIL("Wrong file hash for targets.txt!");
+    fclose(targets_file);
+
+    domains_file = fopen(TMPDIR "/domains.txt", "rb");
+    if (!file_hash(domains_file, &hash)) FAIL("Failed to file_hash!");
+    if (hash != 450185627565076573LL) FAIL("Wrong file hash for domains.txt!");
+    fclose(domains_file);
+
     h3c_result_del(result);
 
 cleanup:

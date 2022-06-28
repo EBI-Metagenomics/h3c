@@ -10,6 +10,4 @@ enum h3c_rc h3c_open(char const *ip, uint16_t port);
 enum h3c_rc h3c_call(char const *args, FILE *fasta, struct h3c_result *);
 enum h3c_rc h3c_close(void);
 
-void h3c_pack_print(void);
-
 #endif

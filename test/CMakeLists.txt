@@ -11,9 +11,9 @@ set(URL "https://uk1s3.embassy.ebi.ac.uk/deciphon")
 
 file(COPY assets/ross.fasta DESTINATION ${ASSETS})
 
-file(DOWNLOAD ${URL}/minifam.hmm.7z ${ASSETS}/minifam.hmm.7z
-     EXPECTED_HASH MD5=cebacd72804ed51b895e697b0384dbb7)
-file(ARCHIVE_EXTRACT INPUT ${ASSETS}/minifam.hmm.7z DESTINATION ${ASSETS})
+file(DOWNLOAD ${URL}/ross.hmm.7z ${ASSETS}/ross.hmm.7z
+     EXPECTED_HASH MD5=233e76d2be2275d7936edbc6fa9407c3)
+file(ARCHIVE_EXTRACT INPUT ${ASSETS}/ross.hmm.7z DESTINATION ${ASSETS})
 
 add_executable(test_h3client h3client.c file_hash.c)
 target_compile_definitions(test_h3client PRIVATE XXH_STATIC_LINKING_ONLY)

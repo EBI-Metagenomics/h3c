@@ -23,19 +23,4 @@ enum h3c_rc hmmd_tophits_setup(struct hmmd_tophits *, unsigned char const *data,
                                uint64_t nincluded);
 void hmmd_tophits_cleanup(struct hmmd_tophits *);
 
-enum h3c_rc hmmd_tophits_print_targets(struct hmmd_tophits const *th,
-                                       bool show_accessions, double Z);
-
-int hmmd_tophits_print_domains(struct hmmd_tophits const *th,
-                               bool show_accessions, double Z, double domZ,
-                               bool show_alignments);
-
-int hmmd_tophits_print_tabular_targets(char *qname, char *qacc,
-                                       struct hmmd_tophits const *th,
-                                       int show_header, double Z);
-
-void hmmd_tophits_print_tabular_domains(char *qname, char *qacc,
-                                        struct hmmd_tophits const *th,
-                                        int show_header, double Z, double domZ);
-
 #endif
