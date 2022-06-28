@@ -11,6 +11,10 @@ set(URL "https://uk1s3.embassy.ebi.ac.uk/deciphon")
 
 file(COPY assets/ross.fasta DESTINATION ${ASSETS})
 
+file(DOWNLOAD ${URL}/ross.1.hmm.7z ${ASSETS}/ross.1.hmm.7z
+     EXPECTED_HASH MD5=97522291f8e4e5871010306384de4cac)
+file(ARCHIVE_EXTRACT INPUT ${ASSETS}/ross.1.hmm.7z DESTINATION ${ASSETS})
+
 file(DOWNLOAD ${URL}/ross.2.hmm.7z ${ASSETS}/ross.2.hmm.7z
      EXPECTED_HASH MD5=0f283ef3a099cc8228caa9d196db5dd8)
 file(ARCHIVE_EXTRACT INPUT ${ASSETS}/ross.2.hmm.7z DESTINATION ${ASSETS})
