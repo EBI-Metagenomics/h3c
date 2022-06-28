@@ -10,6 +10,7 @@ add_compile_definitions(TMPDIR=\"${TMPDIR}\")
 set(URL "https://uk1s3.embassy.ebi.ac.uk/deciphon")
 
 file(COPY assets/ross.fasta DESTINATION ${ASSETS})
+file(COPY assets/ross.poor.fasta DESTINATION ${ASSETS})
 
 file(DOWNLOAD ${URL}/ross.1.hmm.7z ${ASSETS}/ross.1.hmm.7z
      EXPECTED_HASH MD5=97522291f8e4e5871010306384de4cac)

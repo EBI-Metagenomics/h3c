@@ -163,7 +163,7 @@ cleanup:
     return exit_status;
 }
 
-static int test_reuse_results_print_targets(void)
+static int test_reuse_results_print(void)
 {
     int64_t targets[] = {3595942196364536930LL, -2350707101380469820LL,
                          7268596939732165182LL, 624009942923406464LL,
@@ -202,6 +202,33 @@ cleanup:
     return exit_status;
 }
 
+static int test_reuse_connection(uint16_t ross_id)
+{
+    struct h3c_result *result = 0;
+    bool connected = false;
+    FILE *file = 0;
+
+    if (!(result = h3c_result_new())) FAIL("h3c_result_new")
+    if (h3c_open(h3master_address(), 51371 + ross_id)) FAIL("h3c_open");
+    connected = true;
+
+    if (!(file = fopen(ASSETS "/ross.fasta", "r"))) FAIL("fopen");
+    if (h3c_call(cmd, file, result)) FAIL("h3c_call");
+    fclose(file);
+
+    if (!(file = fopen(ASSETS "/ross.poor.fasta", "r"))) FAIL("fopen");
+    if (h3c_call(cmd, file, result)) FAIL("h3c_call");
+    fclose(file);
+
+    connected = false;
+    if (h3c_close()) FAIL("h3c_close");
+
+cleanup:
+    if (connected) h3c_close();
+    if (result) h3c_result_del(result);
+    return exit_status;
+}
+
 int main(void)
 {
     if (test_open_close_connection(4)) goto cleanup;
@@ -209,7 +236,8 @@ int main(void)
     if (test_print_targets(4)) goto cleanup;
     if (test_print_domains(4)) goto cleanup;
     if (test_reuse_results()) goto cleanup;
-    if (test_reuse_results_print_targets()) goto cleanup;
+    if (test_reuse_results_print()) goto cleanup;
+    if (test_reuse_connection(4)) goto cleanup;
 
 cleanup:
     return exit_status;

@@ -52,7 +52,7 @@ enum h3c_rc hmmd_hit_parse(struct hmmd_hit *hit, size_t *read_size,
     hit->nclustered = eatu32(&ptr);
     hit->noverlaps = eatu32(&ptr);
     hit->nenvelopes = eatu32(&ptr);
-    hit->ndom = eatu32(&ptr);
+    uint32_t ndom = eatu32(&ptr);
 
     hit->flags = eatu32(&ptr);
     hit->nreported = eatu32(&ptr);
@@ -72,20 +72,10 @@ enum h3c_rc hmmd_hit_parse(struct hmmd_hit *hit, size_t *read_size,
     {
         if ((rc = eatstr(&hit->acc, &ptr))) goto cleanup;
     }
-    else
-    {
-        free(hit->acc);
-        hit->acc = 0;
-    }
 
     if (presence & DESC_PRESENT)
     {
         if ((rc = eatstr(&hit->desc, &ptr))) goto cleanup;
-    }
-    else
-    {
-        free(hit->desc);
-        hit->desc = 0;
     }
 
     if (ptr != obj_size + data)
@@ -94,23 +84,34 @@ enum h3c_rc hmmd_hit_parse(struct hmmd_hit *hit, size_t *read_size,
         goto cleanup;
     }
 
-    if (hit->ndom > 0)
+    if (ndom > hit->ndom)
     {
-        hit->dcl = ctb_realloc(hit->dcl, hit->ndom * sizeof(*hit->dcl));
-        if (!hit->dcl)
+        struct hmmd_domain *dcl = realloc(hit->dcl, ndom * sizeof(*hit->dcl));
+        if (!dcl)
         {
             rc = H3C_NOT_ENOUGH_MEMORY;
             goto cleanup;
         }
 
-        for (unsigned i = 0; i < hit->ndom; i++)
+        hit->dcl = dcl;
+        for (uint32_t i = hit->ndom; i < ndom; i++)
         {
             hmmd_domain_init(hit->dcl + i);
-            size_t size = 0;
-            if ((rc = hmmd_domain_parse(&(hit->dcl[i]), &size, ptr)))
-                goto cleanup;
-            ptr += size;
+            ++hit->ndom;
         }
+    }
+    else
+    {
+        for (uint32_t i = ndom; i < hit->ndom; i++)
+            hmmd_domain_cleanup(hit->dcl + i);
+        hit->ndom = ndom;
+    }
+
+    for (unsigned i = 0; i < hit->ndom; i++)
+    {
+        size_t size = 0;
+        if ((rc = hmmd_domain_parse(&(hit->dcl[i]), &size, ptr))) goto cleanup;
+        ptr += size;
     }
 
     *read_size = (size_t)(ptr - data);

@@ -21,7 +21,7 @@ void hmmd_domain_cleanup(struct hmmd_domain *dom)
 }
 
 enum h3c_rc hmmd_domain_parse(struct hmmd_domain *dom, size_t *read_size,
-                                    unsigned char const *data)
+                              unsigned char const *data)
 {
     enum h3c_rc rc = H3C_OK;
     *read_size = 0;
@@ -50,23 +50,27 @@ enum h3c_rc hmmd_domain_parse(struct hmmd_domain *dom, size_t *read_size,
     dom->is_reported = eatu32(&ptr);
     dom->is_included = eatu32(&ptr);
 
-    dom->npos = eatu32(&ptr);
+    uint32_t npos = eatu32(&ptr);
 
-    if (dom->npos > 0)
+    if (npos > dom->npos)
     {
-        size_t size = dom->npos * sizeof(float);
-        dom->scores_per_pos = ctb_realloc(dom->scores_per_pos, size);
-        if (!dom->scores_per_pos)
+        size_t size = npos * sizeof(float);
+        float *scores = realloc(dom->scores_per_pos, size);
+        if (!scores)
         {
             rc = H3C_FAILED_PARSE;
             goto cleanup;
         }
-
-        for (uint64_t i = 0; i < dom->npos; i++)
-        {
-            dom->scores_per_pos[i] = eatf32(&ptr);
-        }
+        dom->scores_per_pos = scores;
+        dom->npos = npos;
     }
+    else
+    {
+        dom->npos = npos;
+    }
+
+    for (uint32_t i = 0; i < dom->npos; i++)
+        dom->scores_per_pos[i] = eatf32(&ptr);
 
     if (ptr != obj_size + data)
     {

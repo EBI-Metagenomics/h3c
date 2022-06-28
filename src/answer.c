@@ -84,7 +84,7 @@ enum h3c_rc answer_parse(struct answer *ans)
     rc = hmmd_tophits_setup(&ans->tophits, ans->buff->data + read_size,
                             ans->stats.nhits, ans->stats.nreported,
                             ans->stats.nincluded);
-    return H3C_OK;
+    return rc;
 
 cleanup:
     return rc;
