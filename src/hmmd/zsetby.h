@@ -10,7 +10,7 @@ enum hmmd_zsetby
     HMMD_ZSETBY_FILEINFO = 2
 };
 
-enum h3c_rc hmmd_zsetby_parse(enum hmmd_zsetby *dst, size_t *read_size,
-                              unsigned char const *data);
+enum h3c_rc hmmd_zsetby_parse(enum hmmd_zsetby *dst,
+                              unsigned char const **data);
 
 #endif

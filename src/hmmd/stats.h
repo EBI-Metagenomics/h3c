@@ -7,11 +7,6 @@
 
 struct hmmd_stats
 {
-    // Don't need those values.
-    // double elapsed;
-    // double user;
-    // double sys;
-
     double Z;
     double domZ;
     enum hmmd_zsetby Z_setby;
@@ -32,7 +27,8 @@ struct hmmd_stats
 
 void hmmd_stats_init(struct hmmd_stats *);
 void hmmd_stats_cleanup(struct hmmd_stats *);
-enum h3c_rc hmmd_stats_parse(struct hmmd_stats *stats, size_t *read_size,
-                             unsigned char const *data);
+enum h3c_rc hmmd_stats_parse(struct hmmd_stats *stats,
+                             unsigned char const **ptr,
+                             unsigned char const *end);
 
 #endif

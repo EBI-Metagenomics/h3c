@@ -93,7 +93,7 @@ enum h3c_rc h3c_call(char const *args, FILE *fasta, struct h3c_result *result)
     struct hmmd_status const *status = answer_status_parse(conn.answer);
 
     size = status->msg_size;
-    if ((rc = answer_ensure(conn.answer, size))) goto cleanup;
+    if ((rc = answer_setup_size(conn.answer, size))) goto cleanup;
 
     data = answer_data(conn.answer);
     if ((rc = readn(conn.sockfd, data, size))) goto cleanup;

@@ -1,5 +1,6 @@
 #include "hmmd/alidisplay.h"
 #include "c_toolbelt/c_toolbelt.h"
+#include "del.h"
 #include "h3client/h3client.h"
 #include "hmmd/utils.h"
 #include <assert.h>
@@ -13,7 +14,7 @@ void hmmd_alidisplay_init(struct hmmd_alidisplay *ali)
 
 void hmmd_alidisplay_cleanup(struct hmmd_alidisplay *ali)
 {
-    if (ali->mem) free(ali->mem);
+    if (ali->mem) DEL(ali->mem);
     hmmd_alidisplay_init(ali);
 }
 
@@ -34,7 +35,11 @@ enum h3c_rc hmmd_alidisplay_parse(struct hmmd_alidisplay *ali,
     unsigned char const *ptr = data;
 
     size_t obj_size = eatu32(&ptr);
-    assert(obj_size > SER_BASE_SIZE);
+    if (obj_size <= SER_BASE_SIZE)
+    {
+        rc = H3C_FAILED_PARSE;
+        goto cleanup;
+    }
 
     if (!(ali->mem = ctb_realloc(ali->mem, obj_size - SER_BASE_SIZE)))
     {
@@ -50,7 +55,6 @@ enum h3c_rc hmmd_alidisplay_parse(struct hmmd_alidisplay *ali,
     ali->sqfrom = eatu64(&ptr);
     ali->sqto = eatu64(&ptr);
     ali->L = eatu64(&ptr);
-
     ali->presence = eatu8(&ptr);
 
     memcpy(ali->mem, ptr, obj_size - SER_BASE_SIZE);
@@ -79,7 +83,7 @@ enum h3c_rc hmmd_alidisplay_parse(struct hmmd_alidisplay *ali,
     ali->sqacc = strskip(&mem);
     ali->sqdesc = strskip(&mem);
 
-    if (mem != ali->mem + obj_size - SER_BASE_SIZE)
+    if (mem + SER_BASE_SIZE != ali->mem + obj_size)
     {
         rc = H3C_FAILED_PARSE;
         goto cleanup;

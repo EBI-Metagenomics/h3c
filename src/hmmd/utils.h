@@ -17,4 +17,14 @@ float eatf32(unsigned char const **data);
 enum h3c_rc eatstr(char **dst, unsigned char const **data);
 char *strskip(char **str);
 
+#define ESCAPE_OVERRUN(rc, cur, end, sz)                                       \
+    do                                                                         \
+    {                                                                          \
+        if ((end) < (cur) + (sz))                                              \
+        {                                                                      \
+            rc = H3C_FAILED_PARSE;                                             \
+            goto cleanup;                                                      \
+        }                                                                      \
+    } while (0);
+
 #endif

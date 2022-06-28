@@ -67,8 +67,9 @@ struct hmmd_status const *answer_status_parse(struct answer *ans)
     return &ans->status.value;
 }
 
-enum h3c_rc answer_ensure(struct answer *ans, size_t size)
+enum h3c_rc answer_setup_size(struct answer *ans, size_t size)
 {
+    ans->buff->size = size;
     return buff_ensure(&ans->buff, size);
 }
 
@@ -76,14 +77,14 @@ unsigned char *answer_data(struct answer *ans) { return ans->buff->data; }
 
 enum h3c_rc answer_parse(struct answer *ans)
 {
-    size_t read_size = 0;
     enum h3c_rc rc = H3C_OK;
-    if ((rc = hmmd_stats_parse(&ans->stats, &read_size, ans->buff->data)))
-        goto cleanup;
 
-    rc = hmmd_tophits_setup(&ans->tophits, ans->buff->data + read_size,
-                            ans->stats.nhits, ans->stats.nreported,
-                            ans->stats.nincluded);
+    unsigned char const *ptr = ans->buff->data;
+    unsigned char const *end = ptr + ans->buff->size;
+    if ((rc = hmmd_stats_parse(&ans->stats, &ptr, end))) goto cleanup;
+
+    rc = hmmd_tophits_setup(&ans->tophits, ptr, ans->stats.nhits,
+                            ans->stats.nreported, ans->stats.nincluded);
     return rc;
 
 cleanup:
