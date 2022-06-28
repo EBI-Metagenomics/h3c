@@ -6,7 +6,7 @@
 
 struct lip_file;
 
-struct h3c_alidisplay
+struct alidisplay
 {
     uint8_t presence;
 
@@ -35,9 +35,9 @@ struct h3c_alidisplay
     uint64_t L;
 };
 
-enum h3c_rc alidisplay_init(struct h3c_alidisplay *);
-void alidisplay_cleanup(struct h3c_alidisplay *);
-enum h3c_rc alidisplay_pack(struct h3c_alidisplay const *, struct lip_file *);
-void alidisplay_print(struct h3c_alidisplay const *, FILE *file);
+enum h3c_rc alidisplay_init(struct alidisplay *);
+void alidisplay_cleanup(struct alidisplay *);
+enum h3c_rc alidisplay_pack(struct alidisplay const *, struct lip_file *);
+void alidisplay_print(struct alidisplay const *, FILE *file);
 
 #endif

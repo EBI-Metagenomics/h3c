@@ -7,13 +7,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-void domain_init(struct h3c_domain *dom)
+void domain_init(struct domain *dom)
 {
-    memset(dom, 0, offsetof(struct h3c_domain, ad));
+    memset(dom, 0, offsetof(struct domain, ad));
     alidisplay_init(&dom->ad);
 }
 
-static enum h3c_rc grow(struct h3c_domain *dom, uint64_t npos)
+static enum h3c_rc grow(struct domain *dom, uint64_t npos)
 {
     size_t sz = npos * sizeof(*dom->scores_per_pos);
     if (!(dom->scores_per_pos = ctb_realloc(dom->scores_per_pos, sz)))
@@ -24,23 +24,23 @@ static enum h3c_rc grow(struct h3c_domain *dom, uint64_t npos)
     return H3C_OK;
 }
 
-static void shrink(struct h3c_domain *dom, uint64_t npos) { dom->npos = npos; }
+static void shrink(struct domain *dom, uint64_t npos) { dom->npos = npos; }
 
-enum h3c_rc domain_setup(struct h3c_domain *dom, uint64_t npos)
+enum h3c_rc domain_setup(struct domain *dom, uint64_t npos)
 {
     if (dom->npos < npos) return grow(dom, npos);
     shrink(dom, npos);
     return H3C_OK;
 }
 
-void domain_cleanup(struct h3c_domain *dom)
+void domain_cleanup(struct domain *dom)
 {
     DEL(dom->scores_per_pos);
     dom->npos = 0;
     alidisplay_cleanup(&dom->ad);
 }
 
-enum h3c_rc domain_pack(struct h3c_domain const *dom, struct lip_file *f)
+enum h3c_rc domain_pack(struct domain const *dom, struct lip_file *f)
 {
     lip_write_array_size(f, 14);
 

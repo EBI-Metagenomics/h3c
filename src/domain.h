@@ -5,10 +5,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-struct h3c_domain;
+struct domain;
 struct lip_file;
 
-struct h3c_domain
+struct domain
 {
     uint64_t ienv;
     uint64_t jenv;
@@ -24,12 +24,12 @@ struct h3c_domain
     bool is_included;
     uint64_t npos;
     float *scores_per_pos;
-    struct h3c_alidisplay ad;
+    struct alidisplay ad;
 };
 
-void domain_init(struct h3c_domain *);
-enum h3c_rc domain_setup(struct h3c_domain *, uint64_t npos);
-void domain_cleanup(struct h3c_domain *);
-enum h3c_rc domain_pack(struct h3c_domain const *, struct lip_file *);
+void domain_init(struct domain *);
+enum h3c_rc domain_setup(struct domain *, uint64_t npos);
+void domain_cleanup(struct domain *);
+enum h3c_rc domain_pack(struct domain const *, struct lip_file *);
 
 #endif

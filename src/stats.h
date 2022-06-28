@@ -4,16 +4,16 @@
 #include "zsetby.h"
 #include <stdint.h>
 
-struct h3c_stats;
+struct stats;
 struct lip_file;
 
-struct h3c_stats
+struct stats
 {
     double Z;
     double domZ;
 
-    enum h3c_zsetby Z_setby;
-    enum h3c_zsetby domZ_setby;
+    enum zsetby Z_setby;
+    enum zsetby domZ_setby;
 
     uint64_t nmodels;
     uint64_t nseqs;
@@ -27,7 +27,7 @@ struct h3c_stats
     uint64_t nincluded;
 };
 
-void stats_init(struct h3c_stats *);
-enum h3c_rc stats_pack(struct h3c_stats const *, struct lip_file *);
+void stats_init(struct stats *);
+enum h3c_rc stats_pack(struct stats const *, struct lip_file *);
 
 #endif

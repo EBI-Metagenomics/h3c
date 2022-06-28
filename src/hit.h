@@ -4,9 +4,9 @@
 #include <stdint.h>
 
 struct lip_file;
-struct h3c_domain;
+struct domain;
 
-struct h3c_hit
+struct hit
 {
     char *name;
     char *acc;
@@ -33,12 +33,12 @@ struct h3c_hit
     uint32_t best_domain;
 
     uint32_t ndomains;
-    struct h3c_domain *domains;
+    struct domain *domains;
 };
 
-enum h3c_rc hit_init(struct h3c_hit *);
-enum h3c_rc hit_setup(struct h3c_hit *, uint32_t ndomains);
-void hit_cleanup(struct h3c_hit *);
-enum h3c_rc hit_pack(struct h3c_hit const *, struct lip_file *);
+enum h3c_rc hit_init(struct hit *);
+enum h3c_rc hit_setup(struct hit *, uint32_t ndomains);
+void hit_cleanup(struct hit *);
+enum h3c_rc hit_pack(struct hit const *, struct lip_file *);
 
 #endif

@@ -92,7 +92,7 @@ cleanup:
 
 #define STRXDUP(D, S) (D = strxdup((D), (S)))
 
-static enum h3c_rc copy_alidisplay(struct h3c_alidisplay *dst,
+static enum h3c_rc copy_alidisplay(struct alidisplay *dst,
                                    struct hmmd_alidisplay const *src)
 {
     dst->presence = src->presence;
@@ -128,7 +128,7 @@ cleanup:
     return H3C_NOT_ENOUGH_MEMORY;
 }
 
-static enum h3c_rc copy_domain(struct h3c_domain *dst,
+static enum h3c_rc copy_domain(struct domain *dst,
                                struct hmmd_domain const *src)
 {
     enum h3c_rc rc = domain_setup(dst, src->npos);
@@ -159,7 +159,7 @@ cleanup:
     return rc;
 }
 
-static enum h3c_rc copy_hit(struct h3c_hit *dst, struct hmmd_hit const *src)
+static enum h3c_rc copy_hit(struct hit *dst, struct hmmd_hit const *src)
 {
     enum h3c_rc rc = hit_setup(dst, src->ndom);
     if (rc) return rc;
@@ -201,7 +201,7 @@ cleanup:
     return rc;
 }
 
-static enum h3c_rc copy_tophits(struct h3c_tophits *dst,
+static enum h3c_rc copy_tophits(struct tophits *dst,
                                 struct hmmd_tophits const *src)
 {
     enum h3c_rc rc = tophits_setup(dst, src->nhits);
@@ -224,13 +224,13 @@ cleanup:
     return rc;
 }
 
-static void copy_stats(struct h3c_stats *dst, struct hmmd_stats const *src)
+static void copy_stats(struct stats *dst, struct hmmd_stats const *src)
 {
     dst->Z = src->Z;
     dst->domZ = src->domZ;
 
-    dst->Z_setby = (enum h3c_zsetby)src->Z_setby;
-    dst->domZ_setby = (enum h3c_zsetby)src->domZ_setby;
+    dst->Z_setby = (enum zsetby)src->Z_setby;
+    dst->domZ_setby = (enum zsetby)src->domZ_setby;
 
     dst->nmodels = src->nmodels;
     dst->nseqs = src->nseqs;

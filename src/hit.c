@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-enum h3c_rc hit_init(struct h3c_hit *hit)
+enum h3c_rc hit_init(struct hit *hit)
 {
     memset(hit, 0, sizeof(*hit));
 
@@ -21,10 +21,10 @@ cleanup:
     return H3C_NOT_ENOUGH_MEMORY;
 }
 
-static enum h3c_rc grow(struct h3c_hit *hit, uint32_t ndomains)
+static enum h3c_rc grow(struct hit *hit, uint32_t ndomains)
 {
     size_t sz = ndomains * sizeof(*hit->domains);
-    struct h3c_domain *domains = realloc(hit->domains, sz);
+    struct domain *domains = realloc(hit->domains, sz);
     if (!domains) goto cleanup;
     hit->domains = domains;
 
@@ -41,7 +41,7 @@ cleanup:
     return H3C_NOT_ENOUGH_MEMORY;
 }
 
-static void shrink(struct h3c_hit *hit, uint32_t ndomains)
+static void shrink(struct hit *hit, uint32_t ndomains)
 {
     for (uint32_t i = ndomains; i < hit->ndomains; ++i)
         domain_cleanup(hit->domains + i);
@@ -49,14 +49,14 @@ static void shrink(struct h3c_hit *hit, uint32_t ndomains)
     hit->ndomains = ndomains;
 }
 
-enum h3c_rc hit_setup(struct h3c_hit *hit, uint32_t ndomains)
+enum h3c_rc hit_setup(struct hit *hit, uint32_t ndomains)
 {
     if (hit->ndomains < ndomains) return grow(hit, ndomains);
     shrink(hit, ndomains);
     return H3C_OK;
 }
 
-void hit_cleanup(struct h3c_hit *hit)
+void hit_cleanup(struct hit *hit)
 {
     DEL(hit->name);
     DEL(hit->acc);
@@ -69,7 +69,7 @@ void hit_cleanup(struct h3c_hit *hit)
     DEL(hit->domains);
 }
 
-enum h3c_rc hit_pack(struct h3c_hit const *hit, struct lip_file *f)
+enum h3c_rc hit_pack(struct hit const *hit, struct lip_file *f)
 {
     lip_write_array_size(f, 20);
 

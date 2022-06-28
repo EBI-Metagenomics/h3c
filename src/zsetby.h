@@ -1,11 +1,11 @@
 #ifndef ZSETBY_H
 #define ZSETBY_H
 
-enum h3c_zsetby
+enum zsetby
 {
-    H3C_ZSETBY_NTARGETS = 0,
-    H3C_ZSETBY_OPTION = 1,
-    H3C_ZSETBY_FILEINFO = 2
+    ZSETBY_NTARGETS = 0,
+    ZSETBY_OPTION = 1,
+    ZSETBY_FILEINFO = 2
 };
 
 #endif

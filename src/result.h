@@ -6,8 +6,8 @@
 
 struct h3c_result
 {
-    struct h3c_stats stats;
-    struct h3c_tophits tophits;
+    struct stats stats;
+    struct tophits tophits;
 };
 
 #endif

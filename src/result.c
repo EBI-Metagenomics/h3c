@@ -15,7 +15,7 @@ struct h3c_result *h3c_result_new(void)
 
 void h3c_result_del(struct h3c_result const *result)
 {
-    tophits_cleanup((struct h3c_tophits *)&result->tophits);
+    tophits_cleanup((struct tophits *)&result->tophits);
     free((void *)result);
 }
 

@@ -12,7 +12,7 @@
 #define ASEQ_PRESENT (1 << 4)
 #define NTSEQ_PRESENT (1 << 5)
 
-enum h3c_rc alidisplay_init(struct h3c_alidisplay *ad)
+enum h3c_rc alidisplay_init(struct alidisplay *ad)
 {
     memset(ad, 0, sizeof(*ad));
 
@@ -40,7 +40,7 @@ cleanup:
     return H3C_NOT_ENOUGH_MEMORY;
 }
 
-void alidisplay_cleanup(struct h3c_alidisplay *ad)
+void alidisplay_cleanup(struct alidisplay *ad)
 {
     DEL(ad->rfline);
     DEL(ad->mmline);
@@ -68,7 +68,7 @@ static void write_cstr(struct lip_file *f, char const *str)
         lip_write_cstr(f, "");
 }
 
-enum h3c_rc alidisplay_pack(struct h3c_alidisplay const *ad, struct lip_file *f)
+enum h3c_rc alidisplay_pack(struct alidisplay const *ad, struct lip_file *f)
 {
     lip_write_array_size(f, 19);
 
@@ -109,7 +109,7 @@ static int integer_textwidth(long n)
     return w;
 }
 
-void alidisplay_print(struct h3c_alidisplay const *ad, FILE *file)
+void alidisplay_print(struct alidisplay const *ad, FILE *file)
 {
     int min_aliwidth = 40;
     int linewidth = 120;

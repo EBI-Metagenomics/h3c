@@ -13,14 +13,14 @@
 
 #define eslCONST_LOG2R 1.44269504088896341
 
-void tophits_init(struct h3c_tophits *th) { memset(th, 0, sizeof(*th)); }
+void tophits_init(struct tophits *th) { memset(th, 0, sizeof(*th)); }
 
-static enum h3c_rc grow(struct h3c_tophits *th, uint64_t nhits)
+static enum h3c_rc grow(struct tophits *th, uint64_t nhits)
 {
     enum h3c_rc rc = H3C_OK;
 
     size_t sz = nhits * sizeof(*th->hits);
-    struct h3c_hit *hits = realloc(th->hits, sz);
+    struct hit *hits = realloc(th->hits, sz);
     if (!hits)
     {
         rc = H3C_NOT_ENOUGH_MEMORY;
@@ -41,7 +41,7 @@ cleanup:
     return rc;
 }
 
-static void shrink(struct h3c_tophits *th, uint64_t nhits)
+static void shrink(struct tophits *th, uint64_t nhits)
 {
     for (uint64_t i = nhits; i < th->nhits; ++i)
         hit_cleanup(th->hits + i);
@@ -49,14 +49,14 @@ static void shrink(struct h3c_tophits *th, uint64_t nhits)
     th->nhits = nhits;
 }
 
-enum h3c_rc tophits_setup(struct h3c_tophits *th, uint64_t nhits)
+enum h3c_rc tophits_setup(struct tophits *th, uint64_t nhits)
 {
     if (th->nhits < nhits) return grow(th, nhits);
     shrink(th, nhits);
     return H3C_OK;
 }
 
-void tophits_cleanup(struct h3c_tophits *th)
+void tophits_cleanup(struct tophits *th)
 {
     for (uint64_t i = 0; i < th->nhits; ++i)
         hit_cleanup(th->hits + i);
@@ -64,7 +64,7 @@ void tophits_cleanup(struct h3c_tophits *th)
     th->nhits = 0;
 }
 
-enum h3c_rc tophits_pack(struct h3c_tophits const *th, struct lip_file *f)
+enum h3c_rc tophits_pack(struct tophits const *th, struct lip_file *f)
 {
     lip_write_array_size(f, 5);
 
@@ -89,7 +89,7 @@ enum h3c_rc tophits_pack(struct h3c_tophits const *th, struct lip_file *f)
 
 #define ESL_MAX(a, b) (((a) > (b)) ? (a) : (b))
 
-uint64_t GetMaxShownLength(struct h3c_tophits const *h)
+uint64_t GetMaxShownLength(struct tophits const *h)
 {
     uint64_t max = 0;
     uint64_t i = 0;
@@ -110,7 +110,7 @@ uint64_t GetMaxShownLength(struct h3c_tophits const *h)
     return max;
 }
 
-uint64_t GetMaxNameLength(struct h3c_tophits const *h)
+uint64_t GetMaxNameLength(struct tophits const *h)
 {
     uint64_t max = 0;
     uint64_t i = 0;
@@ -133,7 +133,7 @@ uint64_t GetMaxNameLength(struct h3c_tophits const *h)
 #define p7_IS_DROPPED (1 << 3)
 #define p7_IS_DUPLICATE (1 << 4)
 
-void tophits_print_targets(struct h3c_tophits const *th, FILE *file, double Z)
+void tophits_print_targets(struct tophits const *th, FILE *file, double Z)
 {
     char newness;
     uint32_t h;
@@ -261,7 +261,7 @@ void tophits_print_targets(struct h3c_tophits const *th, FILE *file, double Z)
 #define p7_IS_DROPPED (1 << 3)
 #define p7_IS_DUPLICATE (1 << 4)
 
-void tophits_print_domains(struct h3c_tophits const *th, FILE *file, double Z,
+void tophits_print_domains(struct tophits const *th, FILE *file, double Z,
                            double domZ)
 {
     bool show_accessions = true;
@@ -450,7 +450,7 @@ void tophits_print_domains(struct h3c_tophits const *th, FILE *file, double Z,
     }
 }
 
-static int GetMaxAccessionLength(struct h3c_tophits const *th)
+static int GetMaxAccessionLength(struct tophits const *th)
 {
     uint32_t i, max, n;
     for (max = 0, i = 0; i < th->nhits; i++)
@@ -465,7 +465,7 @@ static int GetMaxAccessionLength(struct h3c_tophits const *th)
 }
 
 void tophits_print_tabular_targets(char *qname, char *qacc,
-                                   struct h3c_tophits const *th,
+                                   struct tophits const *th,
                                    int show_header, double Z)
 {
     int qnamew = ESL_MAX(20, strlen(qname));
@@ -527,7 +527,7 @@ void tophits_print_tabular_targets(char *qname, char *qacc,
 }
 
 void tophits_print_tabular_domains(char *qname, char *qacc,
-                                   struct h3c_tophits const *th,
+                                   struct tophits const *th,
                                    int show_header, double Z, double domZ)
 {
     int qnamew = ESL_MAX(20, strlen(qname));

@@ -4,9 +4,9 @@
 #include "stats.h"
 #include <string.h>
 
-void stats_init(struct h3c_stats *stats) { memset(stats, 0, sizeof(*stats)); }
+void stats_init(struct stats *stats) { memset(stats, 0, sizeof(*stats)); }
 
-enum h3c_rc stats_pack(struct h3c_stats const *stats, struct lip_file *f)
+enum h3c_rc stats_pack(struct stats const *stats, struct lip_file *f)
 {
     lip_write_array_size(f, 13);
 
