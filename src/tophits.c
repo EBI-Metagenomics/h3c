@@ -87,42 +87,24 @@ enum h3c_rc tophits_pack(struct tophits const *th, struct lip_file *f)
     return lip_file_error(f) ? H3C_FAILED_PACK : H3C_OK;
 }
 
-#define ESL_MAX(a, b) (((a) > (b)) ? (a) : (b))
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
-uint64_t GetMaxShownLength(struct tophits const *h)
+static unsigned max_shown_length(struct tophits const *h)
 {
-    uint64_t max = 0;
-    uint64_t i = 0;
-    uint64_t n = 0;
-    for (max = 0, i = 0; i < h->nhits; i++)
+    unsigned max = 0;
+    for (uint64_t i = 0; i < h->nhits; i++)
     {
-        if (h->hits[i].acc != 0 && h->hits[i].acc[0] != '\0')
-        {
-            n = strlen(h->hits[i].acc);
-            max = ESL_MAX(n, max);
-        }
-        else if (h->hits[i].name != 0)
-        {
-            n = strlen(h->hits[i].name);
-            max = ESL_MAX(n, max);
-        }
+        max = MAX(max, (unsigned)strlen(h->hits[i].acc));
+        max = MAX(max, (unsigned)strlen(h->hits[i].name));
     }
     return max;
 }
 
-uint64_t GetMaxNameLength(struct tophits const *h)
+static unsigned max_name_length(struct tophits const *h)
 {
-    uint64_t max = 0;
-    uint64_t i = 0;
-    uint64_t n = 0;
-    for (max = 0, i = 0; i < h->nhits; i++)
-    {
-        if (h->hits[i].name != 0)
-        {
-            n = strlen(h->hits[i].name);
-            max = ESL_MAX(n, max);
-        }
-    }
+    unsigned max = 0;
+    for (uint64_t i = 0; i < h->nhits; i++)
+        max = MAX(max, (unsigned)strlen(h->hits[i].name));
     return max;
 }
 
@@ -149,14 +131,14 @@ void tophits_print_targets(struct tophits const *th, FILE *file, double Z)
     /* when --acc is on, we'll show accession if available, and fall back to
      * name */
     if (show_accessions)
-        namew = ESL_MAX(8, GetMaxShownLength(th));
+        namew = MAX(8, max_shown_length(th));
     else
-        namew = ESL_MAX(8, GetMaxNameLength(th));
+        namew = MAX(8, max_name_length(th));
 
     if (textw > 0)
-        descw = ESL_MAX(32, textw - namew -
-                                61); /* 61 chars excluding desc is from the
-                                        format: 2 + 22+2 +22+2 +8+2 +<name>+1 */
+        descw = MAX(32, textw - namew -
+                            61); /* 61 chars excluding desc is from the
+                                    format: 2 + 22+2 +22+2 +8+2 +<name>+1 */
     else
         descw = 0; /* unlimited desc length is handled separately */
 
@@ -295,7 +277,7 @@ void tophits_print_domains(struct tophits const *th, FILE *file, double Z,
 
             if (textw > 0)
             {
-                descw = ESL_MAX(32, textw - namew - 5);
+                descw = MAX(32, textw - namew - 5);
                 if (fprintf(
                         file, ">> %s  %-.*s\n", showname, descw,
                         (th->hits[h].desc == NULL ? "" : th->hits[h].desc)) < 0)
@@ -450,17 +432,11 @@ void tophits_print_domains(struct tophits const *th, FILE *file, double Z,
     }
 }
 
-static int GetMaxAccessionLength(struct tophits const *th)
+static unsigned max_accession_length(struct tophits const *th)
 {
-    uint32_t i, max, n;
-    for (max = 0, i = 0; i < th->nhits; i++)
-    {
-        if (th->hits[i].acc != NULL)
-        {
-            n = strlen(th->hits[i].acc);
-            max = ESL_MAX(n, max);
-        }
-    }
+    unsigned max = 0;
+    for (uint64_t i = 0; i < th->nhits; i++)
+        max = MAX(max, (unsigned)strlen(th->hits[i].acc));
     return max;
 }
 
@@ -475,13 +451,14 @@ void tophits_print_targets_table(char *qname, char *qacc,
     {
         for (d = 0; d < th->hits[h].ndomains; d++)
         {
-            qnamew = ESL_MAX(qnamew, strlen(th->hits[h].domains[d].ad.sqname));
+            qnamew =
+                MAX(qnamew, (unsigned)strlen(th->hits[h].domains[d].ad.sqname));
         }
     }
 
-    int tnamew = ESL_MAX(20, GetMaxNameLength(th));
-    int qaccw = ((qacc != NULL) ? ESL_MAX(10, strlen(qacc)) : 10);
-    int taccw = ESL_MAX(10, GetMaxAccessionLength(th));
+    int tnamew = MAX(20, max_name_length(th));
+    int qaccw = ((qacc != NULL) ? MAX(10, strlen(qacc)) : 10);
+    int taccw = MAX(10, max_accession_length(th));
 
     if (show_header)
     {
@@ -541,59 +518,62 @@ void tophits_print_targets_table(char *qname, char *qacc,
     }
 }
 
+struct header_width
+{
+    unsigned qname;
+    unsigned qacc;
+    unsigned tname;
+    unsigned tacc;
+};
+
+void print_domains_table_header(struct header_width w, FILE *file)
+{
+    fprintf(file, "#%*s %22s %40s %11s %11s %11s\n",
+            w.tname + w.qname - 1 + 15 + w.tacc + w.qacc, "",
+            "--- full sequence ---", "-------------- this domain -------------",
+            "hmm coord", "ali coord", "env coord");
+    fprintf(file,
+            "#%-*s %-*s %5s %-*s %-*s %5s %9s %6s %5s %3s %3s %9s %9s "
+            "%6s %5s %5s %5s %5s %5s %5s %5s %4s %s\n",
+            w.tname - 1, " target name", w.tacc, "accession", "tlen", w.qname,
+            "query name", w.qacc, "accession", "qlen", "E-value", "score",
+            "bias", "#", "of", "c-Evalue", "i-Evalue", "score", "bias", "from",
+            "to", "from", "to", "from", "to", "acc", "description of target");
+    fprintf(file,
+            "#%*s %*s %5s %*s %*s %5s %9s %6s %5s %3s %3s %9s %9s %6s "
+            "%5s %5s %5s %5s %5s %5s %5s %4s %s\n",
+            w.tname - 1, "-------------------", w.tacc, "----------", "-----",
+            w.qname, "--------------------", w.qacc, "----------", "-----",
+            "---------", "------", "-----", "---", "---", "---------",
+            "---------", "------", "-----", "-----", "-----", "-----", "-----",
+            "-----", "-----", "----", "---------------------");
+}
+
 void tophits_print_domains_table(char *qname, char *qacc,
                                  struct tophits const *th, FILE *file,
                                  int show_header, double Z, double domZ)
 {
-    int qnamew = 20;
-    uint32_t h, d;
-    for (h = 0; h < th->nhits; h++)
+    struct header_width w = {20, 10, 20, 10};
+    for (uint64_t h = 0; h < th->nhits; h++)
     {
-        d = th->hits[h].best_domain;
-        qnamew = ESL_MAX(qnamew, strlen(th->hits[h].domains[d].ad.sqname));
+        uint32_t d = th->hits[h].best_domain;
+        w.qname = MAX(w.qname, strlen(th->hits[h].domains[d].ad.sqname));
     }
 
-    int tnamew = ESL_MAX(20, GetMaxNameLength(th));
-    int qaccw = (qacc ? ESL_MAX(10, strlen(qacc)) : 10);
-    int taccw = ESL_MAX(10, GetMaxAccessionLength(th));
+    w.tname = MAX(w.tname, max_name_length(th));
+    w.qacc = MAX(w.qacc, strlen(qacc));
+    w.tacc = MAX(w.tacc, max_accession_length(th));
     int tlen, qlen;
     uint32_t nd;
 
-    if (show_header)
-    {
-        if (fprintf(file, "#%*s %22s %40s %11s %11s %11s\n",
-                    tnamew + qnamew - 1 + 15 + taccw + qaccw, "",
-                    "--- full sequence ---",
-                    "-------------- this domain -------------", "hmm coord",
-                    "ali coord", "env coord") < 0)
-            fprintf(stderr, "tabular per-domain hit list: write failed");
-        if (fprintf(file,
-                    "#%-*s %-*s %5s %-*s %-*s %5s %9s %6s %5s %3s %3s %9s %9s "
-                    "%6s %5s %5s %5s %5s %5s %5s %5s %4s %s\n",
-                    tnamew - 1, " target name", taccw, "accession", "tlen",
-                    qnamew, "query name", qaccw, "accession", "qlen", "E-value",
-                    "score", "bias", "#", "of", "c-Evalue", "i-Evalue", "score",
-                    "bias", "from", "to", "from", "to", "from", "to", "acc",
-                    "description of target") < 0)
-            fprintf(stderr, "tabular per-domain hit list: write failed");
-        if (fprintf(file,
-                    "#%*s %*s %5s %*s %*s %5s %9s %6s %5s %3s %3s %9s %9s %6s "
-                    "%5s %5s %5s %5s %5s %5s %5s %4s %s\n",
-                    tnamew - 1, "-------------------", taccw, "----------",
-                    "-----", qnamew, "--------------------", qaccw,
-                    "----------", "-----", "---------", "------", "-----",
-                    "---", "---", "---------", "---------", "------", "-----",
-                    "-----", "-----", "-----", "-----", "-----", "-----",
-                    "----", "---------------------") < 0)
-            fprintf(stderr, "tabular per-domain hit list: write failed");
-    }
+    if (show_header) print_domains_table_header(w, file);
 
-    for (h = 0; h < th->nhits; h++)
+    for (uint64_t h = 0; h < th->nhits; h++)
     {
         if (th->hits[h].flags & p7_IS_REPORTED)
         {
             nd = 0;
-            for (d = 0; d < th->hits[h].ndomains; d++)
+            for (uint32_t d = 0; d < th->hits[h].ndomains; d++)
             {
                 if (th->hits[h].domains[d].is_reported)
                 {
@@ -609,9 +589,9 @@ void tophits_print_domains_table(char *qname, char *qacc,
                             "%3d %9.2g %9.2g %6.1f %5.1f %5d %5d %5" PRId64
                             " %5" PRId64 " %5" PRId64 " %5" PRId64
                             " %4.2f %s\n",
-                            tnamew, th->hits[h].name, taccw,
+                            w.tname, th->hits[h].name, w.tacc,
                             th->hits[h].acc ? th->hits[h].acc : "-", tlen,
-                            qnamew, qname, qaccw,
+                            w.qname, qname, w.qacc,
                             ((qacc != NULL && qacc[0] != '\0') ? qacc : "-"),
                             qlen, exp(th->hits[h].lnP) * Z, th->hits[h].score,
                             th->hits[h].pre_score -
