@@ -18,9 +18,9 @@ struct hmmd_tophits
 };
 
 void hmmd_tophits_init(struct hmmd_tophits *);
-enum h3c_rc hmmd_tophits_setup(struct hmmd_tophits *, unsigned char const *data,
-                               uint64_t nhits, uint64_t nreported,
-                               uint64_t nincluded);
+enum h3c_rc hmmd_tophits_setup(struct hmmd_tophits *, unsigned char const **ptr,
+                               unsigned char const *end, uint64_t nhits,
+                               uint64_t nreported, uint64_t nincluded);
 void hmmd_tophits_cleanup(struct hmmd_tophits *);
 
 #endif

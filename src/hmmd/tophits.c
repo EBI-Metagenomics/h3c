@@ -61,7 +61,8 @@ static void shrink(struct hmmd_tophits *th, uint64_t nhits)
 }
 
 enum h3c_rc hmmd_tophits_setup(struct hmmd_tophits *th,
-                               unsigned char const *data, uint64_t nhits,
+                               unsigned char const **ptr,
+                               unsigned char const *end, uint64_t nhits,
                                uint64_t nreported, uint64_t nincluded)
 {
     enum h3c_rc rc = H3C_OK;
@@ -78,12 +79,9 @@ enum h3c_rc hmmd_tophits_setup(struct hmmd_tophits *th,
     th->is_sorted_by_seqidx = false;
     th->is_sorted_by_sortkey = true;
 
-    unsigned char const *ptr = data;
     for (uint64_t i = 0; i < nhits; ++i)
     {
-        size_t size = 0;
-        if ((rc = hmmd_hit_parse(th->unsrt + i, &size, ptr))) goto cleanup;
-        ptr += size;
+        if ((rc = hmmd_hit_parse(th->unsrt + i, ptr, end))) goto cleanup;
         th->hit[i] = th->unsrt + i;
     }
 

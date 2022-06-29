@@ -30,8 +30,7 @@ struct hmmd_domain
 
 void hmmd_domain_init(struct hmmd_domain *);
 void hmmd_domain_cleanup(struct hmmd_domain *);
-
-enum h3c_rc hmmd_domain_parse(struct hmmd_domain *, size_t *read_size,
-                              unsigned char const *data);
+enum h3c_rc hmmd_domain_parse(struct hmmd_domain *, unsigned char const **ptr,
+                              unsigned char const *end);
 
 #endif

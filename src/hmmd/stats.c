@@ -18,13 +18,13 @@ void hmmd_stats_cleanup(struct hmmd_stats *stats)
     stats->hit_offsets = 0;
 }
 
-static enum h3c_rc parse_part1(struct hmmd_stats *stats,
-                               unsigned char const **ptr,
-                               unsigned char const *end)
+static enum h3c_rc parse_first_part(struct hmmd_stats *stats,
+                                    unsigned char const **ptr,
+                                    unsigned char const *end)
 {
     enum h3c_rc rc = H3C_OK;
 
-    ESCAPE_OVERRUN(rc, *ptr, end, 14 * 8 + 2);
+    ESCAPE_OVERRUN(rc, *ptr, end, 14 * sizeof(uint64_t) + 2);
 
     // skip elapsed
     (void)eatf64(ptr);
@@ -59,9 +59,9 @@ enum h3c_rc hmmd_stats_parse(struct hmmd_stats *stats,
 {
     enum h3c_rc rc = H3C_OK;
 
-    if ((rc = parse_part1(stats, ptr, end))) goto cleanup;
+    if ((rc = parse_first_part(stats, ptr, end))) goto cleanup;
 
-    ESCAPE_OVERRUN(rc, *ptr, end, 8);
+    ESCAPE_OVERRUN(rc, *ptr, end, sizeof(uint64_t));
     uint64_t hit_offset = eatu64(ptr);
 
     if (hit_offset == UINT64_MAX && stats->nhits > 0)
@@ -80,7 +80,7 @@ enum h3c_rc hmmd_stats_parse(struct hmmd_stats *stats,
             goto cleanup;
         }
 
-        ESCAPE_OVERRUN(rc, *ptr, end, stats->nhits * 8);
+        ESCAPE_OVERRUN(rc, *ptr, end, stats->nhits * sizeof(uint64_t));
         stats->hit_offsets[0] = hit_offset;
         for (uint64_t i = 1; i < stats->nhits; i++)
             stats->hit_offsets[i] = eatu64(ptr);

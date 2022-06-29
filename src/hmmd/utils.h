@@ -1,6 +1,8 @@
 #ifndef HMMD_UTILS_H
 #define HMMD_UTILS_H
 
+#include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 uint64_t eatu64(unsigned char const **data);
@@ -26,5 +28,7 @@ char *strskip(char **str);
             goto cleanup;                                                      \
         }                                                                      \
     } while (0);
+
+bool expect_n_strings(size_t size, char const *ptr, unsigned n);
 
 #endif

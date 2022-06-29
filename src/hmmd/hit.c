@@ -24,65 +24,73 @@ void hmmd_hit_cleanup(struct hmmd_hit *hit)
 #define ACC_PRESENT (1 << 0)
 #define DESC_PRESENT (1 << 1)
 
-enum h3c_rc hmmd_hit_parse(struct hmmd_hit *hit, size_t *read_size,
-                           unsigned char const *data)
+static enum h3c_rc parse_strings(struct hmmd_hit *hit, uint8_t presence,
+                                 size_t size, unsigned char const **ptr)
 {
+    unsigned n = 1 + !!(presence & ACC_PRESENT) + !!(presence & DESC_PRESENT);
+    if (!expect_n_strings(size, (char const *)*ptr, n)) return H3C_FAILED_PARSE;
+
     enum h3c_rc rc = H3C_OK;
-    *read_size = 0;
-    unsigned char const *ptr = data;
 
-    uint32_t obj_size = eatu32(&ptr);
-
-    // Member window_length apparently being set with random values.
-    // Skipping it for now.
-    eati32(&ptr);
-    // hit->window_length = eati32(&ptr);
-
-    hit->sortkey = eatf64(&ptr);
-    hit->score = eatf32(&ptr);
-    hit->pre_score = eatf32(&ptr);
-    hit->sum_score = eatf32(&ptr);
-
-    hit->lnP = eatf64(&ptr);
-    hit->pre_lnP = eatf64(&ptr);
-    hit->sum_lnP = eatf64(&ptr);
-
-    hit->nexpected = eatf32(&ptr);
-    hit->nregions = eatu32(&ptr);
-    hit->nclustered = eatu32(&ptr);
-    hit->noverlaps = eatu32(&ptr);
-    hit->nenvelopes = eatu32(&ptr);
-    uint32_t ndom = eatu32(&ptr);
-
-    hit->flags = eatu32(&ptr);
-    hit->nreported = eatu32(&ptr);
-    hit->nincluded = eatu32(&ptr);
-    hit->best_domain = eatu32(&ptr);
-    hit->seqidx = eatu64(&ptr);
-    // Member window_length apparently being set with random values.
-    // Skipping it for now.
-    eatu64(&ptr);
-    // hit->subseq_start = eatu64(&ptr);
-
-    uint8_t presence = eatu8(&ptr);
-
-    if ((rc = eatstr(&hit->name, &ptr))) goto cleanup;
+    if ((rc = eatstr(&hit->name, ptr))) return rc;
 
     if (presence & ACC_PRESENT)
     {
-        if ((rc = eatstr(&hit->acc, &ptr))) goto cleanup;
+        if ((rc = eatstr(&hit->acc, ptr))) return rc;
     }
 
     if (presence & DESC_PRESENT)
     {
-        if ((rc = eatstr(&hit->desc, &ptr))) goto cleanup;
+        if ((rc = eatstr(&hit->desc, ptr))) return rc;
     }
 
-    if (ptr != obj_size + data)
-    {
-        rc = H3C_FAILED_PARSE;
-        goto cleanup;
-    }
+    return H3C_OK;
+}
+
+enum h3c_rc hmmd_hit_parse(struct hmmd_hit *hit, unsigned char const **ptr,
+                           unsigned char const *end)
+{
+    enum h3c_rc rc = H3C_OK;
+
+    ESCAPE_OVERRUN(rc, *ptr, end, 2 * sizeof(uint32_t));
+
+    // Skips object size
+    (void)eatu32(ptr);
+
+    // Skips window_length for now
+    (void)eati32(ptr);
+
+    ESCAPE_OVERRUN(rc, *ptr, end, 4 * sizeof(double) + 3 * sizeof(float));
+    hit->sortkey = eatf64(ptr);
+    hit->score = eatf32(ptr);
+    hit->pre_score = eatf32(ptr);
+    hit->sum_score = eatf32(ptr);
+
+    hit->lnP = eatf64(ptr);
+    hit->pre_lnP = eatf64(ptr);
+    hit->sum_lnP = eatf64(ptr);
+
+    ESCAPE_OVERRUN(rc, *ptr, end, 5 * sizeof(uint32_t) + sizeof(float));
+    hit->nexpected = eatf32(ptr);
+    hit->nregions = eatu32(ptr);
+    hit->nclustered = eatu32(ptr);
+    hit->noverlaps = eatu32(ptr);
+    hit->nenvelopes = eatu32(ptr);
+    uint32_t ndom = eatu32(ptr);
+
+    ESCAPE_OVERRUN(rc, *ptr, end, 4 * sizeof(uint32_t) + 2 * sizeof(uint64_t));
+    hit->flags = eatu32(ptr);
+    hit->nreported = eatu32(ptr);
+    hit->nincluded = eatu32(ptr);
+    hit->best_domain = eatu32(ptr);
+    hit->seqidx = eatu64(ptr);
+    // Skips subseq_start for now
+    (void)eatu64(ptr);
+
+    ESCAPE_OVERRUN(rc, *ptr, end, sizeof(uint8_t));
+    uint8_t presence = eatu8(ptr);
+
+    if ((rc = parse_strings(hit, presence, (end - *ptr), ptr))) goto cleanup;
 
     if (ndom > hit->ndom)
     {
@@ -107,14 +115,11 @@ enum h3c_rc hmmd_hit_parse(struct hmmd_hit *hit, size_t *read_size,
         hit->ndom = ndom;
     }
 
-    for (unsigned i = 0; i < hit->ndom; i++)
+    for (uint32_t i = 0; i < hit->ndom; i++)
     {
-        size_t size = 0;
-        if ((rc = hmmd_domain_parse(&(hit->dcl[i]), &size, ptr))) goto cleanup;
-        ptr += size;
+        if ((rc = hmmd_domain_parse(hit->dcl + i, ptr, end))) goto cleanup;
     }
 
-    *read_size = (size_t)(ptr - data);
     return H3C_OK;
 
 cleanup:

@@ -71,3 +71,17 @@ char *strskip(char **str)
     *str += strlen(*str) + 1;
     return tmp;
 }
+
+bool expect_n_strings(size_t size, char const *ptr, unsigned n)
+{
+    char const *end = ptr + size;
+    unsigned i = 0;
+    while (i < n && ptr < end)
+    {
+        while (ptr < end && *ptr)
+            ++ptr;
+
+        if (ptr < end) ++i;
+    }
+    return i == n;
+}

@@ -3,6 +3,7 @@
 #include "h3client/rc.h"
 #include "hmmd/alidisplay.h"
 #include "hmmd/utils.h"
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,37 +21,41 @@ void hmmd_domain_cleanup(struct hmmd_domain *dom)
     hmmd_domain_init(dom);
 }
 
-enum h3c_rc hmmd_domain_parse(struct hmmd_domain *dom, size_t *read_size,
-                              unsigned char const *data)
+static_assert(sizeof(float) == 4, "sizeof(float) == 4");
+static_assert(sizeof(double) == 8, "sizeof(double) == 8");
+
+enum h3c_rc hmmd_domain_parse(struct hmmd_domain *dom,
+                              unsigned char const **ptr,
+                              unsigned char const *end)
 {
     enum h3c_rc rc = H3C_OK;
-    *read_size = 0;
-    unsigned char const *ptr = data;
 
-    size_t obj_size = eatu32(&ptr);
-    dom->ienv = eatu64(&ptr);
-    dom->jenv = eatu64(&ptr);
-    dom->iali = eatu64(&ptr);
-    dom->jali = eatu64(&ptr);
+    ESCAPE_OVERRUN(rc, *ptr, end, sizeof(uint32_t) + 6 * sizeof(uint64_t));
 
-    // Members iorf and jorf apparently being set with random values.
-    // Skipping them for now.
-    eati64(&ptr);
-    eati64(&ptr);
+    // Skips object size
+    (void)eatu32(ptr);
+    dom->ienv = eatu64(ptr);
+    dom->jenv = eatu64(ptr);
+    dom->iali = eatu64(ptr);
+    dom->jali = eatu64(ptr);
 
-    // dom->iorf = eati64(&ptr);
-    // dom->jorf = eati64(&ptr);
+    // Skips iorf and jorf.
+    (void)eati64(ptr);
+    (void)eati64(ptr);
 
-    dom->envsc = eatf32(&ptr);
-    dom->domcorrection = eatf32(&ptr);
-    dom->dombias = eatf32(&ptr);
-    dom->oasc = eatf32(&ptr);
-    dom->bitscore = eatf32(&ptr);
-    dom->lnP = eatf64(&ptr);
-    dom->is_reported = eatu32(&ptr);
-    dom->is_included = eatu32(&ptr);
+    ESCAPE_OVERRUN(rc, *ptr, end, 5 * sizeof(float) + sizeof(double));
+    ESCAPE_OVERRUN(rc, *ptr, end, 3 * sizeof(uint32_t));
 
-    uint32_t npos = eatu32(&ptr);
+    dom->envsc = eatf32(ptr);
+    dom->domcorrection = eatf32(ptr);
+    dom->dombias = eatf32(ptr);
+    dom->oasc = eatf32(ptr);
+    dom->bitscore = eatf32(ptr);
+    dom->lnP = eatf64(ptr);
+    dom->is_reported = eatu32(ptr);
+    dom->is_included = eatu32(ptr);
+
+    uint32_t npos = eatu32(ptr);
 
     if (npos > dom->npos)
     {
@@ -65,24 +70,14 @@ enum h3c_rc hmmd_domain_parse(struct hmmd_domain *dom, size_t *read_size,
         dom->npos = npos;
     }
     else
-    {
         dom->npos = npos;
-    }
 
+    ESCAPE_OVERRUN(rc, *ptr, end, dom->npos * sizeof(float));
     for (uint32_t i = 0; i < dom->npos; i++)
-        dom->scores_per_pos[i] = eatf32(&ptr);
+        dom->scores_per_pos[i] = eatf32(ptr);
 
-    if (ptr != obj_size + data)
-    {
-        rc = H3C_FAILED_PARSE;
-        goto cleanup;
-    }
+    if ((rc = hmmd_alidisplay_parse(&dom->ad, ptr, end))) goto cleanup;
 
-    size_t size = 0;
-    if ((rc = hmmd_alidisplay_parse(&dom->ad, &size, ptr))) goto cleanup;
-    ptr += size;
-
-    *read_size = (size_t)(ptr - data);
     return H3C_OK;
 
 cleanup:

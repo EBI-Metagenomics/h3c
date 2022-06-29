@@ -83,9 +83,11 @@ enum h3c_rc answer_parse(struct answer *ans)
     unsigned char const *end = ptr + ans->buff->size;
     if ((rc = hmmd_stats_parse(&ans->stats, &ptr, end))) goto cleanup;
 
-    rc = hmmd_tophits_setup(&ans->tophits, ptr, ans->stats.nhits,
+    rc = hmmd_tophits_setup(&ans->tophits, &ptr, end, ans->stats.nhits,
                             ans->stats.nreported, ans->stats.nincluded);
-    return rc;
+    if (rc) goto cleanup;
+
+    if (ptr != end) rc = H3C_FAILED_PARSE;
 
 cleanup:
     return rc;
