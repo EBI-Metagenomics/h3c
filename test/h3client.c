@@ -82,6 +82,7 @@ static int check_hash(char const *filepath, int64_t hash, char const *source,
 
     if (!(file = fopen(filepath, "rb"))) XFAIL("fopen", source, line);
     if (!file_hash(file, &h)) XFAIL("file_hash", source, line);
+    printf("hash: %lld\n", h);
     if (h != hash) XFAIL("match file hash", source, line);
     fclose(file);
 
@@ -136,6 +137,23 @@ static int test_print_domains(uint16_t ross_id)
     fclose(file);
 
     if (CHECK_HASH(TMPDIR "/domains.txt", 450185627565076573LL)) goto cleanup;
+
+cleanup:
+    if (result) h3c_result_del(result);
+    return exit_status;
+}
+
+static int test_print_targets_table(uint16_t ross_id)
+{
+    struct h3c_result *result = create_result_ross(ross_id);
+    if (!result) goto cleanup;
+
+    FILE *file = 0;
+    if (!(file = fopen(TMPDIR "/targets.tbl", "wb"))) FAIL("fopen");
+    h3c_result_print_targets_table(result, file);
+    fclose(file);
+
+    if (CHECK_HASH(TMPDIR "/targets.tbl", -705996778582966846LL)) goto cleanup;
 
 cleanup:
     if (result) h3c_result_del(result);
@@ -235,6 +253,7 @@ int main(void)
     if (test_pack_result(4)) goto cleanup;
     if (test_print_targets(4)) goto cleanup;
     if (test_print_domains(4)) goto cleanup;
+    if (test_print_targets_table(4)) goto cleanup;
     if (test_reuse_results()) goto cleanup;
     if (test_reuse_results_print()) goto cleanup;
     if (test_reuse_connection(4)) goto cleanup;

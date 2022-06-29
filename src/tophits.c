@@ -464,37 +464,47 @@ static int GetMaxAccessionLength(struct tophits const *th)
     return max;
 }
 
-void tophits_print_tabular_targets(char *qname, char *qacc,
-                                   struct tophits const *th, int show_header,
-                                   double Z)
+void tophits_print_targets_table(char *qname, char *qacc,
+                                 struct tophits const *th, FILE *file,
+                                 int show_header, double Z)
 {
-    int qnamew = ESL_MAX(20, strlen(qname));
+    int qnamew = 20;
+
+    uint32_t h, d;
+    for (h = 0; h < th->nhits; h++)
+    {
+        d = th->hits[h].best_domain;
+        qnamew = ESL_MAX(qnamew, strlen(th->hits[h].domains[d].ad.sqname));
+    }
+
     int tnamew = ESL_MAX(20, GetMaxNameLength(th));
     int qaccw = ((qacc != NULL) ? ESL_MAX(10, strlen(qacc)) : 10);
     int taccw = ESL_MAX(10, GetMaxAccessionLength(th));
-    uint32_t h, d;
 
     if (show_header)
     {
-        if (printf("#%*s %22s %22s %33s\n", tnamew + qnamew + taccw + qaccw + 2,
-                   "", "--- full sequence ----", "--- best 1 domain ----",
-                   "--- domain number estimation ----") < 0)
+        if (fprintf(file, "#%*s %22s %22s %33s\n",
+                    tnamew + qnamew + taccw + qaccw + 2, "",
+                    "--- full sequence ----", "--- best 1 domain ----",
+                    "--- domain number estimation ----") < 0)
             fprintf(stderr, "tabular per-sequence hit list: write failed");
-        if (printf("#%-*s %-*s %-*s %-*s %9s %6s %5s %9s %6s %5s %5s %3s %3s "
-                   "%3s %3s %3s %3s %3s %s\n",
-                   tnamew - 1, " target name", taccw, "accession", qnamew,
-                   "query name", qaccw, "accession", "  E-value", " score",
-                   " bias", "  E-value", " score", " bias", "exp", "reg", "clu",
-                   " ov", "env", "dom", "rep", "inc",
-                   "description of target") < 0)
+        if (fprintf(file,
+                    "#%-*s %-*s %-*s %-*s %9s %6s %5s %9s %6s %5s %5s %3s %3s "
+                    "%3s %3s %3s %3s %3s %s\n",
+                    tnamew - 1, " target name", taccw, "accession", qnamew,
+                    "query name", qaccw, "accession", "  E-value", " score",
+                    " bias", "  E-value", " score", " bias", "exp", "reg",
+                    "clu", " ov", "env", "dom", "rep", "inc",
+                    "description of target") < 0)
             fprintf(stderr, "tabular per-sequence hit list: write failed");
-        if (printf("#%*s %*s %*s %*s %9s %6s %5s %9s %6s %5s %5s %3s %3s %3s "
-                   "%3s %3s %3s %3s %s\n",
-                   tnamew - 1, "-------------------", taccw, "----------",
-                   qnamew, "--------------------", qaccw, "----------",
-                   "---------", "------", "-----", "---------", "------",
-                   "-----", "---", "---", "---", "---", "---", "---", "---",
-                   "---", "---------------------") < 0)
+        if (fprintf(file,
+                    "#%*s %*s %*s %*s %9s %6s %5s %9s %6s %5s %5s %3s %3s %3s "
+                    "%3s %3s %3s %3s %s\n",
+                    tnamew - 1, "-------------------", taccw, "----------",
+                    qnamew, "--------------------", qaccw, "----------",
+                    "---------", "------", "-----", "---------", "------",
+                    "-----", "---", "---", "---", "---", "---", "---", "---",
+                    "---", "---------------------") < 0)
             fprintf(stderr, "tabular per-sequence hit list: write failed");
     }
 
@@ -503,32 +513,35 @@ void tophits_print_tabular_targets(char *qname, char *qacc,
         if (th->hits[h].flags & p7_IS_REPORTED)
         {
             d = th->hits[h].best_domain;
-            if (printf("%-*s %-*s %-*s %-*s %9.2g %6.1f %5.1f %9.2g %6.1f "
-                       "%5.1f %5.1f %3d %3d %3d %3d %3d %3d %3d %s\n",
-                       tnamew, th->hits[h].name, taccw,
-                       th->hits[h].acc ? th->hits[h].acc : "-", qnamew, qname,
-                       qaccw, ((qacc != NULL && qacc[0] != '\0') ? qacc : "-"),
-                       exp(th->hits[h].lnP) * Z, th->hits[h].score,
-                       th->hits[h].pre_score -
-                           th->hits[h].score, /* bias correction */
-                       exp(th->hits[h].domains[d].lnP) * Z,
-                       th->hits[h].domains[d].bitscore,
-                       th->hits[h].domains[d].dombias *
-                           eslCONST_LOG2R, /* convert NATS to BITS at last
-                                              moment */
-                       th->hits[h].nexpected, th->hits[h].nregions,
-                       th->hits[h].nclustered, th->hits[h].noverlaps,
-                       th->hits[h].nenvelopes, th->hits[h].ndomains,
-                       th->hits[h].nreported, th->hits[h].nincluded,
-                       (th->hits[h].desc == NULL ? "-" : th->hits[h].desc)) < 0)
+            qname = th->hits[h].domains[d].ad.sqname;
+            if (fprintf(file,
+                        "%-*s %-*s %-*s %-*s %9.2g %6.1f %5.1f %9.2g %6.1f "
+                        "%5.1f %5.1f %3d %3d %3d %3d %3d %3d %3d %s\n",
+                        tnamew, th->hits[h].name, taccw,
+                        th->hits[h].acc ? th->hits[h].acc : "-", qnamew, qname,
+                        qaccw, ((qacc != NULL && qacc[0] != '\0') ? qacc : "-"),
+                        exp(th->hits[h].lnP) * Z, th->hits[h].score,
+                        th->hits[h].pre_score -
+                            th->hits[h].score, /* bias correction */
+                        exp(th->hits[h].domains[d].lnP) * Z,
+                        th->hits[h].domains[d].bitscore,
+                        th->hits[h].domains[d].dombias *
+                            eslCONST_LOG2R, /* convert NATS to BITS at last
+                                               moment */
+                        th->hits[h].nexpected, th->hits[h].nregions,
+                        th->hits[h].nclustered, th->hits[h].noverlaps,
+                        th->hits[h].nenvelopes, th->hits[h].ndomains,
+                        th->hits[h].nreported, th->hits[h].nincluded,
+                        (th->hits[h].desc == NULL ? "-" : th->hits[h].desc)) <
+                0)
                 fprintf(stderr, "tabular per-sequence hit list: write failed");
         }
     }
 }
 
-void tophits_print_tabular_domains(char *qname, char *qacc,
-                                   struct tophits const *th, int show_header,
-                                   double Z, double domZ)
+void tophits_print_domains_table(char *qname, char *qacc,
+                                 struct tophits const *th, FILE *file,
+                                 int show_header, double Z, double domZ)
 {
     int qnamew = ESL_MAX(20, strlen(qname));
     int tnamew = ESL_MAX(20, GetMaxNameLength(th));
@@ -539,28 +552,30 @@ void tophits_print_tabular_domains(char *qname, char *qacc,
 
     if (show_header)
     {
-        if (printf("#%*s %22s %40s %11s %11s %11s\n",
-                   tnamew + qnamew - 1 + 15 + taccw + qaccw, "",
-                   "--- full sequence ---",
-                   "-------------- this domain -------------", "hmm coord",
-                   "ali coord", "env coord") < 0)
+        if (fprintf(file, "#%*s %22s %40s %11s %11s %11s\n",
+                    tnamew + qnamew - 1 + 15 + taccw + qaccw, "",
+                    "--- full sequence ---",
+                    "-------------- this domain -------------", "hmm coord",
+                    "ali coord", "env coord") < 0)
             fprintf(stderr, "tabular per-domain hit list: write failed");
-        if (printf("#%-*s %-*s %5s %-*s %-*s %5s %9s %6s %5s %3s %3s %9s %9s "
-                   "%6s %5s %5s %5s %5s %5s %5s %5s %4s %s\n",
-                   tnamew - 1, " target name", taccw, "accession", "tlen",
-                   qnamew, "query name", qaccw, "accession", "qlen", "E-value",
-                   "score", "bias", "#", "of", "c-Evalue", "i-Evalue", "score",
-                   "bias", "from", "to", "from", "to", "from", "to", "acc",
-                   "description of target") < 0)
+        if (fprintf(file,
+                    "#%-*s %-*s %5s %-*s %-*s %5s %9s %6s %5s %3s %3s %9s %9s "
+                    "%6s %5s %5s %5s %5s %5s %5s %5s %4s %s\n",
+                    tnamew - 1, " target name", taccw, "accession", "tlen",
+                    qnamew, "query name", qaccw, "accession", "qlen", "E-value",
+                    "score", "bias", "#", "of", "c-Evalue", "i-Evalue", "score",
+                    "bias", "from", "to", "from", "to", "from", "to", "acc",
+                    "description of target") < 0)
             fprintf(stderr, "tabular per-domain hit list: write failed");
-        if (printf("#%*s %*s %5s %*s %*s %5s %9s %6s %5s %3s %3s %9s %9s %6s "
-                   "%5s %5s %5s %5s %5s %5s %5s %4s %s\n",
-                   tnamew - 1, "-------------------", taccw, "----------",
-                   "-----", qnamew, "--------------------", qaccw, "----------",
-                   "-----", "---------", "------", "-----", "---", "---",
-                   "---------", "---------", "------", "-----", "-----",
-                   "-----", "-----", "-----", "-----", "-----", "----",
-                   "---------------------") < 0)
+        if (fprintf(file,
+                    "#%*s %*s %5s %*s %*s %5s %9s %6s %5s %3s %3s %9s %9s %6s "
+                    "%5s %5s %5s %5s %5s %5s %5s %4s %s\n",
+                    tnamew - 1, "-------------------", taccw, "----------",
+                    "-----", qnamew, "--------------------", qaccw,
+                    "----------", "-----", "---------", "------", "-----",
+                    "---", "---", "---------", "---------", "------", "-----",
+                    "-----", "-----", "-----", "-----", "-----", "-----",
+                    "----", "---------------------") < 0)
             fprintf(stderr, "tabular per-domain hit list: write failed");
     }
 

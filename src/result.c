@@ -41,28 +41,24 @@ enum h3c_rc h3c_result_pack(struct h3c_result const *result, FILE *file)
     return tophits_pack(&result->tophits, &f);
 }
 
-void h3c_result_print_targets(struct h3c_result const *result, FILE *file)
+void h3c_result_print_targets(struct h3c_result const *r, FILE *file)
 {
-    tophits_print_targets(&result->tophits, file, result->stats.Z);
+    tophits_print_targets(&r->tophits, file, r->stats.Z);
 }
 
-void h3c_result_print_domains(struct h3c_result const *result, FILE *file)
+void h3c_result_print_domains(struct h3c_result const *r, FILE *file)
 {
-    tophits_print_domains(&result->tophits, file, result->stats.Z,
-                          result->stats.domZ);
+    tophits_print_domains(&r->tophits, file, r->stats.Z, r->stats.domZ);
 }
 
-#if 0
-void answer_print(struct answer const *ans)
+void h3c_result_print_targets_table(struct h3c_result const *r, FILE *file)
 {
-    hmmd_tophits_print_targets(&ans->tophits, true, ans->stats.Z);
-    hmmd_tophits_print_domains(&ans->tophits, true, ans->stats.Z,
-                               ans->stats.domZ, true);
-
-    hmmd_tophits_print_tabular_targets("QNAME", "QACC", &ans->tophits, true,
-                                       ans->stats.Z);
-
-    hmmd_tophits_print_tabular_domains("QNAME", "QACC", &ans->tophits, true,
-                                       ans->stats.Z, ans->stats.domZ);
+    tophits_print_targets_table("QNAME", "-", &r->tophits, file, true,
+                                r->stats.Z);
 }
-#endif
+
+void h3c_result_print_domains_table(struct h3c_result const *r, FILE *file)
+{
+    tophits_print_domains_table("QNAME", "-", &r->tophits, file, true,
+                                r->stats.Z, r->stats.domZ);
+}
