@@ -473,8 +473,10 @@ void tophits_print_targets_table(char *qname, char *qacc,
     uint32_t h, d;
     for (h = 0; h < th->nhits; h++)
     {
-        d = th->hits[h].best_domain;
-        qnamew = ESL_MAX(qnamew, strlen(th->hits[h].domains[d].ad.sqname));
+        for (d = 0; d < th->hits[h].ndomains; d++)
+        {
+            qnamew = ESL_MAX(qnamew, strlen(th->hits[h].domains[d].ad.sqname));
+        }
     }
 
     int tnamew = ESL_MAX(20, GetMaxNameLength(th));
@@ -543,12 +545,19 @@ void tophits_print_domains_table(char *qname, char *qacc,
                                  struct tophits const *th, FILE *file,
                                  int show_header, double Z, double domZ)
 {
-    int qnamew = ESL_MAX(20, strlen(qname));
+    int qnamew = 20;
+    uint32_t h, d;
+    for (h = 0; h < th->nhits; h++)
+    {
+        d = th->hits[h].best_domain;
+        qnamew = ESL_MAX(qnamew, strlen(th->hits[h].domains[d].ad.sqname));
+    }
+
     int tnamew = ESL_MAX(20, GetMaxNameLength(th));
     int qaccw = (qacc ? ESL_MAX(10, strlen(qacc)) : 10);
     int taccw = ESL_MAX(10, GetMaxAccessionLength(th));
     int tlen, qlen;
-    uint32_t h, d, nd;
+    uint32_t nd;
 
     if (show_header)
     {
@@ -590,10 +599,12 @@ void tophits_print_domains_table(char *qname, char *qacc,
                 {
                     nd++;
 
+                    qname = th->hits[h].domains[d].ad.sqname;
                     qlen = th->hits[h].domains[d].ad.L;
                     tlen = th->hits[h].domains[d].ad.M;
 
-                    if (printf(
+                    if (fprintf(
+                            file,
                             "%-*s %-*s %5d %-*s %-*s %5d %9.2g %6.1f %5.1f %3d "
                             "%3d %9.2g %9.2g %6.1f %5.1f %5d %5d %5" PRId64
                             " %5" PRId64 " %5" PRId64 " %5" PRId64

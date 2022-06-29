@@ -160,6 +160,23 @@ cleanup:
     return exit_status;
 }
 
+static int test_print_domains_table(uint16_t ross_id)
+{
+    struct h3c_result *result = create_result_ross(ross_id);
+    if (!result) goto cleanup;
+
+    FILE *file = 0;
+    if (!(file = fopen(TMPDIR "/domains.tbl", "wb"))) FAIL("fopen");
+    h3c_result_print_domains_table(result, file);
+    fclose(file);
+
+    if (CHECK_HASH(TMPDIR "/domains.tbl", -1168549464075086691LL)) goto cleanup;
+
+cleanup:
+    if (result) h3c_result_del(result);
+    return exit_status;
+}
+
 static int test_reuse_results(void)
 {
     struct h3c_result *result = 0;
@@ -254,6 +271,7 @@ int main(void)
     if (test_print_targets(4)) goto cleanup;
     if (test_print_domains(4)) goto cleanup;
     if (test_print_targets_table(4)) goto cleanup;
+    if (test_print_domains_table(4)) goto cleanup;
     if (test_reuse_results()) goto cleanup;
     if (test_reuse_results_print()) goto cleanup;
     if (test_reuse_connection(4)) goto cleanup;
