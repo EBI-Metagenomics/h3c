@@ -75,8 +75,7 @@ if(USE_SANITIZER)
         endif()
       else()
         message(
-          FATAL_ERROR
-            "Address sanitizer not available for ${CMAKE_C_COMPILER}")
+          FATAL_ERROR "Address sanitizer not available for ${CMAKE_C_COMPILER}")
       endif()
     endif()
 
@@ -147,8 +146,7 @@ if(USE_SANITIZER)
         endif()
       else()
         message(
-          FATAL_ERROR "Thread sanitizer not available for ${CMAKE_C_COMPILER}"
-        )
+          FATAL_ERROR "Thread sanitizer not available for ${CMAKE_C_COMPILER}")
       endif()
     endif()
 
@@ -166,8 +164,7 @@ if(USE_SANITIZER)
         endif()
       else()
         message(
-          FATAL_ERROR "Thread sanitizer not available for ${CMAKE_C_COMPILER}"
-        )
+          FATAL_ERROR "Thread sanitizer not available for ${CMAKE_C_COMPILER}")
       endif()
     endif()
 

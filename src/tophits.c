@@ -465,8 +465,8 @@ static int GetMaxAccessionLength(struct tophits const *th)
 }
 
 void tophits_print_tabular_targets(char *qname, char *qacc,
-                                   struct tophits const *th,
-                                   int show_header, double Z)
+                                   struct tophits const *th, int show_header,
+                                   double Z)
 {
     int qnamew = ESL_MAX(20, strlen(qname));
     int tnamew = ESL_MAX(20, GetMaxNameLength(th));
@@ -527,8 +527,8 @@ void tophits_print_tabular_targets(char *qname, char *qacc,
 }
 
 void tophits_print_tabular_domains(char *qname, char *qacc,
-                                   struct tophits const *th,
-                                   int show_header, double Z, double domZ)
+                                   struct tophits const *th, int show_header,
+                                   double Z, double domZ)
 {
     int qnamew = ESL_MAX(20, strlen(qname));
     int tnamew = ESL_MAX(20, GetMaxNameLength(th));
