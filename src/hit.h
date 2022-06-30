@@ -40,5 +40,6 @@ enum h3c_rc hit_init(struct hit *);
 enum h3c_rc hit_setup(struct hit *, uint32_t ndomains);
 void hit_cleanup(struct hit *);
 enum h3c_rc hit_pack(struct hit const *, struct lip_file *);
+enum h3c_rc hit_unpack(struct hit *, struct lip_file *);
 
 #endif

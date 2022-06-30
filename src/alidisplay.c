@@ -2,6 +2,7 @@
 #include "del.h"
 #include "h3client/rc.h"
 #include "lite_pack/lite_pack.h"
+#include "utils.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -60,9 +61,9 @@ void alidisplay_cleanup(struct alidisplay *ad)
     DEL(ad->sqdesc);
 }
 
-static void write_cstr(struct lip_file *f, char const *str)
+static void write_cstr(bool presence, struct lip_file *f, char const *str)
 {
-    if (str)
+    if (presence)
         lip_write_cstr(f, str);
     else
         lip_write_cstr(f, "");
@@ -73,14 +74,14 @@ enum h3c_rc alidisplay_pack(struct alidisplay const *ad, struct lip_file *f)
     lip_write_array_size(f, 19);
 
     lip_write_int(f, ad->presence);
-    write_cstr(f, ad->rfline);
-    write_cstr(f, ad->mmline);
-    write_cstr(f, ad->csline);
+    write_cstr(ad->presence & RFLINE_PRESENT, f, ad->rfline);
+    write_cstr(ad->presence & MMLINE_PRESENT, f, ad->mmline);
+    write_cstr(ad->presence & CSLINE_PRESENT, f, ad->csline);
     lip_write_cstr(f, ad->model);
     lip_write_cstr(f, ad->mline);
-    write_cstr(f, ad->aseq);
-    write_cstr(f, ad->ntseq);
-    write_cstr(f, ad->ppline);
+    write_cstr(ad->presence & ASEQ_PRESENT, f, ad->aseq);
+    write_cstr(ad->presence & NTSEQ_PRESENT, f, ad->ntseq);
+    write_cstr(ad->presence & PPLINE_PRESENT, f, ad->ppline);
     lip_write_int(f, ad->N);
 
     lip_write_cstr(f, ad->hmmname);
@@ -96,7 +97,42 @@ enum h3c_rc alidisplay_pack(struct alidisplay const *ad, struct lip_file *f)
     return lip_file_error(f) ? H3C_FAILED_PACK : H3C_OK;
 }
 
-#define ESL_MAX(a, b) (((a) > (b)) ? (a) : (b))
+enum h3c_rc alidisplay_unpack(struct alidisplay *ad, struct lip_file *f)
+{
+    enum h3c_rc rc = H3C_FAILED_UNPACK;
+
+    if (!expect_array_size(f, 19)) goto cleanup;
+
+    if (!lip_read_int(f, &ad->presence)) goto cleanup;
+    if ((rc = read_string(f, &ad->rfline))) goto cleanup;
+    if ((rc = read_string(f, &ad->mmline))) goto cleanup;
+    if ((rc = read_string(f, &ad->csline))) goto cleanup;
+    if ((rc = read_string(f, &ad->model))) goto cleanup;
+    if ((rc = read_string(f, &ad->mline))) goto cleanup;
+    if ((rc = read_string(f, &ad->aseq))) goto cleanup;
+    if ((rc = read_string(f, &ad->ntseq))) goto cleanup;
+    if ((rc = read_string(f, &ad->ppline))) goto cleanup;
+    lip_read_int(f, &ad->N);
+
+    if ((rc = read_string(f, &ad->hmmname))) goto cleanup;
+    if ((rc = read_string(f, &ad->hmmacc))) goto cleanup;
+    if ((rc = read_string(f, &ad->hmmdesc))) goto cleanup;
+    lip_read_int(f, &ad->hmmfrom);
+    lip_read_int(f, &ad->hmmto);
+    lip_read_int(f, &ad->M);
+    lip_read_int(f, &ad->sqfrom);
+    lip_read_int(f, &ad->sqto);
+    lip_read_int(f, &ad->L);
+
+    rc = H3C_FAILED_UNPACK;
+    if (lip_file_error(f)) goto cleanup;
+
+    return H3C_OK;
+
+cleanup:
+    alidisplay_cleanup(ad);
+    return rc;
+}
 
 static int integer_textwidth(long n)
 {
@@ -133,10 +169,10 @@ void alidisplay_print(struct alidisplay const *ad, FILE *file)
         (show_accessions && ad->sqacc[0] != '\0') ? ad->sqacc : ad->sqname;
 
     /* dynamically size the output lines */
-    namewidth = ESL_MAX(strlen(show_hmmname), strlen(show_seqname));
-    coordwidth = ESL_MAX(
-        ESL_MAX(integer_textwidth(ad->hmmfrom), integer_textwidth(ad->hmmto)),
-        ESL_MAX(integer_textwidth(ad->sqfrom), integer_textwidth(ad->sqto)));
+    namewidth = MAX(strlen(show_hmmname), strlen(show_seqname));
+    coordwidth =
+        MAX(MAX(integer_textwidth(ad->hmmfrom), integer_textwidth(ad->hmmto)),
+            MAX(integer_textwidth(ad->sqfrom), integer_textwidth(ad->sqto)));
 
     aliwidth =
         (linewidth > 0) ? linewidth - namewidth - 2 * coordwidth - 5 : ad->N;

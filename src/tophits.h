@@ -21,7 +21,9 @@ struct tophits
 void tophits_init(struct tophits *);
 enum h3c_rc tophits_setup(struct tophits *, uint64_t nhits);
 void tophits_cleanup(struct tophits *);
+
 enum h3c_rc tophits_pack(struct tophits const *, struct lip_file *);
+enum h3c_rc tophits_unpack(struct tophits *result, struct lip_file *);
 
 void tophits_print_targets(struct tophits const *, FILE *file, double Z);
 void tophits_print_domains(struct tophits const *, FILE *file, double Z,

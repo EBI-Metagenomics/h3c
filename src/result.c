@@ -2,6 +2,7 @@
 #include "h3client/rc.h"
 #include "lite_pack/lite_pack.h"
 #include "result.h"
+#include "utils.h"
 #include <stdlib.h>
 
 struct h3c_result *h3c_result_new(void)
@@ -21,8 +22,6 @@ void h3c_result_del(struct h3c_result const *result)
 
 enum h3c_rc h3c_result_pack(struct h3c_result const *result, FILE *file)
 {
-    enum h3c_rc rc = H3C_OK;
-
     struct lip_file f = {0};
     lip_file_init(&f, file);
 
@@ -31,14 +30,29 @@ enum h3c_rc h3c_result_pack(struct h3c_result const *result, FILE *file)
 
     lip_write_map_size(&f, 2);
     lip_write_cstr(&f, "stats");
-    if (lip_file_error(&f)) return H3C_FAILED_PACK;
-
-    if ((rc = stats_pack(&result->stats, &f))) return rc;
+    enum h3c_rc rc = stats_pack(&result->stats, &f);
+    if (rc) return rc;
 
     lip_write_cstr(&f, "tophits");
-    if (lip_file_error(&f)) return H3C_FAILED_PACK;
-
     return tophits_pack(&result->tophits, &f);
+}
+
+enum h3c_rc h3c_result_unpack(struct h3c_result *result, FILE *file)
+{
+    struct lip_file f = {0};
+    lip_file_init(&f, file);
+
+    if (!expect_map_size(&f, 1)) return H3C_FAILED_UNPACK;
+
+    if (!expect_key(&f, "h3result")) return H3C_FAILED_UNPACK;
+
+    if (!expect_map_size(&f, 2)) return H3C_FAILED_UNPACK;
+    if (!expect_key(&f, "stats")) return H3C_FAILED_UNPACK;
+    enum h3c_rc rc = stats_unpack(&result->stats, &f);
+    if (rc) return rc;
+
+    if (!expect_key(&f, "tophits")) return H3C_FAILED_UNPACK;
+    return tophits_unpack(&result->tophits, &f);
 }
 
 void h3c_result_print_targets(struct h3c_result const *r, FILE *file)

@@ -5,6 +5,7 @@
 #include "hit.h"
 #include "lite_pack/lite_pack.h"
 #include "tophits.h"
+#include "utils.h"
 #include <inttypes.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -70,8 +71,7 @@ enum h3c_rc tophits_pack(struct tophits const *th, struct lip_file *f)
 
     lip_write_map_size(f, 1);
     lip_write_cstr(f, "hits");
-    lip_write_array_size(f, th->nhits);
-    if (lip_file_error(f)) return H3C_FAILED_PACK;
+    if (!lip_write_array_size(f, th->nhits)) return H3C_FAILED_PACK;
 
     for (uint64_t i = 0; i < th->nhits; ++i)
     {
@@ -87,7 +87,38 @@ enum h3c_rc tophits_pack(struct tophits const *th, struct lip_file *f)
     return lip_file_error(f) ? H3C_FAILED_PACK : H3C_OK;
 }
 
-#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+enum h3c_rc tophits_unpack(struct tophits *th, struct lip_file *f)
+{
+    enum h3c_rc rc = H3C_FAILED_UNPACK;
+
+    if (!expect_array_size(f, 5)) goto cleanup;
+
+    if (!expect_map_size(f, 1)) goto cleanup;
+    if (!expect_key(f, "hits")) goto cleanup;
+
+    unsigned size = 0;
+    if (!lip_read_array_size(f, &size)) goto cleanup;
+
+    if ((rc = tophits_setup(th, size))) goto cleanup;
+
+    for (uint64_t i = 0; i < th->nhits; ++i)
+    {
+        if ((rc = hit_unpack(th->hits + i, f))) goto cleanup;
+    }
+
+    lip_read_int(f, &th->nreported);
+    lip_read_int(f, &th->nincluded);
+    lip_read_bool(f, &th->is_sorted_by_sortkey);
+    lip_read_bool(f, &th->is_sorted_by_seqidx);
+
+    if (lip_file_error(f)) goto cleanup;
+
+    return H3C_OK;
+
+cleanup:
+    tophits_cleanup(th);
+    return rc;
+}
 
 static unsigned max_shown_length(struct tophits const *h)
 {

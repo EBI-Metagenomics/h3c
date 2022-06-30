@@ -109,6 +109,34 @@ cleanup:
     return exit_status;
 }
 
+static int test_unpack_result(uint16_t ross_id)
+{
+    struct h3c_result *result = create_result_ross(ross_id);
+    if (!result) goto cleanup;
+
+    FILE *file = 0;
+    if (!(file = fopen(TMPDIR "/h3result.mp", "wb"))) FAIL("fopen");
+    if (h3c_result_pack(result, file)) FAIL("h3c_result_pack");
+    fclose(file);
+
+    if (CHECK_HASH(TMPDIR "/h3result.mp", -7580715214164890760LL)) goto cleanup;
+
+    if (!(file = fopen(TMPDIR "/h3result.mp", "rb"))) FAIL("fopen");
+    if (h3c_result_unpack(result, file)) FAIL("h3c_result_unpack");
+    fclose(file);
+
+    file = 0;
+    if (!(file = fopen(TMPDIR "/h3result.mp", "wb"))) FAIL("fopen");
+    if (h3c_result_pack(result, file)) FAIL("h3c_result_pack");
+    fclose(file);
+
+    if (CHECK_HASH(TMPDIR "/h3result.mp", -7580715214164890760LL)) goto cleanup;
+
+cleanup:
+    if (result) h3c_result_del(result);
+    return exit_status;
+}
+
 static int test_print_targets(uint16_t ross_id)
 {
     struct h3c_result *result = create_result_ross(ross_id);
@@ -268,6 +296,7 @@ int main(void)
 {
     if (test_open_close_connection(4)) goto cleanup;
     if (test_pack_result(4)) goto cleanup;
+    if (test_unpack_result(4)) goto cleanup;
     if (test_print_targets(4)) goto cleanup;
     if (test_print_domains(4)) goto cleanup;
     if (test_print_targets_table(4)) goto cleanup;
