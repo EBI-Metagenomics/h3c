@@ -8,8 +8,8 @@
 #include "hmmd/hmmd.h"
 #include "result.h"
 #include "stats.h"
-#include "strxdup.h"
 #include "tophits.h"
+#include "utils.h"
 #include <stdlib.h>
 #include <string.h>
 

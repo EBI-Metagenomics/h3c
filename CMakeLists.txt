@@ -31,12 +31,10 @@ add_library(
   src/hmmd/stats.c
   src/hmmd/status.c
   src/hmmd/tophits.c
-  src/hmmd/utils.c
   src/hmmd/zsetby.c
   src/request.c
   src/result.c
   src/stats.c
-  src/strxdup.c
   src/tophits.c
   src/utils.c)
 target_link_libraries(h3client PUBLIC C_TOOLBELT::c_toolbelt)

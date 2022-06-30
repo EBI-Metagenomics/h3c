@@ -1,7 +1,7 @@
 #include "hmmd/status.h"
 #include "c_toolbelt/c_toolbelt.h"
 #include "h3client/rc.h"
-#include "hmmd/utils.h"
+#include "utils.h"
 #include <stdlib.h>
 #include <string.h>
 

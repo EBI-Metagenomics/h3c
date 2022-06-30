@@ -1,5 +1,4 @@
 #include "tophits.h"
-#include "del.h"
 #include "domain.h"
 #include "h3client/rc.h"
 #include "hit.h"

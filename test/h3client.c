@@ -82,7 +82,6 @@ static int check_hash(char const *filepath, int64_t hash, char const *source,
 
     if (!(file = fopen(filepath, "rb"))) XFAIL("fopen", source, line);
     if (!file_hash(file, &h)) XFAIL("file_hash", source, line);
-    printf("hash: %lld\n", h);
     if (h != hash) XFAIL("match file hash", source, line);
     fclose(file);
 

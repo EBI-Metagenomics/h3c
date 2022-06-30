@@ -2,7 +2,7 @@
 #include "c_toolbelt/c_toolbelt.h"
 #include "h3client/rc.h"
 #include "hmmd/alidisplay.h"
-#include "hmmd/utils.h"
+#include "utils.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>

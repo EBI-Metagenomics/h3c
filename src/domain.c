@@ -1,7 +1,6 @@
 #include "domain.h"
 #include "alidisplay.h"
 #include "c_toolbelt/c_toolbelt.h"
-#include "del.h"
 #include "h3client/rc.h"
 #include "lite_pack/lite_pack.h"
 #include "utils.h"
