@@ -8,10 +8,10 @@
 
 struct hmmd_domain
 {
-    uint64_t ienv;
-    uint64_t jenv;
-    uint64_t iali;
-    uint64_t jali;
+    uint32_t ienv;
+    uint32_t jenv;
+    uint32_t iali;
+    uint32_t jali;
     // The following two members seems to be receiving
     // random numbers from daemon end. Skip them.
     // int64_t iorf, jorf;

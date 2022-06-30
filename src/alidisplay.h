@@ -30,9 +30,9 @@ struct alidisplay
     char *sqname;
     char *sqacc;
     char *sqdesc;
-    uint64_t sqfrom;
-    uint64_t sqto;
-    uint64_t L;
+    uint32_t sqfrom;
+    uint32_t sqto;
+    uint32_t L;
 };
 
 enum h3c_rc alidisplay_init(struct alidisplay *);

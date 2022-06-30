@@ -36,7 +36,8 @@ struct hmmd_hit
     uint32_t nincluded;
     uint32_t best_domain;
 
-    uint64_t seqidx;
+    // Skip it.
+    // uint64_t seqidx;
     // The following member seems to be receiving
     // random numbers from daemon end. Skip it.
     // uint64_t subseq_start;

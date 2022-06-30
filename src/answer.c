@@ -95,9 +95,21 @@ cleanup:
 
 #define STRXDUP(D, S) (D = strxdup((D), (S)))
 
+#define CHECK_OVERFLOW(var, val)                                               \
+    do                                                                         \
+    {                                                                          \
+        if ((var) > (val))                                                     \
+        {                                                                      \
+            rc = H3C_INTEGER_OVERFLOW;                                         \
+            goto cleanup;                                                      \
+        }                                                                      \
+    } while (0);
+
 static enum h3c_rc copy_alidisplay(struct alidisplay *dst,
                                    struct hmmd_alidisplay const *src)
 {
+    enum h3c_rc rc = H3C_NOT_ENOUGH_MEMORY;
+
     dst->presence = src->presence;
 
     if (!STRXDUP(dst->rfline, src->rfline)) goto cleanup;
@@ -117,6 +129,10 @@ static enum h3c_rc copy_alidisplay(struct alidisplay *dst,
     dst->hmmto = src->hmmto;
     dst->M = src->M;
 
+    CHECK_OVERFLOW(src->sqfrom, UINT32_MAX);
+    CHECK_OVERFLOW(src->sqto, UINT32_MAX);
+    CHECK_OVERFLOW(src->L, UINT32_MAX);
+
     if (!STRXDUP(dst->sqname, src->sqname)) goto cleanup;
     if (!STRXDUP(dst->sqacc, src->sqacc)) goto cleanup;
     if (!STRXDUP(dst->sqdesc, src->sqdesc)) goto cleanup;
@@ -128,7 +144,7 @@ static enum h3c_rc copy_alidisplay(struct alidisplay *dst,
 
 cleanup:
     alidisplay_cleanup(dst);
-    return H3C_NOT_ENOUGH_MEMORY;
+    return rc;
 }
 
 static enum h3c_rc copy_domain(struct domain *dst,
@@ -136,6 +152,11 @@ static enum h3c_rc copy_domain(struct domain *dst,
 {
     enum h3c_rc rc = domain_setup(dst, src->npos);
     if (rc) return rc;
+
+    CHECK_OVERFLOW(src->ienv, UINT32_MAX);
+    CHECK_OVERFLOW(src->jenv, UINT32_MAX);
+    CHECK_OVERFLOW(src->iali, UINT32_MAX);
+    CHECK_OVERFLOW(src->jali, UINT32_MAX);
 
     dst->ienv = src->ienv;
     dst->jenv = src->jenv;
@@ -150,6 +171,7 @@ static enum h3c_rc copy_domain(struct domain *dst,
     dst->is_reported = src->is_reported;
     dst->is_included = src->is_included;
 
+    CHECK_OVERFLOW(src->npos, UINT32_MAX);
     for (uint32_t i = 0; i < dst->npos; ++i)
         dst->scores_per_pos[i] = src->scores_per_pos[i];
 
@@ -227,13 +249,22 @@ cleanup:
     return rc;
 }
 
-static void copy_stats(struct stats *dst, struct hmmd_stats const *src)
+static enum h3c_rc copy_stats(struct stats *dst, struct hmmd_stats const *src)
 {
+    enum h3c_rc rc = H3C_OK;
+
     dst->Z = src->Z;
     dst->domZ = src->domZ;
 
     dst->Z_setby = (enum zsetby)src->Z_setby;
     dst->domZ_setby = (enum zsetby)src->domZ_setby;
+
+    CHECK_OVERFLOW(src->nmodels, UINT32_MAX);
+    CHECK_OVERFLOW(src->nseqs, UINT32_MAX);
+    CHECK_OVERFLOW(src->n_past_msv, UINT32_MAX);
+    CHECK_OVERFLOW(src->n_past_bias, UINT32_MAX);
+    CHECK_OVERFLOW(src->n_past_vit, UINT32_MAX);
+    CHECK_OVERFLOW(src->n_past_fwd, UINT32_MAX);
 
     dst->nmodels = src->nmodels;
     dst->nseqs = src->nseqs;
@@ -242,9 +273,16 @@ static void copy_stats(struct stats *dst, struct hmmd_stats const *src)
     dst->n_past_vit = src->n_past_vit;
     dst->n_past_fwd = src->n_past_fwd;
 
+    CHECK_OVERFLOW(src->nhits, UINT32_MAX);
+    CHECK_OVERFLOW(src->nreported, UINT32_MAX);
+    CHECK_OVERFLOW(src->nincluded, UINT32_MAX);
+
     dst->nhits = src->nhits;
     dst->nreported = src->nreported;
     dst->nincluded = src->nincluded;
+
+cleanup:
+    return rc;
 }
 
 enum h3c_rc answer_copy(struct answer *ans, struct h3c_result *r)

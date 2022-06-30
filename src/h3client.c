@@ -58,7 +58,6 @@ enum h3c_rc h3c_open(char const *ip, uint16_t port)
     if (connect(conn.sockfd, (struct sockaddr *)&conn.addr,
                 sizeof(conn.addr)) == -1)
     {
-
         rc = H3C_FAILED_CONNECT;
         goto cleanup;
     }

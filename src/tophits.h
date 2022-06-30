@@ -10,16 +10,16 @@ struct lip_file;
 
 struct tophits
 {
-    uint64_t nhits;
+    uint32_t nhits;
     struct hit *hits;
-    uint64_t nreported;
-    uint64_t nincluded;
+    uint32_t nreported;
+    uint32_t nincluded;
     bool is_sorted_by_sortkey;
     bool is_sorted_by_seqidx;
 };
 
 void tophits_init(struct tophits *);
-enum h3c_rc tophits_setup(struct tophits *, uint64_t nhits);
+enum h3c_rc tophits_setup(struct tophits *, uint32_t nhits);
 void tophits_cleanup(struct tophits *);
 
 enum h3c_rc tophits_pack(struct tophits const *, struct lip_file *);

@@ -83,7 +83,8 @@ enum h3c_rc hmmd_hit_parse(struct hmmd_hit *hit, unsigned char const **ptr,
     hit->nreported = eatu32(ptr);
     hit->nincluded = eatu32(ptr);
     hit->best_domain = eatu32(ptr);
-    hit->seqidx = eatu64(ptr);
+    // Skips seqidx
+    (void)eatu64(ptr);
     // Skips subseq_start for now
     (void)eatu64(ptr);
 

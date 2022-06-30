@@ -15,16 +15,16 @@ struct stats
     enum zsetby Z_setby;
     enum zsetby domZ_setby;
 
-    uint64_t nmodels;
-    uint64_t nseqs;
-    uint64_t n_past_msv;
-    uint64_t n_past_bias;
-    uint64_t n_past_vit;
-    uint64_t n_past_fwd;
+    uint32_t nmodels;
+    uint32_t nseqs;
+    uint32_t n_past_msv;
+    uint32_t n_past_bias;
+    uint32_t n_past_vit;
+    uint32_t n_past_fwd;
 
-    uint64_t nhits;
-    uint64_t nreported;
-    uint64_t nincluded;
+    uint32_t nhits;
+    uint32_t nreported;
+    uint32_t nincluded;
 };
 
 void stats_init(struct stats *);

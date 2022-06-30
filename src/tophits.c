@@ -15,7 +15,7 @@
 
 void tophits_init(struct tophits *th) { memset(th, 0, sizeof(*th)); }
 
-static enum h3c_rc grow(struct tophits *th, uint64_t nhits)
+static enum h3c_rc grow(struct tophits *th, uint32_t nhits)
 {
     enum h3c_rc rc = H3C_OK;
 
@@ -28,7 +28,7 @@ static enum h3c_rc grow(struct tophits *th, uint64_t nhits)
     }
     th->hits = hits;
 
-    for (uint64_t i = th->nhits; i < nhits; ++i)
+    for (uint32_t i = th->nhits; i < nhits; ++i)
     {
         if ((rc = hit_init(th->hits + i))) goto cleanup;
         ++th->nhits;
@@ -41,15 +41,15 @@ cleanup:
     return rc;
 }
 
-static void shrink(struct tophits *th, uint64_t nhits)
+static void shrink(struct tophits *th, uint32_t nhits)
 {
-    for (uint64_t i = nhits; i < th->nhits; ++i)
+    for (uint32_t i = nhits; i < th->nhits; ++i)
         hit_cleanup(th->hits + i);
 
     th->nhits = nhits;
 }
 
-enum h3c_rc tophits_setup(struct tophits *th, uint64_t nhits)
+enum h3c_rc tophits_setup(struct tophits *th, uint32_t nhits)
 {
     if (th->nhits < nhits) return grow(th, nhits);
     shrink(th, nhits);
@@ -58,7 +58,7 @@ enum h3c_rc tophits_setup(struct tophits *th, uint64_t nhits)
 
 void tophits_cleanup(struct tophits *th)
 {
-    for (uint64_t i = 0; i < th->nhits; ++i)
+    for (uint32_t i = 0; i < th->nhits; ++i)
         hit_cleanup(th->hits + i);
     DEL(th->hits);
     th->nhits = 0;
@@ -72,7 +72,7 @@ enum h3c_rc tophits_pack(struct tophits const *th, struct lip_file *f)
     lip_write_cstr(f, "hits");
     if (!lip_write_array_size(f, th->nhits)) return H3C_FAILED_PACK;
 
-    for (uint64_t i = 0; i < th->nhits; ++i)
+    for (uint32_t i = 0; i < th->nhits; ++i)
     {
         enum h3c_rc rc = hit_pack(th->hits + i, f);
         if (rc) return rc;
@@ -100,7 +100,7 @@ enum h3c_rc tophits_unpack(struct tophits *th, struct lip_file *f)
 
     if ((rc = tophits_setup(th, size))) goto cleanup;
 
-    for (uint64_t i = 0; i < th->nhits; ++i)
+    for (uint32_t i = 0; i < th->nhits; ++i)
     {
         if ((rc = hit_unpack(th->hits + i, f))) goto cleanup;
     }
@@ -122,7 +122,7 @@ cleanup:
 static unsigned max_shown_length(struct tophits const *h)
 {
     unsigned max = 0;
-    for (uint64_t i = 0; i < h->nhits; i++)
+    for (uint32_t i = 0; i < h->nhits; i++)
     {
         max = MAX(max, (unsigned)strlen(h->hits[i].acc));
         max = MAX(max, (unsigned)strlen(h->hits[i].name));
@@ -133,7 +133,7 @@ static unsigned max_shown_length(struct tophits const *h)
 static unsigned max_name_length(struct tophits const *h)
 {
     unsigned max = 0;
-    for (uint64_t i = 0; i < h->nhits; i++)
+    for (uint32_t i = 0; i < h->nhits; i++)
         max = MAX(max, (unsigned)strlen(h->hits[i].name));
     return max;
 }
@@ -278,7 +278,7 @@ void tophits_print_domains(struct tophits const *th, FILE *file, double Z,
 {
     bool show_accessions = true;
     bool show_alignments = true;
-    uint64_t h = 0;
+    uint32_t h = 0;
     uint32_t d = 0;
     int nd;
     int namew, descw;
@@ -465,7 +465,7 @@ void tophits_print_domains(struct tophits const *th, FILE *file, double Z,
 static unsigned max_accession_length(struct tophits const *th)
 {
     unsigned max = 0;
-    for (uint64_t i = 0; i < th->nhits; i++)
+    for (uint32_t i = 0; i < th->nhits; i++)
         max = MAX(max, (unsigned)strlen(th->hits[i].acc));
     return max;
 }
@@ -584,7 +584,7 @@ void tophits_print_domains_table(char *qname, char *qacc,
                                  int show_header, double Z, double domZ)
 {
     struct header_width w = {20, 10, 20, 10};
-    for (uint64_t h = 0; h < th->nhits; h++)
+    for (uint32_t h = 0; h < th->nhits; h++)
     {
         uint32_t d = th->hits[h].best_domain;
         w.qname = MAX(w.qname, strlen(th->hits[h].domains[d].ad.sqname));
@@ -598,7 +598,7 @@ void tophits_print_domains_table(char *qname, char *qacc,
 
     if (show_header) print_domains_table_header(w, file);
 
-    for (uint64_t h = 0; h < th->nhits; h++)
+    for (uint32_t h = 0; h < th->nhits; h++)
     {
         if (th->hits[h].flags & p7_IS_REPORTED)
         {
