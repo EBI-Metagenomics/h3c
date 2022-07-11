@@ -1,6 +1,7 @@
 #ifndef HIT_H
 #define HIT_H
 
+#include "compiler.h"
 #include <stdint.h>
 
 struct lip_file;
@@ -22,22 +23,24 @@ struct hit
     double sum_lnP;
 
     float nexpected;
-    uint32_t nregions;
-    uint32_t nclustered;
-    uint32_t noverlaps;
-    uint32_t nenvelopes;
+    unsigned nregions;
+    unsigned nclustered;
+    unsigned noverlaps;
+    unsigned nenvelopes;
 
-    uint32_t flags;
-    uint32_t nreported;
-    uint32_t nincluded;
-    uint32_t best_domain;
+    unsigned flags;
+    unsigned nreported;
+    unsigned nincluded;
+    unsigned best_domain;
 
-    uint32_t ndomains;
+    unsigned ndomains;
     struct domain *domains;
 };
 
+STATIC_ASSERT(sizeof(unsigned) >= 4);
+
 enum h3c_rc hit_init(struct hit *);
-enum h3c_rc hit_setup(struct hit *, uint32_t ndomains);
+enum h3c_rc hit_setup(struct hit *, unsigned ndomains);
 void hit_cleanup(struct hit *);
 enum h3c_rc hit_pack(struct hit const *, struct lip_file *);
 enum h3c_rc hit_unpack(struct hit *, struct lip_file *);

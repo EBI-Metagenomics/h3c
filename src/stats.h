@@ -1,6 +1,7 @@
 #ifndef STATS_H
 #define STATS_H
 
+#include "compiler.h"
 #include "zsetby.h"
 #include <stdint.h>
 
@@ -15,17 +16,19 @@ struct stats
     enum zsetby Z_setby;
     enum zsetby domZ_setby;
 
-    uint32_t nmodels;
-    uint32_t nseqs;
-    uint32_t n_past_msv;
-    uint32_t n_past_bias;
-    uint32_t n_past_vit;
-    uint32_t n_past_fwd;
+    unsigned nmodels;
+    unsigned nseqs;
+    unsigned n_past_msv;
+    unsigned n_past_bias;
+    unsigned n_past_vit;
+    unsigned n_past_fwd;
 
-    uint32_t nhits;
-    uint32_t nreported;
-    uint32_t nincluded;
+    unsigned nhits;
+    unsigned nreported;
+    unsigned nincluded;
 };
+
+STATIC_ASSERT(sizeof(unsigned) >= 4);
 
 void stats_init(struct stats *);
 enum h3c_rc stats_pack(struct stats const *, struct lip_file *);

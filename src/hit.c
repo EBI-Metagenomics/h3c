@@ -11,9 +11,9 @@ enum h3c_rc hit_init(struct hit *hit)
 {
     memset(hit, 0, sizeof(*hit));
 
-    if (!(hit->name = malloc(1))) goto cleanup;
-    if (!(hit->acc = malloc(1))) goto cleanup;
-    if (!(hit->desc = malloc(1))) goto cleanup;
+    if (!(hit->name = calloc(1, sizeof(char)))) goto cleanup;
+    if (!(hit->acc = calloc(1, sizeof(char)))) goto cleanup;
+    if (!(hit->desc = calloc(1, sizeof(char)))) goto cleanup;
 
     return H3C_OK;
 
@@ -22,14 +22,14 @@ cleanup:
     return H3C_NOT_ENOUGH_MEMORY;
 }
 
-static enum h3c_rc grow(struct hit *hit, uint32_t ndomains)
+static enum h3c_rc grow(struct hit *hit, unsigned ndomains)
 {
     size_t sz = ndomains * sizeof(*hit->domains);
     struct domain *domains = realloc(hit->domains, sz);
     if (!domains) goto cleanup;
     hit->domains = domains;
 
-    for (uint32_t i = hit->ndomains; i < ndomains; ++i)
+    for (unsigned i = hit->ndomains; i < ndomains; ++i)
     {
         domain_init(hit->domains + i);
         ++hit->ndomains;
@@ -42,15 +42,15 @@ cleanup:
     return H3C_NOT_ENOUGH_MEMORY;
 }
 
-static void shrink(struct hit *hit, uint32_t ndomains)
+static void shrink(struct hit *hit, unsigned ndomains)
 {
-    for (uint32_t i = ndomains; i < hit->ndomains; ++i)
+    for (unsigned i = ndomains; i < hit->ndomains; ++i)
         domain_cleanup(hit->domains + i);
 
     hit->ndomains = ndomains;
 }
 
-enum h3c_rc hit_setup(struct hit *hit, uint32_t ndomains)
+enum h3c_rc hit_setup(struct hit *hit, unsigned ndomains)
 {
     if (hit->ndomains < ndomains) return grow(hit, ndomains);
     shrink(hit, ndomains);
@@ -63,7 +63,7 @@ void hit_cleanup(struct hit *hit)
     DEL(hit->acc);
     DEL(hit->desc);
 
-    for (uint32_t i = 0; i < hit->ndomains; ++i)
+    for (unsigned i = 0; i < hit->ndomains; ++i)
         domain_cleanup(hit->domains + i);
 
     hit->ndomains = 0;
@@ -147,9 +147,9 @@ enum h3c_rc hit_unpack(struct hit *hit, struct lip_file *f)
 
     unsigned size = 0;
     if (!lip_read_array_size(f, &size)) goto cleanup;
-    if ((rc = hit_setup(hit, (uint32_t)size))) goto cleanup;
+    if ((rc = hit_setup(hit, size))) goto cleanup;
 
-    for (uint32_t i = 0; i < hit->ndomains; ++i)
+    for (unsigned i = 0; i < hit->ndomains; ++i)
     {
         if ((rc = domain_unpack(hit->domains + i, f))) goto cleanup;
     }
