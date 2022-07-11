@@ -145,10 +145,8 @@ static unsigned textwidth(unsigned n)
     return w;
 }
 
-enum h3c_rc alidisplay_print(struct alidisplay const *ad, FILE *f)
+void alidisplay_print(struct alidisplay const *ad, FILE *f)
 {
-    unsigned min_aliwidth = 40;
-
     /* implement the --acc option for preferring accessions over names in output
      */
     char const *hmmname = ad->hmmacc[0] != 0 ? ad->hmmacc : ad->hmmname;
@@ -160,10 +158,9 @@ enum h3c_rc alidisplay_print(struct alidisplay const *ad, FILE *f)
                               MAX(textwidth(ad->sqfrom), textwidth(ad->sqto)));
 
     unsigned aliwidth = zero_clip(120 - namewidth - 2 * coordwidth - 5);
-    if (aliwidth < ad->N && aliwidth < min_aliwidth) aliwidth = min_aliwidth;
+    if (aliwidth < ad->N && aliwidth < 40) aliwidth = 40;
 
-    char *buf = calloc(aliwidth + 1, sizeof(char));
-    if (!buf) return H3C_NOT_ENOUGH_MEMORY;
+    char buf[121] = {0};
 
     /* Break the alignment into multiple blocks of width aliwidth for printing
      */
@@ -237,7 +234,4 @@ enum h3c_rc alidisplay_print(struct alidisplay const *ad, FILE *f)
         else
             i1 -= ni; // revcomp hit for DNA
     }
-    free(buf);
-
-    return H3C_OK;
 }
