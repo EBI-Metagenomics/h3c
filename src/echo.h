@@ -3,7 +3,6 @@
 
 #include <stdio.h>
 
-void echo(FILE *stream, char const *fmt, ...)
-    __attribute__((format(printf, 2, 3)));
+void echo(FILE *stream, char const *fmt, ...);
 
 #endif

@@ -2,6 +2,7 @@
 #define UTILS_H
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 uint64_t eatu64(unsigned char const **data);
