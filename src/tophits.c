@@ -1,5 +1,6 @@
 #include "tophits.h"
 #include "domain.h"
+#include "echo.h"
 #include "h3client/rc.h"
 #include "hit.h"
 #include "lite_pack/lite_pack.h"
@@ -11,11 +12,11 @@
 #include <string.h>
 #include <tgmath.h>
 
-#define eslCONST_LOG2R 1.44269504088896341
+#define CONST_LOG2R 1.44269504088896341
 
 void tophits_init(struct tophits *th) { memset(th, 0, sizeof(*th)); }
 
-static enum h3c_rc grow(struct tophits *th, uint32_t nhits)
+static enum h3c_rc grow(struct tophits *th, unsigned nhits)
 {
     enum h3c_rc rc = H3C_OK;
 
@@ -28,7 +29,7 @@ static enum h3c_rc grow(struct tophits *th, uint32_t nhits)
     }
     th->hits = hits;
 
-    for (uint32_t i = th->nhits; i < nhits; ++i)
+    for (unsigned i = th->nhits; i < nhits; ++i)
     {
         if ((rc = hit_init(th->hits + i))) goto cleanup;
         ++th->nhits;
@@ -41,15 +42,15 @@ cleanup:
     return rc;
 }
 
-static void shrink(struct tophits *th, uint32_t nhits)
+static void shrink(struct tophits *th, unsigned nhits)
 {
-    for (uint32_t i = nhits; i < th->nhits; ++i)
+    for (unsigned i = nhits; i < th->nhits; ++i)
         hit_cleanup(th->hits + i);
 
     th->nhits = nhits;
 }
 
-enum h3c_rc tophits_setup(struct tophits *th, uint32_t nhits)
+enum h3c_rc tophits_setup(struct tophits *th, unsigned nhits)
 {
     if (th->nhits < nhits) return grow(th, nhits);
     shrink(th, nhits);
@@ -58,7 +59,7 @@ enum h3c_rc tophits_setup(struct tophits *th, uint32_t nhits)
 
 void tophits_cleanup(struct tophits *th)
 {
-    for (uint32_t i = 0; i < th->nhits; ++i)
+    for (unsigned i = 0; i < th->nhits; ++i)
         hit_cleanup(th->hits + i);
     DEL(th->hits);
     th->nhits = 0;
@@ -72,7 +73,7 @@ enum h3c_rc tophits_pack(struct tophits const *th, struct lip_file *f)
     lip_write_cstr(f, "hits");
     if (!lip_write_array_size(f, th->nhits)) return H3C_FAILED_PACK;
 
-    for (uint32_t i = 0; i < th->nhits; ++i)
+    for (unsigned i = 0; i < th->nhits; ++i)
     {
         enum h3c_rc rc = hit_pack(th->hits + i, f);
         if (rc) return rc;
@@ -100,7 +101,7 @@ enum h3c_rc tophits_unpack(struct tophits *th, struct lip_file *f)
 
     if ((rc = tophits_setup(th, size))) goto cleanup;
 
-    for (uint32_t i = 0; i < th->nhits; ++i)
+    for (unsigned i = 0; i < th->nhits; ++i)
     {
         if ((rc = hit_unpack(th->hits + i, f))) goto cleanup;
     }
@@ -122,7 +123,7 @@ cleanup:
 static unsigned max_shown_length(struct tophits const *h)
 {
     unsigned max = 0;
-    for (uint32_t i = 0; i < h->nhits; i++)
+    for (unsigned i = 0; i < h->nhits; i++)
     {
         max = MAX(max, (unsigned)strlen(h->hits[i].acc));
         max = MAX(max, (unsigned)strlen(h->hits[i].name));
@@ -133,7 +134,7 @@ static unsigned max_shown_length(struct tophits const *h)
 static unsigned max_name_length(struct tophits const *h)
 {
     unsigned max = 0;
-    for (uint32_t i = 0; i < h->nhits; i++)
+    for (unsigned i = 0; i < h->nhits; i++)
         max = MAX(max, (unsigned)strlen(h->hits[i].name));
     return max;
 }
@@ -145,75 +146,68 @@ static unsigned max_name_length(struct tophits const *h)
 #define p7_IS_DROPPED (1 << 3)
 #define p7_IS_DUPLICATE (1 << 4)
 
-#define echo(...) fprintf(file, __VA_ARGS__)
-#define newline() fprintf(file, "\n")
+static inline char const *show_name(struct hit const *hit)
+{
+    return (hit->acc != 0 && hit->acc[0] != '\0') ? hit->acc : hit->name;
+}
 
-void tophits_print_targets(struct tophits const *th, FILE *file, double Z)
+static inline char newness(struct hit const *hit)
+{
+    char symbol = ' ';
+    if (hit->flags & p7_IS_NEW)
+        symbol = '+';
+    else if (hit->flags & p7_IS_DROPPED)
+        symbol = '-';
+    return symbol;
+}
+
+void tophits_print_targets(struct tophits const *th, FILE *f, double Z)
 {
     unsigned namew = MAX(8, max_shown_length(th));
+    unsigned descw = MAX(32, zero_clip(120 - namew - 61));
 
-    unsigned descw = 32;
-    if (120 > 32 + 61 + namew) descw = (unsigned)(120 - namew - 61);
+    echo(f, "Scores for complete sequence (score includes all domains):");
 
-    echo("Scores for complete sequence (score includes all domains):");
-    newline();
-
-    echo("  %22s  %22s  %8s", " --- full sequence ---",
+    echo(f, "  %22s  %22s  %8s", " --- full sequence ---",
          " --- best 1 domain ---", "-#dom-");
-    newline();
 
-    echo("  %9s %6s %5s  %9s %6s %5s  %5s %2s  %-*s %s", "E-value", " score",
+    echo(f, "  %9s %6s %5s  %9s %6s %5s  %5s %2s  %-*s %s", "E-value", " score",
          " bias", "E-value", " score", " bias", "  exp", "N", namew, "Model",
          "Description");
-    newline();
 
-    echo("  %9s %6s %5s  %9s %6s %5s  %5s %2s  %-*s %s", "-------", "------",
+    echo(f, "  %9s %6s %5s  %9s %6s %5s  %5s %2s  %-*s %s", "-------", "------",
          "-----", "-------", "------", "-----", " ----", "--", namew,
          "--------", "-----------");
-    newline();
 
     bool printed_incthresh = false;
-    for (unsigned h = 0; h < (unsigned)th->nhits; h++)
+    for (unsigned i = 0; i < th->nhits; i++)
     {
-        if (th->hits[h].flags & p7_IS_REPORTED)
+        struct hit *const hit = th->hits + i;
+        if (hit->flags & p7_IS_REPORTED)
         {
-            unsigned d = (unsigned)th->hits[h].best_domain;
+            struct domain const *dom = hit->domains + hit->best_domain;
 
-            if (!(th->hits[h].flags & p7_IS_INCLUDED) && !printed_incthresh)
+            if (!(hit->flags & p7_IS_INCLUDED) && !printed_incthresh)
             {
-                echo("  ------ inclusion threshold ------");
-                newline();
+                echo(f, "  ------ inclusion threshold ------");
                 printed_incthresh = true;
             }
 
-            char *showname = 0;
-            if (th->hits[h].acc != 0 && th->hits[h].acc[0] != '\0')
-                showname = th->hits[h].acc;
-            else
-                showname = th->hits[h].name;
+            double bits = CONST_LOG2R * dom->dombias;
+            float score = hit->pre_score - hit->score;
 
-            char newness = ' ';
-            if (th->hits[h].flags & p7_IS_NEW)
-                newness = '+';
-            else if (th->hits[h].flags & p7_IS_DROPPED)
-                newness = '-';
-
-            double bits = eslCONST_LOG2R * th->hits[h].domains[d].dombias;
-            float score = th->hits[h].pre_score - th->hits[h].score;
-
-            echo("%c %9.2g %6.1f %5.1f  %9.2g %6.1f %5.1f  %5.1f %2d  %-*s ",
-                 newness, exp(th->hits[h].lnP) * Z, th->hits[h].score, score,
-                 exp(th->hits[h].domains[d].lnP) * Z,
-                 th->hits[h].domains[d].bitscore, bits, th->hits[h].nexpected,
-                 th->hits[h].nreported, namew, showname);
-
-            echo(" %-.*s", descw, th->hits[h].desc);
-            newline();
+            echo(f,
+                 "%c %9.2g %6.1f %5.1f  %9.2g %6.1f %5.1f  %5.1f %2d  %-*s  "
+                 "%-.*s",
+                 newness(th->hits + i), exp(hit->lnP) * Z, hit->score, score,
+                 exp(dom->lnP) * Z, dom->bitscore, bits, hit->nexpected,
+                 hit->nreported, namew, show_name(th->hits + i), descw,
+                 hit->desc);
         }
     }
 
     if (th->nreported == 0)
-        echo("\n   [No hits detected that satisfy reporting thresholds]\n");
+        echo(f, "\n   [No hits detected that satisfy reporting thresholds]");
 }
 
 #define p7_HITFLAGS_DEFAULT 0
@@ -226,8 +220,6 @@ void tophits_print_targets(struct tophits const *th, FILE *file, double Z)
 void tophits_print_domains(struct tophits const *th, FILE *file, double Z,
                            double domZ)
 {
-    uint32_t d = 0;
-    int nd;
     int namew, descw;
     char *showname;
 
@@ -285,18 +277,19 @@ void tophits_print_domains(struct tophits const *th, FILE *file, double Z,
 
             /* Domain hit table for each reported domain in this reported
              * sequence. */
-            nd = 0;
-            for (d = 0; d < th->hits[h].ndomains; d++)
+            unsigned domain_number = 0;
+            for (unsigned d = 0; d < th->hits[h].ndomains; d++)
             {
                 if (th->hits[h].domains[d].is_reported)
                 {
-                    nd++;
+                    domain_number++;
                     fprintf(
                         file, " %3d %c %6.1f %5.1f %9.2g %9.2g %7d %7d %c%c",
-                        nd, th->hits[h].domains[d].is_included ? '!' : '?',
+                        domain_number,
+                        th->hits[h].domains[d].is_included ? '!' : '?',
                         th->hits[h].domains[d].bitscore,
                         th->hits[h].domains[d].dombias *
-                            eslCONST_LOG2R, /* convert NATS to BITS at
+                            CONST_LOG2R, /* convert NATS to BITS at
                                                last moment */
                         exp(th->hits[h].domains[d].lnP) * domZ,
                         exp(th->hits[h].domains[d].lnP) * Z,
@@ -337,14 +330,14 @@ void tophits_print_domains(struct tophits const *th, FILE *file, double Z,
             /* Alignment data for each reported domain in this reported
              * sequence. */
             fprintf(file, "\n  Alignments for each domain:\n");
-            nd = 0;
+            domain_number = 0;
 
-            for (d = 0; d < th->hits[h].ndomains; d++)
+            for (unsigned d = 0; d < th->hits[h].ndomains; d++)
             {
                 if (th->hits[h].domains[d].is_reported)
                 {
-                    nd++;
-                    fprintf(file, "  == domain %d", nd);
+                    domain_number++;
+                    fprintf(file, "  == domain %d", domain_number);
                     fprintf(file, "  score: %.1f bits",
                             th->hits[h].domains[d].bitscore);
 
@@ -369,7 +362,7 @@ void tophits_print_domains(struct tophits const *th, FILE *file, double Z,
 static unsigned max_accession_length(struct tophits const *th)
 {
     unsigned max = 0;
-    for (uint32_t i = 0; i < th->nhits; i++)
+    for (unsigned i = 0; i < th->nhits; i++)
         max = MAX(max, (unsigned)strlen(th->hits[i].acc));
     return max;
 }
@@ -380,7 +373,7 @@ void tophits_print_targets_table(char *qname, char *qacc,
 {
     int qnamew = 20;
 
-    uint32_t h, d;
+    unsigned h, d;
     for (h = 0; h < th->nhits; h++)
     {
         for (d = 0; d < th->hits[h].ndomains; d++)
@@ -435,7 +428,7 @@ void tophits_print_targets_table(char *qname, char *qacc,
                     exp(th->hits[h].domains[d].lnP) * Z,
                     th->hits[h].domains[d].bitscore,
                     th->hits[h].domains[d].dombias *
-                        eslCONST_LOG2R, /* convert NATS to BITS at last
+                        CONST_LOG2R, /* convert NATS to BITS at last
                                            moment */
                     th->hits[h].nexpected, th->hits[h].nregions,
                     th->hits[h].nclustered, th->hits[h].noverlaps,
@@ -482,9 +475,9 @@ void tophits_print_domains_table(char *qname, char *qacc,
                                  int show_header, double Z, double domZ)
 {
     struct header_width w = {20, 10, 20, 10};
-    for (uint32_t h = 0; h < th->nhits; h++)
+    for (unsigned h = 0; h < th->nhits; h++)
     {
-        uint32_t d = th->hits[h].best_domain;
+        unsigned d = th->hits[h].best_domain;
         w.qname = MAX(w.qname, strlen(th->hits[h].domains[d].ad.sqname));
     }
 
@@ -492,16 +485,16 @@ void tophits_print_domains_table(char *qname, char *qacc,
     w.qacc = MAX(w.qacc, strlen(qacc));
     w.tacc = MAX(w.tacc, max_accession_length(th));
     int tlen, qlen;
-    uint32_t nd;
+    unsigned nd;
 
     if (show_header) print_domains_table_header(w, file);
 
-    for (uint32_t h = 0; h < th->nhits; h++)
+    for (unsigned h = 0; h < th->nhits; h++)
     {
         if (th->hits[h].flags & p7_IS_REPORTED)
         {
             nd = 0;
-            for (uint32_t d = 0; d < th->hits[h].ndomains; d++)
+            for (unsigned d = 0; d < th->hits[h].ndomains; d++)
             {
                 if (th->hits[h].domains[d].is_reported)
                 {
@@ -528,8 +521,8 @@ void tophits_print_domains_table(char *qname, char *qacc,
                         exp(th->hits[h].domains[d].lnP) * Z,
                         th->hits[h].domains[d].bitscore,
                         th->hits[h].domains[d].dombias *
-                            eslCONST_LOG2R, /* NATS to BITS at last moment
-                                             */
+                            CONST_LOG2R, /* NATS to BITS at last moment
+                                          */
                         th->hits[h].domains[d].ad.hmmfrom,
                         th->hits[h].domains[d].ad.hmmto,
                         th->hits[h].domains[d].ad.sqfrom,

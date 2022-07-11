@@ -1,6 +1,7 @@
 #ifndef TOPHITS_H
 #define TOPHITS_H
 
+#include "compiler.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -10,16 +11,18 @@ struct lip_file;
 
 struct tophits
 {
-    uint32_t nhits;
+    unsigned nhits;
     struct hit *hits;
-    uint32_t nreported;
-    uint32_t nincluded;
+    unsigned nreported;
+    unsigned nincluded;
     bool is_sorted_by_sortkey;
     bool is_sorted_by_seqidx;
 };
 
+STATIC_ASSERT(sizeof(unsigned) >= sizeof(uint32_t));
+
 void tophits_init(struct tophits *);
-enum h3c_rc tophits_setup(struct tophits *, uint32_t nhits);
+enum h3c_rc tophits_setup(struct tophits *, unsigned nhits);
 void tophits_cleanup(struct tophits *);
 
 enum h3c_rc tophits_pack(struct tophits const *, struct lip_file *);
