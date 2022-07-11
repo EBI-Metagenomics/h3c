@@ -18,21 +18,21 @@ struct alidisplay
     char *aseq;
     char *ntseq;
     char *ppline;
-    uint32_t N;
+    unsigned N;
 
     char *hmmname;
     char *hmmacc;
     char *hmmdesc;
-    uint32_t hmmfrom;
-    uint32_t hmmto;
-    uint32_t M;
+    unsigned hmmfrom;
+    unsigned hmmto;
+    unsigned M;
 
     char *sqname;
     char *sqacc;
     char *sqdesc;
-    uint32_t sqfrom;
-    uint32_t sqto;
-    uint32_t L;
+    unsigned sqfrom;
+    unsigned sqto;
+    unsigned L;
 };
 
 enum h3c_rc alidisplay_init(struct alidisplay *);

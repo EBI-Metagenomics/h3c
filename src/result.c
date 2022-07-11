@@ -67,12 +67,11 @@ void h3c_result_print_domains(struct h3c_result const *r, FILE *file)
 
 void h3c_result_print_targets_table(struct h3c_result const *r, FILE *file)
 {
-    tophits_print_targets_table("QNAME", "-", &r->tophits, file, true,
-                                r->stats.Z);
+    tophits_print_targets_table("-", &r->tophits, file, true, r->stats.Z);
 }
 
 void h3c_result_print_domains_table(struct h3c_result const *r, FILE *file)
 {
-    tophits_print_domains_table("QNAME", "-", &r->tophits, file, true,
-                                r->stats.Z, r->stats.domZ);
+    tophits_print_domains_table("-", &r->tophits, file, true, r->stats.Z,
+                                r->stats.domZ);
 }
