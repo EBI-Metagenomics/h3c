@@ -237,7 +237,7 @@ static enum h3c_rc copy_tophits(struct tophits *dst,
     dst->is_sorted_by_sortkey = src->is_sorted_by_sortkey;
     dst->is_sorted_by_seqidx = src->is_sorted_by_seqidx;
 
-    for (uint64_t i = 0; i < src->nhits; ++i)
+    for (unsigned long i = 0; i < src->nhits; ++i)
     {
         if ((rc = copy_hit(dst->hits + i, src->hit[i]))) goto cleanup;
     }

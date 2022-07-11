@@ -31,7 +31,7 @@ struct domain
 STATIC_ASSERT(sizeof(long) >= 8);
 
 void domain_init(struct domain *);
-enum h3c_rc domain_setup(struct domain *, uint64_t npos);
+enum h3c_rc domain_setup(struct domain *, unsigned long npos);
 void domain_cleanup(struct domain *);
 enum h3c_rc domain_pack(struct domain const *, struct lip_file *);
 enum h3c_rc domain_unpack(struct domain *, struct lip_file *);

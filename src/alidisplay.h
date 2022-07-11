@@ -2,14 +2,13 @@
 #define ALIDISPLAY_H
 
 #include "compiler.h"
-#include <stdint.h>
 #include <stdio.h>
 
 struct lip_file;
 
 struct alidisplay
 {
-    uint8_t presence;
+    unsigned presence;
 
     char *rfline;
     char *mmline;

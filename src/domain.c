@@ -13,7 +13,7 @@ void domain_init(struct domain *dom)
     alidisplay_init(&dom->ad);
 }
 
-static enum h3c_rc grow(struct domain *dom, uint64_t npos)
+static enum h3c_rc grow(struct domain *dom, unsigned long npos)
 {
     size_t sz = npos * sizeof(*dom->scores_per_pos);
     if (!(dom->scores_per_pos = ctb_realloc(dom->scores_per_pos, sz)))
@@ -24,9 +24,9 @@ static enum h3c_rc grow(struct domain *dom, uint64_t npos)
     return H3C_OK;
 }
 
-static void shrink(struct domain *dom, uint64_t npos) { dom->npos = npos; }
+static void shrink(struct domain *dom, unsigned long npos) { dom->npos = npos; }
 
-enum h3c_rc domain_setup(struct domain *dom, uint64_t npos)
+enum h3c_rc domain_setup(struct domain *dom, unsigned long npos)
 {
     if (dom->npos < npos) return grow(dom, npos);
     shrink(dom, npos);
@@ -61,7 +61,7 @@ enum h3c_rc domain_pack(struct domain const *dom, struct lip_file *f)
     lip_write_bool(f, dom->is_included);
 
     lip_write_array_size(f, dom->npos);
-    for (uint64_t i = 0; i < dom->npos; i++)
+    for (unsigned long i = 0; i < dom->npos; i++)
         lip_write_float(f, dom->scores_per_pos[i]);
 
     lip_write_map_size(f, 1);
@@ -94,9 +94,9 @@ enum h3c_rc domain_unpack(struct domain *dom, struct lip_file *f)
 
     unsigned size = 0;
     lip_read_array_size(f, &size);
-    if ((rc = domain_setup(dom, (uint64_t)size))) goto cleanup;
+    if ((rc = domain_setup(dom, size))) goto cleanup;
 
-    for (uint64_t i = 0; i < dom->npos; i++)
+    for (unsigned long i = 0; i < dom->npos; i++)
         lip_read_float(f, dom->scores_per_pos + i);
 
     if (!expect_map_size(f, 1)) goto cleanup;
