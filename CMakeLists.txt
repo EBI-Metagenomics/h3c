@@ -23,6 +23,7 @@ add_library(
   src/answer.c
   src/buff.c
   src/domain.c
+  src/echo.c
   src/h3client.c
   src/hit.c
   src/hmmd/alidisplay.c

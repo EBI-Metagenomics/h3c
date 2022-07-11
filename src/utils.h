@@ -42,6 +42,8 @@ char *strxdup(char *dst, char const *src);
 
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
+static inline unsigned zero_clip(int x) { return x > 0 ? (unsigned)x : 0; }
+
 #define DEL(ptr)                                                               \
     do                                                                         \
     {                                                                          \
