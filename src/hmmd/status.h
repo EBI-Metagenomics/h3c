@@ -11,7 +11,6 @@ struct hmmd_status
 };
 
 void hmmd_status_init(struct hmmd_status *);
-void hmmd_status_cleanup(struct hmmd_status *);
 
 void hmmd_status_parse(struct hmmd_status *status, size_t *read_size,
                        unsigned char const *data);

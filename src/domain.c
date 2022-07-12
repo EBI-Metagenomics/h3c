@@ -13,10 +13,10 @@ void domain_init(struct domain *dom)
     alidisplay_init(&dom->ad);
 }
 
-static enum h3c_rc grow(struct domain *dom, unsigned long npos)
+static enum h3c_rc grow_scores(struct domain *dom, unsigned size)
 {
-    size_t sz = npos * sizeof(*dom->scores_per_pos);
-    if (!(dom->scores_per_pos = ctb_realloc(dom->scores_per_pos, sz)))
+    size_t sz = size * sizeof(*dom->pos_score);
+    if (!(dom->pos_score = ctb_realloc(dom->pos_score, sz)))
     {
         domain_cleanup(dom);
         return H3C_NOT_ENOUGH_MEMORY;
@@ -24,19 +24,22 @@ static enum h3c_rc grow(struct domain *dom, unsigned long npos)
     return H3C_OK;
 }
 
-static void shrink(struct domain *dom, unsigned long npos) { dom->npos = npos; }
-
-enum h3c_rc domain_setup(struct domain *dom, unsigned long npos)
+static void shrink_scores(struct domain *dom, unsigned size)
 {
-    if (dom->npos < npos) return grow(dom, npos);
-    shrink(dom, npos);
+    dom->pos_score_size = size;
+}
+
+enum h3c_rc domain_setup(struct domain *dom, unsigned scores_size)
+{
+    if (dom->pos_score_size < scores_size) return grow_scores(dom, scores_size);
+    shrink_scores(dom, scores_size);
     return H3C_OK;
 }
 
 void domain_cleanup(struct domain *dom)
 {
-    DEL(dom->scores_per_pos);
-    dom->npos = 0;
+    DEL(dom->pos_score);
+    dom->pos_score_size = 0;
     alidisplay_cleanup(&dom->ad);
 }
 
@@ -60,9 +63,9 @@ enum h3c_rc domain_pack(struct domain const *dom, struct lip_file *f)
     lip_write_bool(f, dom->is_reported);
     lip_write_bool(f, dom->is_included);
 
-    lip_write_array_size(f, dom->npos);
-    for (unsigned long i = 0; i < dom->npos; i++)
-        lip_write_float(f, dom->scores_per_pos[i]);
+    lip_write_array_size(f, dom->pos_score_size);
+    for (unsigned long i = 0; i < dom->pos_score_size; i++)
+        lip_write_float(f, dom->pos_score[i]);
 
     lip_write_map_size(f, 1);
     lip_write_cstr(f, "alidisplay");
@@ -96,8 +99,8 @@ enum h3c_rc domain_unpack(struct domain *dom, struct lip_file *f)
     lip_read_array_size(f, &size);
     if ((rc = domain_setup(dom, size))) goto cleanup;
 
-    for (unsigned long i = 0; i < dom->npos; i++)
-        lip_read_float(f, dom->scores_per_pos + i);
+    for (unsigned long i = 0; i < dom->pos_score_size; i++)
+        lip_read_float(f, dom->pos_score + i);
 
     if (!expect_map_size(f, 1)) goto cleanup;
     if (!expect_key(f, "alidisplay")) goto cleanup;

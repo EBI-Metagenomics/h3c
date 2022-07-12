@@ -23,15 +23,15 @@ struct domain
     double lnP;
     bool is_reported;
     bool is_included;
-    unsigned long npos;
-    float *scores_per_pos;
+    unsigned pos_score_size;
+    float *pos_score;
     struct alidisplay ad;
 };
 
 STATIC_ASSERT(sizeof(long) >= 8);
 
 void domain_init(struct domain *);
-enum h3c_rc domain_setup(struct domain *, unsigned long npos);
+enum h3c_rc domain_setup(struct domain *, unsigned scores_size);
 void domain_cleanup(struct domain *);
 enum h3c_rc domain_pack(struct domain const *, struct lip_file *);
 enum h3c_rc domain_unpack(struct domain *, struct lip_file *);

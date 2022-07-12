@@ -16,7 +16,7 @@ void hmmd_domain_init(struct hmmd_domain *dom)
 
 void hmmd_domain_cleanup(struct hmmd_domain *dom)
 {
-    if (dom->scores_per_pos) free(dom->scores_per_pos);
+    if (dom->pos_score) free(dom->pos_score);
     hmmd_alidisplay_cleanup(&dom->ad);
     hmmd_domain_init(dom);
 }
@@ -55,26 +55,26 @@ enum h3c_rc hmmd_domain_parse(struct hmmd_domain *dom,
     dom->is_reported = eatu32(ptr);
     dom->is_included = eatu32(ptr);
 
-    uint32_t npos = eatu32(ptr);
+    uint32_t scores_size = eatu32(ptr);
 
-    if (npos > dom->npos)
+    if (scores_size > dom->scores_size)
     {
-        size_t size = npos * sizeof(float);
-        float *scores = realloc(dom->scores_per_pos, size);
+        size_t size = scores_size * sizeof(float);
+        float *scores = realloc(dom->pos_score, size);
         if (!scores)
         {
             rc = H3C_FAILED_PARSE;
             goto cleanup;
         }
-        dom->scores_per_pos = scores;
-        dom->npos = npos;
+        dom->pos_score = scores;
+        dom->scores_size = scores_size;
     }
     else
-        dom->npos = npos;
+        dom->scores_size = scores_size;
 
-    ESCAPE_OVERRUN(rc, *ptr, end, dom->npos * sizeof(float));
-    for (uint32_t i = 0; i < dom->npos; i++)
-        dom->scores_per_pos[i] = eatf32(ptr);
+    ESCAPE_OVERRUN(rc, *ptr, end, dom->scores_size * sizeof(float));
+    for (uint32_t i = 0; i < dom->scores_size; i++)
+        dom->pos_score[i] = eatf32(ptr);
 
     if ((rc = hmmd_alidisplay_parse(&dom->ad, ptr, end))) goto cleanup;
 

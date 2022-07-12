@@ -23,8 +23,8 @@ struct hmmd_domain
     double lnP;
     bool is_reported;
     bool is_included;
-    uint32_t npos;
-    float *scores_per_pos;
+    uint32_t scores_size;
+    float *pos_score;
     struct hmmd_alidisplay ad;
 };
 

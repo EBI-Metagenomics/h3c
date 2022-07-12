@@ -34,6 +34,7 @@ struct answer *answer_new(void)
     if (!ans) return 0;
 
     ans->status.data[0] = '\0';
+    hmmd_status_init(&ans->status.value);
 
     if (!(ans->buff = buff_new(BUFF_SIZE)))
     {
@@ -150,7 +151,7 @@ cleanup:
 static enum h3c_rc copy_domain(struct domain *dst,
                                struct hmmd_domain const *src)
 {
-    enum h3c_rc rc = domain_setup(dst, src->npos);
+    enum h3c_rc rc = domain_setup(dst, src->scores_size);
     if (rc) return rc;
 
     CHECK_OVERFLOW(src->ienv, UINT32_MAX);
@@ -171,9 +172,9 @@ static enum h3c_rc copy_domain(struct domain *dst,
     dst->is_reported = src->is_reported;
     dst->is_included = src->is_included;
 
-    CHECK_OVERFLOW(src->npos, UINT32_MAX);
-    for (uint32_t i = 0; i < dst->npos; ++i)
-        dst->scores_per_pos[i] = src->scores_per_pos[i];
+    CHECK_OVERFLOW(src->scores_size, UINT32_MAX);
+    for (unsigned i = 0; i < dst->pos_score_size; ++i)
+        dst->pos_score[i] = src->pos_score[i];
 
     if ((rc = copy_alidisplay(&dst->ad, &src->ad))) goto cleanup;
 
@@ -214,7 +215,7 @@ static enum h3c_rc copy_hit(struct hit *dst, struct hmmd_hit const *src)
     dst->nincluded = src->nincluded;
     dst->best_domain = src->best_domain;
 
-    for (uint32_t i = 0; i < dst->ndomains; ++i)
+    for (unsigned i = 0; i < dst->ndomains; ++i)
     {
         if ((rc = copy_domain(dst->domains + i, src->dcl + i))) goto cleanup;
     }
