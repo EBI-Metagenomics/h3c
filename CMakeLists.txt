@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16.3 FATAL_ERROR)
 
 project(
   h3client
-  VERSION 0.2.1
+  VERSION 0.2.2
   LANGUAGES C)
 
 # Generate compile_commands.json file
@@ -80,7 +80,7 @@ install(DIRECTORY include/h3client/ DESTINATION include/h3client)
 install(
   EXPORT h3client-targets
   FILE h3client-targets.cmake
-  NAMESPACE h3client::
+  NAMESPACE H3CLIENT::
   DESTINATION lib/cmake/h3client)
 
 include(CMakePackageConfigHelpers)
