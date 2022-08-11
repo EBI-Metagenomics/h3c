@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16.3 FATAL_ERROR)
 
 project(
   h3client
-  VERSION 0.2.2
+  VERSION 0.2.3
   LANGUAGES C)
 
 # Generate compile_commands.json file
@@ -50,7 +50,7 @@ generate_export_header(
   BASE_NAME
   H3C
   INCLUDE_GUARD_NAME
-  C3CLIENT_EXPORT_H
+  H3CLIENT_EXPORT_H
   EXPORT_MACRO_NAME
   H3C_API
   EXPORT_FILE_NAME
