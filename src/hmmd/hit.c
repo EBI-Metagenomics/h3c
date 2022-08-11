@@ -1,5 +1,5 @@
 #include "hmmd/hit.h"
-#include "c_toolbelt/c_toolbelt.h"
+#include "ctb/ctb.h"
 #include "h3client/h3client.h"
 #include "hmmd/domain.h"
 #include "utils.h"

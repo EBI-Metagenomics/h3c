@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16.3 FATAL_ERROR)
 
 project(
   h3client
-  VERSION 0.1.0
+  VERSION 0.2.0
   LANGUAGES C)
 
 # Generate compile_commands.json file
@@ -12,7 +12,7 @@ include(cmake/compiler-options.cmake)
 include(cmake/sanitizers.cmake)
 include(cmake/CPM.cmake)
 
-cpmaddpackage(NAME c_toolbelt VERSION 0.3.1 GITHUB_REPOSITORY horta/c-toolbelt)
+cpmaddpackage(NAME c_toolbelt VERSION 0.9.0 GITHUB_REPOSITORY horta/c-toolbelt)
 cpmaddpackage(NAME lite_pack VERSION 0.3.0 GITHUB_REPOSITORY
               EBI-Metagenomics/lite-pack)
 
@@ -38,7 +38,7 @@ add_library(
   src/stats.c
   src/tophits.c
   src/utils.c)
-target_link_libraries(h3client PUBLIC C_TOOLBELT::c_toolbelt)
+target_link_libraries(h3client PUBLIC C_TOOLBELT::ctb)
 target_link_libraries(h3client PUBLIC LITE_PACK::lite_pack)
 target_link_libraries(h3client INTERFACE $<$<BOOL:${UNIX}>:m>)
 add_library(H3CLIENT::h3client ALIAS h3client)

@@ -1,5 +1,5 @@
 #include "hmmd/tophits.h"
-#include "c_toolbelt/c_toolbelt.h"
+#include "ctb/ctb.h"
 #include "h3client/rc.h"
 #include "hmmd/domain.h"
 #include "hmmd/hit.h"
