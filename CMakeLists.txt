@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16.3 FATAL_ERROR)
 
 project(
   h3client
-  VERSION 0.2.3
+  VERSION 0.2.4
   LANGUAGES C)
 
 # Generate compile_commands.json file
