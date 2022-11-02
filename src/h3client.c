@@ -29,9 +29,9 @@ struct conn
 
 } conn = {0};
 
-enum h3c_rc h3c_open(char const *ip, uint16_t port)
+int h3c_open(char const *ip, uint16_t port)
 {
-    enum h3c_rc rc = H3C_OK;
+    int rc = H3C_OK;
     conn.request = 0;
     conn.answer = 0;
 
@@ -71,12 +71,12 @@ cleanup:
     return rc;
 }
 
-static enum h3c_rc writen(int fd, void const *buf, size_t count);
-static enum h3c_rc readn(int fd, void *buf, size_t count);
+static int writen(int fd, void const *buf, size_t count);
+static int readn(int fd, void *buf, size_t count);
 
-enum h3c_rc h3c_call(char const *args, FILE *fasta, struct h3c_result *result)
+int h3c_call(char const *args, FILE *fasta, struct h3c_result *result)
 {
-    enum h3c_rc rc = H3C_OK;
+    int rc = H3C_OK;
 
     if ((rc = request_set_args(conn.request, args))) goto cleanup;
     if ((rc = request_set_seqs(conn.request, fasta))) goto cleanup;
@@ -107,14 +107,14 @@ cleanup:
     return rc;
 }
 
-enum h3c_rc h3c_close(void)
+int h3c_close(void)
 {
     request_del(conn.request);
     answer_del(conn.answer);
     return close(conn.sockfd) ? H3C_FAILED_CLOSE : H3C_OK;
 }
 
-static enum h3c_rc writen(int fd, void const *buf, size_t count)
+static int writen(int fd, void const *buf, size_t count)
 {
     while (count > 0)
     {
@@ -139,7 +139,7 @@ static enum h3c_rc writen(int fd, void const *buf, size_t count)
     return H3C_OK;
 }
 
-static enum h3c_rc readn(int fd, void *buf, size_t count)
+static int readn(int fd, void *buf, size_t count)
 {
     while (count > 0)
     {

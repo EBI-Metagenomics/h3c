@@ -20,7 +20,7 @@ void h3c_result_del(struct h3c_result const *result)
     free((void *)result);
 }
 
-enum h3c_rc h3c_result_pack(struct h3c_result const *result, FILE *file)
+int h3c_result_pack(struct h3c_result const *result, FILE *file)
 {
     struct lip_file f = {0};
     lip_file_init(&f, file);
@@ -30,14 +30,14 @@ enum h3c_rc h3c_result_pack(struct h3c_result const *result, FILE *file)
 
     lip_write_map_size(&f, 2);
     lip_write_cstr(&f, "stats");
-    enum h3c_rc rc = stats_pack(&result->stats, &f);
+    int rc = stats_pack(&result->stats, &f);
     if (rc) return rc;
 
     lip_write_cstr(&f, "tophits");
     return tophits_pack(&result->tophits, &f);
 }
 
-enum h3c_rc h3c_result_unpack(struct h3c_result *result, FILE *file)
+int h3c_result_unpack(struct h3c_result *result, FILE *file)
 {
     struct lip_file f = {0};
     lip_file_init(&f, file);
@@ -48,7 +48,7 @@ enum h3c_rc h3c_result_unpack(struct h3c_result *result, FILE *file)
 
     if (!expect_map_size(&f, 2)) return H3C_FAILED_UNPACK;
     if (!expect_key(&f, "stats")) return H3C_FAILED_UNPACK;
-    enum h3c_rc rc = stats_unpack(&result->stats, &f);
+    int rc = stats_unpack(&result->stats, &f);
     if (rc) return rc;
 
     if (!expect_key(&f, "tophits")) return H3C_FAILED_UNPACK;

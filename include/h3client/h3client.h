@@ -6,8 +6,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
-enum h3c_rc h3c_open(char const *ip, uint16_t port);
-enum h3c_rc h3c_call(char const *args, FILE *fasta, struct h3c_result *);
-enum h3c_rc h3c_close(void);
+int h3c_open(char const *ip, uint16_t port);
+int h3c_call(char const *args, FILE *fasta, struct h3c_result *);
+int h3c_close(void);
 
 #endif
