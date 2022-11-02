@@ -1,8 +1,8 @@
 #include "hmmd/tophits.h"
-#include "c_toolbelt/c_toolbelt.h"
 #include "h3client/rc.h"
 #include "hmmd/domain.h"
 #include "hmmd/hit.h"
+#include "zc.h"
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,7 +21,7 @@ static enum h3c_rc grow(struct hmmd_tophits *th, uint64_t nhits)
 {
     enum h3c_rc rc = H3C_OK;
 
-    if (!(th->hit = ctb_realloc(th->hit, sizeof(*th->hit) * nhits)))
+    if (!(th->hit = zc_reallocf(th->hit, sizeof(*th->hit) * nhits)))
     {
         rc = H3C_NOT_ENOUGH_MEMORY;
         goto cleanup;

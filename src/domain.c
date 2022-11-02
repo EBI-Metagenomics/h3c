@@ -1,9 +1,9 @@
 #include "domain.h"
 #include "alidisplay.h"
-#include "c_toolbelt/c_toolbelt.h"
 #include "h3client/rc.h"
 #include "lite_pack/lite_pack.h"
 #include "utils.h"
+#include "zc.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -16,7 +16,7 @@ void domain_init(struct domain *dom)
 static enum h3c_rc grow_scores(struct domain *dom, unsigned size)
 {
     size_t sz = size * sizeof(*dom->pos_score);
-    if (!(dom->pos_score = ctb_realloc(dom->pos_score, sz)))
+    if (!(dom->pos_score = zc_reallocf(dom->pos_score, sz)))
     {
         domain_cleanup(dom);
         return H3C_NOT_ENOUGH_MEMORY;

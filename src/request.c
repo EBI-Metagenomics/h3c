@@ -1,7 +1,7 @@
 #include "request.h"
 #include "buff.h"
-#include "c_toolbelt/c_toolbelt.h"
 #include "h3client/rc.h"
+#include "zc.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -34,7 +34,7 @@ enum h3c_rc request_set_args(struct request *req, char const *args)
 {
     char *data = (char *)req->buff->data;
     data[0] = '@';
-    size_t size = ctb_strlcpy(data + 1, args, BUFF_SIZE - 2);
+    size_t size = zc_strlcpy(data + 1, args, BUFF_SIZE - 2);
     if (size >= BUFF_SIZE - 2) return H3C_ARGS_TOO_LONG;
     data[size + 1] = '\n';
     data[size + 2] = '\0';

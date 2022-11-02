@@ -1,6 +1,5 @@
 #include "answer.h"
 #include "buff.h"
-#include "c_toolbelt/c_toolbelt.h"
 #include "domain.h"
 #include "h3client/rc.h"
 #include "h3client/result.h"
@@ -10,6 +9,7 @@
 #include "stats.h"
 #include "tophits.h"
 #include "utils.h"
+#include "zc.h"
 #include <stdlib.h>
 #include <string.h>
 

@@ -1,8 +1,8 @@
 #include "hmmd/stats.h"
-#include "c_toolbelt/c_toolbelt.h"
 #include "h3client/h3client.h"
 #include "hmmd/zsetby.h"
 #include "utils.h"
+#include "zc.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -73,7 +73,7 @@ enum h3c_rc hmmd_stats_parse(struct hmmd_stats *stats,
     if (hit_offset != UINT64_MAX)
     {
         size_t size = stats->nhits * sizeof(uint64_t);
-        stats->hit_offsets = ctb_realloc(stats->hit_offsets, size);
+        stats->hit_offsets = zc_reallocf(stats->hit_offsets, size);
         if (!stats->hit_offsets)
         {
             rc = H3C_NOT_ENOUGH_MEMORY;

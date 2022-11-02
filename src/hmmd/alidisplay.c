@@ -1,7 +1,7 @@
 #include "hmmd/alidisplay.h"
-#include "c_toolbelt/c_toolbelt.h"
 #include "h3client/h3client.h"
 #include "utils.h"
+#include "zc.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -76,7 +76,7 @@ enum h3c_rc hmmd_alidisplay_parse(struct hmmd_alidisplay *ali,
     }
     size_t memsize = (size_t)(obj_size - SER_BASE_SIZE);
 
-    if (!(ali->mem = ctb_realloc(ali->mem, memsize)))
+    if (!(ali->mem = zc_reallocf(ali->mem, memsize)))
     {
         rc = H3C_NOT_ENOUGH_MEMORY;
         goto cleanup;
