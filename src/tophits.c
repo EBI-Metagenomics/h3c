@@ -1,7 +1,7 @@
 #include "tophits.h"
 #include "domain.h"
 #include "echo.h"
-#include "h3client/rc.h"
+#include "h3c/rc.h"
 #include "hit.h"
 #include "lite_pack/lite_pack.h"
 #include "tophits.h"

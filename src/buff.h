@@ -1,5 +1,5 @@
-#ifndef H3CLIENT_BUFF_H
-#define H3CLIENT_BUFF_H
+#ifndef H3C_BUFF_H
+#define H3C_BUFF_H
 
 #include <stddef.h>
 

@@ -2,5 +2,5 @@
 
 include(CMakeFindDependencyMacro)
 find_dependency(lite_pack)
-include("${CMAKE_CURRENT_LIST_DIR}/h3client-targets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/h3c-targets.cmake")
 check_required_components(lite_pack)

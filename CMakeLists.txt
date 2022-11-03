@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16.3 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 
 project(
   h3client
@@ -16,14 +16,14 @@ cpmaddpackage(NAME lite_pack VERSION 0.3.1 GITHUB_REPOSITORY
               EBI-Metagenomics/lite-pack)
 
 add_library(
-  h3client
+  h3c
   src/addr.c
   src/alidisplay.c
   src/answer.c
   src/buff.c
   src/domain.c
   src/echo.c
-  src/h3client.c
+  src/h3c.c
   src/hit.c
   src/hmmd/alidisplay.c
   src/hmmd/domain.c
@@ -38,14 +38,14 @@ add_library(
   src/tophits.c
   src/utils.c
   src/zc.c)
-target_link_libraries(h3client PUBLIC LITE_PACK::lite_pack)
-target_link_libraries(h3client INTERFACE $<$<BOOL:${UNIX}>:m>)
-add_library(H3CLIENT::h3client ALIAS h3client)
+target_link_libraries(h3c PUBLIC LITE_PACK::lite_pack)
+target_link_libraries(h3c INTERFACE $<$<BOOL:${UNIX}>:m>)
+add_library(H3C::h3c ALIAS h3c)
 
-set(EXPORT_FILE ${CMAKE_CURRENT_BINARY_DIR}/h3client/export.h)
+set(EXPORT_FILE ${CMAKE_CURRENT_BINARY_DIR}/h3c/export.h)
 include(GenerateExportHeader)
 generate_export_header(
-  h3client
+  h3c
   BASE_NAME
   H3C
   INCLUDE_GUARD_NAME
@@ -58,55 +58,54 @@ generate_export_header(
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
   include(CheckIPOSupported)
   check_ipo_supported()
-  set_target_properties(h3client PROPERTIES INTERPROCEDURAL_OPTIMIZATION ON)
+  set_target_properties(h3c PROPERTIES INTERPROCEDURAL_OPTIMIZATION ON)
 endif()
 
-target_compile_features(h3client PRIVATE c_std_11)
-target_compile_options(h3client PRIVATE ${WARNING_FLAGS})
-set_target_properties(h3client PROPERTIES POSITION_INDEPENDENT_CODE ON)
+target_compile_features(h3c PRIVATE c_std_23)
+target_compile_options(h3c PRIVATE ${WARNING_FLAGS})
+set_target_properties(h3c PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 target_include_directories(
-  h3client
+  h3c
   PUBLIC $<INSTALL_INTERFACE:include>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
   PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
 
-install(TARGETS h3client EXPORT h3client-targets)
+install(TARGETS h3c EXPORT h3c-targets)
 
-install(DIRECTORY include/h3client/ DESTINATION include/h3client)
+install(DIRECTORY include/h3c/ DESTINATION include/h3c)
 
 install(
-  EXPORT h3client-targets
-  FILE h3client-targets.cmake
-  NAMESPACE h3client::
-  DESTINATION lib/cmake/h3client)
+  EXPORT h3c-targets
+  FILE h3c-targets.cmake
+  NAMESPACE h3c::
+  DESTINATION lib/cmake/h3c)
 
 include(CMakePackageConfigHelpers)
 
-set(CMAKE_CONFIG_FILE ${CMAKE_CURRENT_BINARY_DIR}/h3client-config.cmake)
-configure_package_config_file(h3client-config.cmake.in ${CMAKE_CONFIG_FILE}
-                              INSTALL_DESTINATION lib/cmake/h3client)
+set(CMAKE_CONFIG_FILE ${CMAKE_CURRENT_BINARY_DIR}/h3c-config.cmake)
+configure_package_config_file(h3c-config.cmake.in ${CMAKE_CONFIG_FILE}
+                              INSTALL_DESTINATION lib/cmake/h3c)
 
-set(CMAKE_VERSION_FILE
-    ${CMAKE_CURRENT_BINARY_DIR}/h3client-config-version.cmake)
+set(CMAKE_VERSION_FILE ${CMAKE_CURRENT_BINARY_DIR}/h3c-config-version.cmake)
 write_basic_package_version_file(${CMAKE_VERSION_FILE}
                                  COMPATIBILITY SameMajorVersion)
 
 install(FILES ${CMAKE_VERSION_FILE} ${CMAKE_CONFIG_FILE}
-        DESTINATION lib/cmake/h3client)
-install(FILES ${EXPORT_FILE} DESTINATION include/h3client)
+        DESTINATION lib/cmake/h3c)
+install(FILES ${EXPORT_FILE} DESTINATION include/h3c)
 
-add_executable(client client.c)
-target_link_libraries(client PRIVATE h3client)
+add_executable(h3client h3client.c)
+target_link_libraries(h3client PRIVATE h3c)
 
 enable_testing()
 add_subdirectory(test)
 
-set(CPACK_PACKAGE_NAME h3client)
+set(CPACK_PACKAGE_NAME h3c)
 set(CPACK_PACKAGE_VENDOR "Danilo Horta")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
-    "Additional functions to the standard C library")
+    "Library and executable to communicate with h3daemon")
 set(CPACK_PACKAGE_CONTACT "Danilo Horta")
 set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})

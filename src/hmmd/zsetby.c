@@ -1,5 +1,5 @@
 #include "hmmd/zsetby.h"
-#include "h3client/h3client.h"
+#include "h3c/h3c.h"
 
 enum h3c_rc hmmd_zsetby_parse(enum hmmd_zsetby *dst, unsigned char const **data)
 {

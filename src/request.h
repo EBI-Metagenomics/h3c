@@ -1,5 +1,5 @@
-#ifndef H3CLIENT_REQUEST_H
-#define H3CLIENT_REQUEST_H
+#ifndef H3C_REQUEST_H
+#define H3C_REQUEST_H
 
 #include <stddef.h>
 #include <stdio.h>

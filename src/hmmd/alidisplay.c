@@ -1,5 +1,5 @@
 #include "hmmd/alidisplay.h"
-#include "h3client/h3client.h"
+#include "h3c/h3c.h"
 #include "utils.h"
 #include "zc.h"
 #include <assert.h>

@@ -1,5 +1,5 @@
-#ifndef H3CLIENT_RC_H
-#define H3CLIENT_RC_H
+#ifndef H3C_RC_H
+#define H3C_RC_H
 
 enum h3c_rc
 {

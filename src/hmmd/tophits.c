@@ -1,5 +1,5 @@
 #include "hmmd/tophits.h"
-#include "h3client/rc.h"
+#include "h3c/rc.h"
 #include "hmmd/domain.h"
 #include "hmmd/hit.h"
 #include "zc.h"

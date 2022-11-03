@@ -1,6 +1,6 @@
 #include "hit.h"
 #include "domain.h"
-#include "h3client/rc.h"
+#include "h3c/rc.h"
 #include "lite_pack/lite_pack.h"
 #include "utils.h"
 #include <stdlib.h>

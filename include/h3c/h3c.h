@@ -1,8 +1,8 @@
-#ifndef H3CLIENT_H3CLIENT_H
-#define H3CLIENT_H3CLIENT_H
+#ifndef H3C_H3C_H
+#define H3C_H3C_H
 
-#include "h3client/rc.h"
-#include "h3client/result.h"
+#include "h3c/rc.h"
+#include "h3c/result.h"
 #include <stdint.h>
 #include <stdio.h>
 

@@ -1,6 +1,6 @@
 #include "domain.h"
 #include "alidisplay.h"
-#include "h3client/rc.h"
+#include "h3c/rc.h"
 #include "lite_pack/lite_pack.h"
 #include "utils.h"
 #include "zc.h"

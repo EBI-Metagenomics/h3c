@@ -1,5 +1,5 @@
 #include "hmmd/domain.h"
-#include "h3client/rc.h"
+#include "h3c/rc.h"
 #include "hmmd/alidisplay.h"
 #include "utils.h"
 #include <assert.h>

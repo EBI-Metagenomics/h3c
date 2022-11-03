@@ -1,5 +1,5 @@
-#ifndef H3CLIENT_RESULT_H
-#define H3CLIENT_RESULT_H
+#ifndef H3C_RESULT_H
+#define H3C_RESULT_H
 
 #include <stdbool.h>
 #include <stdio.h>

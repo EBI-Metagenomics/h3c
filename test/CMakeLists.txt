@@ -32,8 +32,8 @@ file(DOWNLOAD ${URL}/ross.5.hmm.7z ${ASSETS}/ross.5.hmm.7z
      EXPECTED_HASH MD5=f60e18e17215d22d2425a83c21294bcf)
 file(ARCHIVE_EXTRACT INPUT ${ASSETS}/ross.5.hmm.7z DESTINATION ${ASSETS})
 
-add_executable(test_h3client h3client.c file_hash.c)
-target_compile_definitions(test_h3client PRIVATE XXH_STATIC_LINKING_ONLY)
-target_compile_definitions(test_h3client PRIVATE XXH_IMPLEMENTATION)
-target_link_libraries(test_h3client PRIVATE H3CLIENT::h3client)
-add_test(NAME test_h3client COMMAND test_h3client)
+add_executable(test_h3c h3c.c file_hash.c)
+target_compile_definitions(test_h3c PRIVATE XXH_STATIC_LINKING_ONLY)
+target_compile_definitions(test_h3c PRIVATE XXH_IMPLEMENTATION)
+target_link_libraries(test_h3c PRIVATE H3C::h3c)
+add_test(NAME test_h3c COMMAND test_h3c)

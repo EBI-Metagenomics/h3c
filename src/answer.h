@@ -1,5 +1,5 @@
-#ifndef H3CLIENT_ANSWER_H
-#define H3CLIENT_ANSWER_H
+#ifndef H3C_ANSWER_H
+#define H3C_ANSWER_H
 
 #include <stddef.h>
 #include <stdio.h>

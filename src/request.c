@@ -1,6 +1,6 @@
 #include "request.h"
 #include "buff.h"
-#include "h3client/rc.h"
+#include "h3c/rc.h"
 #include "zc.h"
 #include <stdlib.h>
 #include <string.h>

@@ -1,5 +1,5 @@
-#ifndef H3CLIENT_ADDR_H
-#define H3CLIENT_ADDR_H
+#ifndef H3C_ADDR_H
+#define H3C_ADDR_H
 
 #include <stdlib.h>
 

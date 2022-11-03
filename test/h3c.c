@@ -1,4 +1,4 @@
-#include "h3client/h3client.h"
+#include "h3c/h3c.h"
 #include "file_hash.h"
 
 #ifdef _POSIX_C_SOURCE
@@ -20,7 +20,7 @@
 
 static char const *h3master_address(void)
 {
-    char const *addr = getenv("H3CLIENT_MASTER_ADDRESS");
+    char const *addr = getenv("H3C_MASTER_ADDRESS");
     return addr ? addr : "127.0.0.1";
 }
 

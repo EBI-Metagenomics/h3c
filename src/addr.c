@@ -1,5 +1,5 @@
 #include "addr.h"
-#include "h3client/rc.h"
+#include "h3c/rc.h"
 
 enum h3c_rc addr_setup(struct addr *addr, enum addr_ipv ipv, char const *ip,
                        uint16_t port)
