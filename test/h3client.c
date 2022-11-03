@@ -57,7 +57,7 @@ static struct h3c_result *create_result_ross(uint16_t ross_id)
     FILE *file = 0;
     if (!(file = fopen(ASSETS "/ross.fasta", "r"))) FAIL("fopen");
     if (!(result = h3c_result_new())) FAIL("h3c_result_new")
-    if (h3c_call(cmd, file, result)) FAIL("h3c_call");
+    if (h3c_callf(cmd, file, result)) FAIL("h3c_callf");
     fclose(file);
 
     if (h3c_close()) FAIL("h3c_close");
@@ -215,7 +215,7 @@ static int test_reuse_results(void)
     {
         if (!(file = fopen(ASSETS "/ross.fasta", "r"))) FAIL("fopen");
         if (h3c_open(h3master_address(), 51371 + i)) FAIL("h3c_open");
-        if (h3c_call(cmd, file, result)) FAIL("h3c_call");
+        if (h3c_callf(cmd, file, result)) FAIL("h3c_callf");
         if (h3c_close()) FAIL("h3c_close");
         fclose(file);
     }
@@ -242,7 +242,7 @@ static int test_reuse_results_print(void)
     {
         if (!(file = fopen(ASSETS "/ross.fasta", "r"))) FAIL("fopen");
         if (h3c_open(h3master_address(), 51371 + i)) FAIL("h3c_open");
-        if (h3c_call(cmd, file, result)) FAIL("h3c_call");
+        if (h3c_callf(cmd, file, result)) FAIL("h3c_callf");
         if (h3c_close()) FAIL("h3c_close");
         fclose(file);
 
@@ -275,11 +275,11 @@ static int test_reuse_connection(uint16_t ross_id)
     connected = true;
 
     if (!(file = fopen(ASSETS "/ross.fasta", "r"))) FAIL("fopen");
-    if (h3c_call(cmd, file, result)) FAIL("h3c_call");
+    if (h3c_callf(cmd, file, result)) FAIL("h3c_callf");
     fclose(file);
 
     if (!(file = fopen(ASSETS "/ross.poor.fasta", "r"))) FAIL("fopen");
-    if (h3c_call(cmd, file, result)) FAIL("h3c_call");
+    if (h3c_callf(cmd, file, result)) FAIL("h3c_callf");
     fclose(file);
 
     connected = false;
