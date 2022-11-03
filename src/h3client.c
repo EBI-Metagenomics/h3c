@@ -32,8 +32,9 @@ struct conn
 int h3c_open(char const *ip, uint16_t port)
 {
     int rc = H3C_OK;
-    conn.request = 0;
-    conn.answer = 0;
+    conn.sockfd = -1;
+    conn.request = NULL;
+    conn.answer = NULL;
 
     if (!(conn.request = request_new()))
     {
@@ -67,7 +68,10 @@ int h3c_open(char const *ip, uint16_t port)
 cleanup:
     if (conn.request) request_del(conn.request);
     if (conn.answer) answer_del(conn.answer);
-
+    if (conn.sockfd < 0) close(conn.sockfd);
+    conn.answer = NULL;
+    conn.request = NULL;
+    conn.sockfd = -1;
     return rc;
 }
 
@@ -113,9 +117,14 @@ int h3c_callf(char const *args, FILE *fasta, struct h3c_result *result)
 
 int h3c_close(void)
 {
-    request_del(conn.request);
-    answer_del(conn.answer);
-    return close(conn.sockfd) ? H3C_FAILED_CLOSE : H3C_OK;
+    int rc = H3C_OK;
+    if (conn.request) request_del(conn.request);
+    if (conn.answer) answer_del(conn.answer);
+    if (conn.sockfd < 0) rc = close(conn.sockfd) ? H3C_FAILED_CLOSE : H3C_OK;
+    conn.answer = NULL;
+    conn.request = NULL;
+    conn.sockfd = -1;
+    return rc;
 }
 
 static int recv_answer(struct h3c_result *result)

@@ -97,6 +97,9 @@ install(FILES ${CMAKE_VERSION_FILE} ${CMAKE_CONFIG_FILE}
         DESTINATION lib/cmake/h3client)
 install(FILES ${EXPORT_FILE} DESTINATION include/h3client)
 
+add_executable(client client.c)
+target_link_libraries(client PRIVATE h3client)
+
 enable_testing()
 add_subdirectory(test)
 
