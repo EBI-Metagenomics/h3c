@@ -73,56 +73,9 @@ cleanup:
 
 static int writen(int fd, void const *buf, size_t count);
 static int readn(int fd, void *buf, size_t count);
-static int send_args(char const *args);
-static int send_seq(char const *seq);
-static int send_end(void);
 static int recv_answer(struct h3c_result *result);
 
-int h3c_call(char const *args, char const *seq, struct h3c_result *result)
-{
-    int rc = H3C_OK;
-
-    if ((rc = send_args(args))) goto cleanup;
-    if ((rc = send_seq(seq))) goto cleanup;
-    if ((rc = send_end())) goto cleanup;
-    rc = recv_answer(result);
-
-cleanup:
-    return rc;
-}
-
-#define READ_SIZE 4096
-
-int h3c_callf(char const *args, FILE *fasta, struct h3c_result *result)
-{
-    int rc = H3C_OK;
-
-    if ((rc = send_args(args))) goto cleanup;
-
-    static char buf[READ_SIZE] = {0};
-    while (fgets(buf, READ_SIZE, fasta))
-    {
-        if ((rc = send_seq(buf))) goto cleanup;
-    }
-    if (!feof(fasta)) rc = H3C_FAILED_READ_FILE;
-    if (rc) goto cleanup;
-
-    if ((rc = send_end())) goto cleanup;
-
-    rc = recv_answer(result);
-
-cleanup:
-    return rc;
-}
-
-int h3c_close(void)
-{
-    request_del(conn.request);
-    answer_del(conn.answer);
-    return close(conn.sockfd) ? H3C_FAILED_CLOSE : H3C_OK;
-}
-
-static int send_args(char const *args)
+int h3c_begin(char const *args)
 {
     int rc = H3C_OK;
     if ((rc = writen(conn.sockfd, "@", 1))) return rc;
@@ -131,12 +84,39 @@ static int send_args(char const *args)
     return rc;
 }
 
-static int send_seq(char const *seq)
+int h3c_send(char const *seq) { return writen(conn.sockfd, seq, strlen(seq)); }
+
+int h3c_end(struct h3c_result *result)
 {
-    return writen(conn.sockfd, seq, strlen(seq));
+    int rc = H3C_OK;
+    if ((rc = writen(conn.sockfd, "//", 2))) return rc;
+    return recv_answer(result);
 }
 
-static int send_end(void) { return writen(conn.sockfd, "//", 2); }
+#define READ_SIZE 4096
+
+int h3c_callf(char const *args, FILE *fasta, struct h3c_result *result)
+{
+    int rc = H3C_OK;
+    if ((rc = h3c_begin(args))) return rc;
+
+    static char buf[READ_SIZE] = {0};
+    while (fgets(buf, READ_SIZE, fasta))
+    {
+        if ((rc = h3c_send(buf))) return rc;
+    }
+    if (!feof(fasta)) rc = H3C_FAILED_READ_FILE;
+    if (rc) return rc;
+
+    return h3c_end(result);
+}
+
+int h3c_close(void)
+{
+    request_del(conn.request);
+    answer_del(conn.answer);
+    return close(conn.sockfd) ? H3C_FAILED_CLOSE : H3C_OK;
+}
 
 static int recv_answer(struct h3c_result *result)
 {
