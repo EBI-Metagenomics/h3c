@@ -25,6 +25,7 @@ static bool begin_seq(enum state *next);
 static bool send_seq(enum state *next);
 static bool end_seq(enum state *next);
 static bool done(enum state *next);
+static bool err(char const *msg);
 
 int main(void)
 {
@@ -50,52 +51,37 @@ static bool init(void)
 {
     int rc = H3C_OK;
     if ((rc = h3c_open("127.0.0.1", 51371)))
-    {
-        fprintf(stderr, "h3c_open\n");
-        return false;
-    }
+        return err("failed to open connection");
     if (!(result = h3c_result_new()))
     {
         h3c_close();
-        return false;
+        return err("failed the allocate results");
     }
     return true;
 }
 
 static bool begin(void)
 {
-    if (h3c_begin("--hmmdb 1 --acc --cut_ga"))
-    {
-        fprintf(stderr, "h3c_begin\n");
-        return false;
-    }
+    if (h3c_begin("--hmmdb 1 --acc --cut_ga")) return err("failed to begin");
     return true;
 }
 
 static bool send(char const *data)
 {
-    if (h3c_send(data))
-    {
-        fprintf(stderr, "h3c_send\n");
-        return false;
-    }
+    if (h3c_send(data)) return err("failed to send data");
     return true;
 }
 
 static bool end(void)
 {
-    if (h3c_end(result))
-    {
-        fprintf(stderr, "h3c_end\n");
-        return false;
-    }
+    if (h3c_end(result)) return err("failed to end");
     return true;
 }
 
 static bool cleanup(void)
 {
     int rc = H3C_OK;
-    if ((rc = h3c_close())) fprintf(stderr, "h3c_close\n");
+    if ((rc = h3c_close())) err("failed to close connection");
     h3c_result_del(result);
     return rc ? false : true;
 }
@@ -115,13 +101,14 @@ static bool begin_seq(enum state *next)
             *next = EXIT;
             return true;
         }
-        if (strncmp(buf, "@file ", 6)) return false;
+        if (strncmp(buf, "@file ", 6)) return err("unrecognized command");
         remove_newline(buf);
         strcpy(filename, buf + 6);
         if (!begin()) return false;
     }
-    *next = SEND_SEQ;
-    return !feof(stdin);
+    if (ferror(stdin)) return err("failed to read from stdin at begin");
+    *next = feof(stdin) ? EXIT : SEND_SEQ;
+    return true;
 }
 
 static bool send_seq(enum state *next)
@@ -137,7 +124,9 @@ static bool send_seq(enum state *next)
         if (!send(buf)) return false;
     }
     *next = END_SEQ;
-    return !feof(stdin);
+    if (ferror(stdin)) return err("failed to read from stdin at send");
+    if (feof(stdin)) return err("unexpected eof at end");
+    return true;
 }
 
 static bool end_seq(enum state *next)
@@ -151,18 +140,25 @@ static bool end_seq(enum state *next)
     if (!end()) return false;
 
     FILE *file = fopen(filename, "wb");
-    if (!file) return false;
+    if (!file) return err("failed to open results file");
 
     if (h3c_result_pack(result, file))
     {
         fclose(file);
-        return false;
+        return err("failed to pack results");
     }
-    return fclose(file) ? false : true;
+    return fclose(file) ? err("failed to close results file") : true;
 }
 
 static bool done(enum state *next)
 {
     *next = BEGIN_SEQ;
-    return puts(filename) >= 0;
+    return puts(filename) < 0 ? err("failed to write stdin") : true;
+}
+
+static bool err(char const *msg)
+{
+    fputs(msg, stderr);
+    fputs("\n", stderr);
+    return false;
 }
