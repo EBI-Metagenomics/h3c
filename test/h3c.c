@@ -11,6 +11,7 @@
 #endif
 
 #include <ctype.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -74,6 +75,14 @@ cleanup:
     return result;
 }
 
+static int check(bool value, char const *source, int line)
+{
+    if (!value) XFAIL("check failed", source, line);
+
+cleanup:
+    return exit_status;
+}
+
 static int check_hash(char const *filepath, int64_t hash, char const *source,
                       int line)
 {
@@ -89,6 +98,11 @@ cleanup:
     return exit_status;
 }
 
+static bool is_close(double a, double b) { return fabs(a - b) < 1e-7; }
+
+#define CHECK(V) check(V, __FILE__, __LINE__)
+#define CLOSE(A, B) check(is_close(A, B), __FILE__, __LINE__)
+#define STREQ(A, B) check(!strcmp(A, B), __FILE__, __LINE__)
 #define CHECK_HASH(F, H) check_hash(F, H, __FILE__, __LINE__)
 
 static int test_pack_result(uint16_t ross_id)
@@ -291,6 +305,30 @@ cleanup:
     return exit_status;
 }
 
+static int test_result_api(uint16_t ross_id)
+{
+    struct h3c_result *result = create_result_ross(ross_id);
+    if (!result) goto cleanup;
+
+    char const *name[] = {"000000005", "000000003", "000000002", "000000004"};
+    char const *acc[] = {"PF13460.8", "PF01370.23", "PF01073.21", "PF05368.15"};
+    double eln[] = {-53.808984215028, -38.604817925966, -34.047928969184,
+                    -31.743561848164};
+
+    if (CHECK(h3c_result_nhits(result) == 4)) goto cleanup;
+
+    for (int i = 0; i < 4; ++i)
+    {
+        if (STREQ(name[i], h3c_result_hit_name(result, i))) goto cleanup;
+        if (STREQ(acc[i], h3c_result_hit_acc(result, i))) goto cleanup;
+        if (CLOSE(eln[i], h3c_result_hit_evalue_ln(result, i))) goto cleanup;
+    }
+
+cleanup:
+    if (result) h3c_result_del(result);
+    return exit_status;
+}
+
 int main(void)
 {
     if (test_open_close_connection(4)) goto cleanup;
@@ -303,6 +341,8 @@ int main(void)
     if (test_reuse_results()) goto cleanup;
     if (test_reuse_results_print()) goto cleanup;
     if (test_reuse_connection(4)) goto cleanup;
+
+    if (test_result_api(4)) goto cleanup;
 
 cleanup:
     return exit_status;

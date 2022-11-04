@@ -38,4 +38,8 @@ void tophits_print_domains_table(char const *qacc, struct tophits const *th,
                                  FILE *, bool show_header, double Z,
                                  double domZ);
 
+char const *tophits_hit_name(struct tophits const *th, unsigned idx);
+char const *tophits_hit_acc(struct tophits const *th, unsigned idx);
+double tophits_hit_evalue_ln(struct tophits const *th, unsigned idx, double Z);
+
 #endif

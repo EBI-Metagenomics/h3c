@@ -75,3 +75,23 @@ void h3c_result_print_domains_table(struct h3c_result const *r, FILE *file)
     tophits_print_domains_table("-", &r->tophits, file, true, r->stats.Z,
                                 r->stats.domZ);
 }
+
+unsigned h3c_result_nhits(struct h3c_result const *r)
+{
+    return r->tophits.nhits;
+}
+
+char const *h3c_result_hit_name(struct h3c_result const *r, unsigned idx)
+{
+    return tophits_hit_name(&r->tophits, idx);
+}
+
+char const *h3c_result_hit_acc(struct h3c_result const *r, unsigned idx)
+{
+    return tophits_hit_acc(&r->tophits, idx);
+}
+
+double h3c_result_hit_evalue_ln(struct h3c_result const *r, unsigned idx)
+{
+    return tophits_hit_evalue_ln(&r->tophits, idx, r->stats.Z);
+}

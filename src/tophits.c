@@ -178,6 +178,7 @@ static inline float unbiased_score(struct hit const *hit)
 }
 
 static inline double evalue(double lnP, double Z) { return exp(lnP) * Z; }
+static inline double evalue_ln(double lnP, double Z) { return lnP + log(Z); }
 
 void tophits_print_targets(struct tophits const *th, FILE *f, double Z)
 {
@@ -477,4 +478,19 @@ void tophits_print_domains_table(char const *qacc, struct tophits const *th,
                  strdash(hit->desc));
         }
     }
+}
+
+char const *tophits_hit_name(struct tophits const *th, unsigned idx)
+{
+    return th->hits[idx].name;
+}
+
+char const *tophits_hit_acc(struct tophits const *th, unsigned idx)
+{
+    return th->hits[idx].acc;
+}
+
+double tophits_hit_evalue_ln(struct tophits const *th, unsigned idx, double Z)
+{
+    return evalue_ln(th->hits[idx].lnP, Z);
 }
