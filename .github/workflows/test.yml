@@ -4,11 +4,10 @@ on: push
 
 jobs:
   test:
-    name: Test on ${{ matrix.os }} with build type ${{ matrix.build_type }}
-    runs-on: ${{ matrix.os }}
+    name: Test with build type ${{ matrix.build_type }}
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
-        os: [ubuntu-22.04]
         build_type: [Release, Debug]
 
     steps:
