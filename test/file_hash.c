@@ -1,47 +1,39 @@
-#include "xxhash/xxhash.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 
 #define BUFFSIZE (8 * 1024)
 
-bool file_hash(FILE *restrict fp, int64_t *hash)
+static bool fletcher16(FILE *fp, uint8_t *buf, size_t bufsize, long *chk);
+
+bool file_hash(char const *filepath, long *chk)
 {
-    bool ok = true;
-    XXH3_state_t *state = XXH3_createState();
-    if (!state)
-    {
-        ok = false;
-        goto cleanup;
-    }
-    XXH3_64bits_reset(state);
+    static uint8_t buffer[BUFFSIZE];
+    FILE *fp = fopen(filepath, "rb");
+    if (!fp) return false;
 
+    int rc = fletcher16(fp, buffer, sizeof(buffer), chk);
+
+    fclose(fp);
+    return rc;
+}
+
+static bool fletcher16(FILE *fp, uint8_t *buf, size_t bufsize, long *chk)
+{
     size_t n = 0;
-    unsigned char buffer[BUFFSIZE] = {0};
-    while ((n = fread(buffer, sizeof(*buffer), BUFFSIZE, fp)) > 0)
+    uint16_t sum1 = 0;
+    uint16_t sum2 = 0;
+    while ((n = fread(buf, 1, bufsize, fp)) > 0)
     {
-        if (n < BUFFSIZE && ferror(fp))
+        if (n < bufsize && ferror(fp)) return false;
+        for (int i = 0; i < (int)n; ++i)
         {
-            ok = false;
-            goto cleanup;
+            sum1 = (sum1 + buf[i]) % 255;
+            sum2 = (sum2 + sum1) % 255;
         }
-
-        XXH3_64bits_update(state, buffer, n);
     }
-    if (ferror(fp))
-    {
-        ok = false;
-        goto cleanup;
-    }
+    if (ferror(fp)) return false;
 
-    union
-    {
-        int64_t const i;
-        uint64_t const u;
-    } const h = {.u = XXH3_64bits_digest(state)};
-    *hash = h.i;
-
-cleanup:
-    XXH3_freeState(state);
-    return ok;
+    *chk = (sum2 << 8) | sum1;
+    return true;
 }

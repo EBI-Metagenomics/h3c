@@ -10,9 +10,8 @@ add_compile_definitions(TMPDIR=\"${TMPDIR}\")
 file(COPY assets/ross.fasta DESTINATION ${ASSETS})
 file(COPY assets/ross.poor.fasta DESTINATION ${ASSETS})
 
-file(DOWNLOAD https://pub.danilohorta.me/deciphon/ross.5.hmm.7z
-     ${ASSETS}/ross.5.hmm.7z EXPECTED_HASH MD5=f60e18e17215d22d2425a83c21294bcf)
-file(ARCHIVE_EXTRACT INPUT ${ASSETS}/ross.5.hmm.7z DESTINATION ${ASSETS})
+file(DOWNLOAD https://pub.danilohorta.me/deciphon/ross.5.hmm
+     ${ASSETS}/ross.5.hmm)
 
 file(DOWNLOAD https://app.danilohorta.me/h3daemon ${ASSETS}/h3daemon)
 add_test(NAME start_daemon
@@ -22,8 +21,6 @@ add_test(NAME stop_daemon COMMAND /bin/bash ${ASSETS}/h3daemon stop
                                   --name=h3daemon_51379)
 
 add_executable(test_h3c h3c.c file_hash.c)
-target_compile_definitions(test_h3c PRIVATE XXH_STATIC_LINKING_ONLY)
-target_compile_definitions(test_h3c PRIVATE XXH_IMPLEMENTATION)
 target_link_libraries(test_h3c PRIVATE H3C::h3c)
 add_test(NAME test_h3c COMMAND test_h3c)
 

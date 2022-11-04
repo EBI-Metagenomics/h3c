@@ -78,16 +78,13 @@ cleanup:
     return exit_status;
 }
 
-static int check_hash(char const *filepath, int64_t hash, char const *source,
+static int check_hash(char const *filepath, long hash, char const *source,
                       int line)
 {
-    FILE *file = 0;
-    int64_t h = 0;
-
-    if (!(file = fopen(filepath, "rb"))) XFAIL("fopen", source, line);
-    if (!file_hash(file, &h)) XFAIL("file_hash", source, line);
-    if (h != hash) XFAIL("match file hash", source, line);
-    fclose(file);
+    long expected = 0;
+    if (!file_hash(filepath, &expected)) XFAIL("file_hash", source, line);
+    printf("%ld -> %ld\n", hash, expected);
+    if (expected != hash) XFAIL("match file hash", source, line);
 
 cleanup:
     return exit_status;
@@ -110,7 +107,7 @@ static int test_pack_result(void)
     if (h3c_result_pack(result, file)) FAIL("h3c_result_pack");
     fclose(file);
 
-    if (CHECK_HASH(TMPDIR "/h3result.mp", -7580715214164890760LL)) goto cleanup;
+    if (CHECK_HASH(TMPDIR "/h3result.mp", 63792L)) goto cleanup;
 
 cleanup:
     if (result) h3c_result_del(result);
@@ -127,7 +124,7 @@ static int test_unpack_result(void)
     if (h3c_result_pack(result, file)) FAIL("h3c_result_pack");
     fclose(file);
 
-    if (CHECK_HASH(TMPDIR "/h3result.mp", -7580715214164890760LL)) goto cleanup;
+    if (CHECK_HASH(TMPDIR "/h3result.mp", 63792L)) goto cleanup;
 
     if (!(file = fopen(TMPDIR "/h3result.mp", "rb"))) FAIL("fopen");
     if (h3c_result_unpack(result, file)) FAIL("h3c_result_unpack");
@@ -138,7 +135,7 @@ static int test_unpack_result(void)
     if (h3c_result_pack(result, file)) FAIL("h3c_result_pack");
     fclose(file);
 
-    if (CHECK_HASH(TMPDIR "/h3result.mp", -7580715214164890760LL)) goto cleanup;
+    if (CHECK_HASH(TMPDIR "/h3result.mp", 63792L)) goto cleanup;
 
 cleanup:
     if (result) h3c_result_del(result);
@@ -155,7 +152,7 @@ static int test_print_targets(void)
     h3c_result_print_targets(result, file);
     fclose(file);
 
-    if (CHECK_HASH(TMPDIR "/targets.txt", 2235430570033520642LL)) goto cleanup;
+    if (CHECK_HASH(TMPDIR "/targets.txt", 57543L)) goto cleanup;
 
 cleanup:
     if (result) h3c_result_del(result);
@@ -172,7 +169,7 @@ static int test_print_domains(void)
     h3c_result_print_domains(result, file);
     fclose(file);
 
-    if (CHECK_HASH(TMPDIR "/domains.txt", 450185627565076573LL)) goto cleanup;
+    if (CHECK_HASH(TMPDIR "/domains.txt", 46469L)) goto cleanup;
 
 cleanup:
     if (result) h3c_result_del(result);
@@ -189,7 +186,7 @@ static int test_print_targets_table(void)
     h3c_result_print_targets_table(result, file);
     fclose(file);
 
-    if (CHECK_HASH(TMPDIR "/targets.tbl", -705996778582966846LL)) goto cleanup;
+    if (CHECK_HASH(TMPDIR "/targets.tbl", 34790L)) goto cleanup;
 
 cleanup:
     if (result) h3c_result_del(result);
@@ -206,7 +203,7 @@ static int test_print_domains_table(void)
     h3c_result_print_domains_table(result, file);
     fclose(file);
 
-    if (CHECK_HASH(TMPDIR "/domains.tbl", -1168549464075086691LL)) goto cleanup;
+    if (CHECK_HASH(TMPDIR "/domains.tbl", 3913L)) goto cleanup;
 
 cleanup:
     if (result) h3c_result_del(result);
@@ -233,8 +230,8 @@ cleanup:
 
 static int test_reuse_results_print(void)
 {
-    int64_t target = 2235430570033520642LL;
-    int64_t domain = 450185627565076573LL;
+    int64_t target = 57543L;
+    int64_t domain = 46469L;
     struct h3c_result *result = 0;
     FILE *file = 0;
 
