@@ -12,7 +12,10 @@ jobs:
         build_type: [Release, Debug]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+
+      - name: Install eviltest
+        run: curl -fsSL "https://app.danilohorta.me/eviltest" | bash
 
       - name: Configure CMake
         if: runner.os == 'Linux'
@@ -36,9 +39,6 @@ jobs:
           ./h3daemon start test/assets/ross.3.hmm --name=h3daemon_51373 --port=51373 --yes
           ./h3daemon start test/assets/ross.4.hmm --name=h3daemon_51374 --port=51374 --yes
           ./h3daemon start test/assets/ross.5.hmm --name=h3daemon_51375 --port=51375 --yes
-
-      - name: Install eviltest
-        run: curl -fsSL "https://app.danilohorta.me/eviltest" | bash
 
       - name: Test
         working-directory: ${{github.workspace}}/build
