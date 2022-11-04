@@ -9,6 +9,24 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Apt update
+        run: sudo apt-get update
+
+      - name: Install libcurl4
+        run: sudo apt-get install -y libcurl4 libcurl4-openssl-dev
+
+      - name: Install python
+        run: sudo apt-get install -y python3-venv python3-pip
+
+      - name: Install git
+        run: sudo apt-get install -y git
+
+      - name: Install cmake
+        run: sudo apt-get install -y cmake
+
+      - name: Install pipx
+        run: python3 -m pip install --user -U pipx
+
       - name: Install eviltest
         run: curl -fsSL "https://app.danilohorta.me/eviltest" | bash
 
