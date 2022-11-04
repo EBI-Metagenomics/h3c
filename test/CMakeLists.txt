@@ -10,8 +10,8 @@ add_compile_definitions(TMPDIR=\"${TMPDIR}\")
 file(COPY assets/ross.fasta DESTINATION ${ASSETS})
 file(COPY assets/ross.poor.fasta DESTINATION ${ASSETS})
 
-file(DOWNLOAD https://pub.danilohorta.me/ross.5.hmm.7z ${ASSETS}/ross.5.hmm.7z
-     EXPECTED_HASH MD5=f60e18e17215d22d2425a83c21294bcf)
+file(DOWNLOAD https://pub.danilohorta.me/deciphon/ross.5.hmm.7z
+     ${ASSETS}/ross.5.hmm.7z EXPECTED_HASH MD5=f60e18e17215d22d2425a83c21294bcf)
 file(ARCHIVE_EXTRACT INPUT ${ASSETS}/ross.5.hmm.7z DESTINATION ${ASSETS})
 
 file(DOWNLOAD https://app.danilohorta.me/h3daemon ${ASSETS}/h3daemon)
