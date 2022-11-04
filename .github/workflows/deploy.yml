@@ -28,6 +28,9 @@ jobs:
           ./h3daemon start test/assets/ross.4.hmm --name=h3daemon_51374 --port=51374 --yes
           ./h3daemon start test/assets/ross.5.hmm --name=h3daemon_51375 --port=51375 --yes
 
+      - name: Install eviltest
+        run: curl -fsSL "https://app.danilohorta.me/eviltest" | bash
+
       - name: Test
         working-directory: ${{github.workspace}}/build
         run: ctest -C Release --rerun-failed --output-on-failure
