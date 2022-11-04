@@ -17,6 +17,7 @@ cpmaddpackage(NAME lite_pack VERSION 0.3.1 GITHUB_REPOSITORY
 
 add_library(
   h3c
+  libs/argless.c
   src/addr.c
   src/alidisplay.c
   src/answer.c
@@ -70,7 +71,9 @@ target_include_directories(
   PUBLIC $<INSTALL_INTERFACE:include>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-  PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
+         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs>
+  PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+          $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs>)
 
 install(TARGETS h3c EXPORT h3c-targets)
 
@@ -98,6 +101,9 @@ install(FILES ${EXPORT_FILE} DESTINATION include/h3c)
 
 add_executable(h3client h3client.c)
 target_link_libraries(h3client PRIVATE h3c)
+
+add_executable(h3result h3result.c)
+target_link_libraries(h3result PRIVATE h3c)
 
 enable_testing()
 add_subdirectory(test)
