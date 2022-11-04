@@ -51,18 +51,6 @@ jobs:
       - name: Build
         run: cmake --build ${{github.workspace}}/build --config ${{matrix.build_type}}
 
-      - name: Run h3daemon
-        working-directory: ${{github.workspace}}/build
-        run: |
-          loginctl enable-linger 1001
-          curl -fsSL "https://app.danilohorta.me/h3daemon" > h3daemon
-          chmod +x h3daemon
-          ./h3daemon start test/assets/ross.1.hmm --name=h3daemon_51371 --port=51371 --yes
-          ./h3daemon start test/assets/ross.2.hmm --name=h3daemon_51372 --port=51372 --yes
-          ./h3daemon start test/assets/ross.3.hmm --name=h3daemon_51373 --port=51373 --yes
-          ./h3daemon start test/assets/ross.4.hmm --name=h3daemon_51374 --port=51374 --yes
-          ./h3daemon start test/assets/ross.5.hmm --name=h3daemon_51375 --port=51375 --yes
-
       - name: Test
         working-directory: ${{github.workspace}}/build
         run: ctest -C ${{matrix.build_type}} --rerun-failed --output-on-failure

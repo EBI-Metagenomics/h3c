@@ -18,12 +18,7 @@
 #include <sys/stat.h>
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
-
-static char const *h3master_address(void)
-{
-    char const *addr = getenv("H3C_MASTER_ADDRESS");
-    return addr ? addr : "127.0.0.1";
-}
+#define PORT 51379
 
 #define XFAIL(msg, file, line)                                                 \
     do                                                                         \
@@ -41,19 +36,19 @@ static char const *h3master_address(void)
 static int exit_status = 0;
 static char const cmd[] = "--hmmdb 1 --acc --cut_ga";
 
-static int test_open_close_connection(uint16_t ross_id)
+static int test_open_close_connection(void)
 {
-    if (h3c_open(h3master_address(), 51370 + ross_id + 1)) FAIL("h3c_open");
+    if (h3c_open("127.0.0.1", PORT)) FAIL("h3c_open");
     if (h3c_close()) FAIL("h3c_close");
 
 cleanup:
     return exit_status;
 }
 
-static struct h3c_result *create_result_ross(uint16_t ross_id)
+static struct h3c_result *create_result_ross(void)
 {
     struct h3c_result *result = 0;
-    if (h3c_open(h3master_address(), 51371 + ross_id)) FAIL("h3c_open");
+    if (h3c_open("127.0.0.1", PORT)) FAIL("h3c_open");
 
     FILE *file = 0;
     if (!(file = fopen(ASSETS "/ross.fasta", "r"))) FAIL("fopen");
@@ -105,9 +100,9 @@ static bool is_close(double a, double b) { return fabs(a - b) < 1e-7; }
 #define STREQ(A, B) check(!strcmp(A, B), __FILE__, __LINE__)
 #define CHECK_HASH(F, H) check_hash(F, H, __FILE__, __LINE__)
 
-static int test_pack_result(uint16_t ross_id)
+static int test_pack_result(void)
 {
-    struct h3c_result *result = create_result_ross(ross_id);
+    struct h3c_result *result = create_result_ross();
     if (!result) goto cleanup;
 
     FILE *file = 0;
@@ -122,9 +117,9 @@ cleanup:
     return exit_status;
 }
 
-static int test_unpack_result(uint16_t ross_id)
+static int test_unpack_result(void)
 {
-    struct h3c_result *result = create_result_ross(ross_id);
+    struct h3c_result *result = create_result_ross();
     if (!result) goto cleanup;
 
     FILE *file = 0;
@@ -150,9 +145,9 @@ cleanup:
     return exit_status;
 }
 
-static int test_print_targets(uint16_t ross_id)
+static int test_print_targets(void)
 {
-    struct h3c_result *result = create_result_ross(ross_id);
+    struct h3c_result *result = create_result_ross();
     if (!result) goto cleanup;
 
     FILE *file = 0;
@@ -167,9 +162,9 @@ cleanup:
     return exit_status;
 }
 
-static int test_print_domains(uint16_t ross_id)
+static int test_print_domains(void)
 {
-    struct h3c_result *result = create_result_ross(ross_id);
+    struct h3c_result *result = create_result_ross();
     if (!result) goto cleanup;
 
     FILE *file = 0;
@@ -184,9 +179,9 @@ cleanup:
     return exit_status;
 }
 
-static int test_print_targets_table(uint16_t ross_id)
+static int test_print_targets_table(void)
 {
-    struct h3c_result *result = create_result_ross(ross_id);
+    struct h3c_result *result = create_result_ross();
     if (!result) goto cleanup;
 
     FILE *file = 0;
@@ -201,9 +196,9 @@ cleanup:
     return exit_status;
 }
 
-static int test_print_domains_table(uint16_t ross_id)
+static int test_print_domains_table(void)
 {
-    struct h3c_result *result = create_result_ross(ross_id);
+    struct h3c_result *result = create_result_ross();
     if (!result) goto cleanup;
 
     FILE *file = 0;
@@ -225,14 +220,11 @@ static int test_reuse_results(void)
 
     if (!(result = h3c_result_new())) FAIL("h3c_result_new")
 
-    for (unsigned i = 0; i < 5; ++i)
-    {
-        if (!(file = fopen(ASSETS "/ross.fasta", "r"))) FAIL("fopen");
-        if (h3c_open(h3master_address(), 51371 + i)) FAIL("h3c_open");
-        if (h3c_callf(cmd, file, result)) FAIL("h3c_callf");
-        if (h3c_close()) FAIL("h3c_close");
-        fclose(file);
-    }
+    if (!(file = fopen(ASSETS "/ross.fasta", "r"))) FAIL("fopen");
+    if (h3c_open("127.0.0.1", PORT)) FAIL("h3c_open");
+    if (h3c_callf(cmd, file, result)) FAIL("h3c_callf");
+    if (h3c_close()) FAIL("h3c_close");
+    fclose(file);
 
 cleanup:
     if (result) h3c_result_del(result);
@@ -241,51 +233,44 @@ cleanup:
 
 static int test_reuse_results_print(void)
 {
-    int64_t targets[] = {3595942196364536930LL, -2350707101380469820LL,
-                         7268596939732165182LL, 624009942923406464LL,
-                         2235430570033520642LL};
-    int64_t domains[] = {3742250844459566216LL, 6798122216300339939LL,
-                         -6277080907676284547LL, -5934588947600765520LL,
-                         450185627565076573LL};
+    int64_t target = 2235430570033520642LL;
+    int64_t domain = 450185627565076573LL;
     struct h3c_result *result = 0;
     FILE *file = 0;
 
     if (!(result = h3c_result_new())) FAIL("h3c_result_new")
 
-    for (unsigned i = 0; i < 5; ++i)
-    {
-        if (!(file = fopen(ASSETS "/ross.fasta", "r"))) FAIL("fopen");
-        if (h3c_open(h3master_address(), 51371 + i)) FAIL("h3c_open");
-        if (h3c_callf(cmd, file, result)) FAIL("h3c_callf");
-        if (h3c_close()) FAIL("h3c_close");
-        fclose(file);
+    if (!(file = fopen(ASSETS "/ross.fasta", "r"))) FAIL("fopen");
+    if (h3c_open("127.0.0.1", PORT)) FAIL("h3c_open");
+    if (h3c_callf(cmd, file, result)) FAIL("h3c_callf");
+    if (h3c_close()) FAIL("h3c_close");
+    fclose(file);
 
-        file = 0;
-        if (!(file = fopen(TMPDIR "/targets.txt", "wb"))) FAIL("fopen");
-        h3c_result_print_targets(result, file);
-        fclose(file);
-        if (CHECK_HASH(TMPDIR "/targets.txt", targets[i])) goto cleanup;
+    file = 0;
+    if (!(file = fopen(TMPDIR "/targets.txt", "wb"))) FAIL("fopen");
+    h3c_result_print_targets(result, file);
+    fclose(file);
+    if (CHECK_HASH(TMPDIR "/targets.txt", target)) goto cleanup;
 
-        file = 0;
-        if (!(file = fopen(TMPDIR "/domains.txt", "wb"))) FAIL("fopen");
-        h3c_result_print_domains(result, file);
-        fclose(file);
-        if (CHECK_HASH(TMPDIR "/domains.txt", domains[i])) goto cleanup;
-    }
+    file = 0;
+    if (!(file = fopen(TMPDIR "/domains.txt", "wb"))) FAIL("fopen");
+    h3c_result_print_domains(result, file);
+    fclose(file);
+    if (CHECK_HASH(TMPDIR "/domains.txt", domain)) goto cleanup;
 
 cleanup:
     if (result) h3c_result_del(result);
     return exit_status;
 }
 
-static int test_reuse_connection(uint16_t ross_id)
+static int test_reuse_connection(void)
 {
     struct h3c_result *result = 0;
     bool connected = false;
     FILE *file = 0;
 
     if (!(result = h3c_result_new())) FAIL("h3c_result_new")
-    if (h3c_open(h3master_address(), 51371 + ross_id)) FAIL("h3c_open");
+    if (h3c_open("127.0.0.1", PORT)) FAIL("h3c_open");
     connected = true;
 
     if (!(file = fopen(ASSETS "/ross.fasta", "r"))) FAIL("fopen");
@@ -305,9 +290,9 @@ cleanup:
     return exit_status;
 }
 
-static int test_result_api(uint16_t ross_id)
+static int test_result_api(void)
 {
-    struct h3c_result *result = create_result_ross(ross_id);
+    struct h3c_result *result = create_result_ross();
     if (!result) goto cleanup;
 
     char const *name[] = {"000000005", "000000003", "000000002", "000000004"};
@@ -331,18 +316,17 @@ cleanup:
 
 int main(void)
 {
-    if (test_open_close_connection(4)) goto cleanup;
-    if (test_pack_result(4)) goto cleanup;
-    if (test_unpack_result(4)) goto cleanup;
-    if (test_print_targets(4)) goto cleanup;
-    if (test_print_domains(4)) goto cleanup;
-    if (test_print_targets_table(4)) goto cleanup;
-    if (test_print_domains_table(4)) goto cleanup;
+    if (test_open_close_connection()) goto cleanup;
+    if (test_pack_result()) goto cleanup;
+    if (test_unpack_result()) goto cleanup;
+    if (test_print_targets()) goto cleanup;
+    if (test_print_domains()) goto cleanup;
+    if (test_print_targets_table()) goto cleanup;
+    if (test_print_domains_table()) goto cleanup;
     if (test_reuse_results()) goto cleanup;
     if (test_reuse_results_print()) goto cleanup;
-    if (test_reuse_connection(4)) goto cleanup;
-
-    if (test_result_api(4)) goto cleanup;
+    if (test_reuse_connection()) goto cleanup;
+    if (test_result_api()) goto cleanup;
 
 cleanup:
     return exit_status;
