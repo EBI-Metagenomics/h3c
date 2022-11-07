@@ -2,18 +2,31 @@ cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 
 project(
   h3client
-  VERSION 0.3.1
+  VERSION 0.3.2
   LANGUAGES C)
 
-# Generate compile_commands.json file
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(H3C_MAIN_PROJECT OFF)
+if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+  set(H3C_MAIN_PROJECT ON)
+endif()
+
+if(H3C_MAIN_PROJECT)
+  set(H3C_BUILD_TESTS_DEFAULT ON)
+else()
+  set(H3C_BUILD_TESTS_DEFAULT OFF)
+endif()
+
+option(H3C_BUILD_TESTS "Build the unit tests" ${H3C_BUILD_TESTS_DEFAULT})
+message(STATUS "H3C_MAIN_PROJECT: " ${H3C_MAIN_PROJECT})
+message(STATUS "H3C_BUILD_TESTS: " ${H3C_BUILD_TESTS})
 
 include(cmake/compiler-options.cmake)
 include(cmake/sanitizers.cmake)
 include(cmake/CPM.cmake)
 
-cpmaddpackage(NAME lite_pack VERSION 0.3.1 GITHUB_REPOSITORY
-              EBI-Metagenomics/lite-pack)
+cpmaddpackage("gh:EBI-Metagenomics/lite-pack@0.3.1")
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_library(
   h3c
@@ -105,8 +118,10 @@ target_link_libraries(h3client PRIVATE h3c)
 add_executable(h3result h3result.c)
 target_link_libraries(h3result PRIVATE h3c)
 
-enable_testing()
-add_subdirectory(test)
+if(H3C_BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(test)
+endif()
 
 set(CPACK_PACKAGE_NAME h3c)
 set(CPACK_PACKAGE_VENDOR "Danilo Horta")
