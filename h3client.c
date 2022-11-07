@@ -2,6 +2,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define READ_SIZE 4096
@@ -24,12 +25,14 @@ static bool cleanup(void);
 static bool begin_seq(enum state *next);
 static bool send_seq(enum state *next);
 static bool end_seq(enum state *next);
+static bool ready(void);
 static bool done(enum state *next);
 static bool err(char const *msg);
 
 int main(void)
 {
-    if (!init()) return 1;
+    if (!init()) return EXIT_FAILURE;
+    if (!ready()) return EXIT_FAILURE;
 
     enum state state = BEGIN_SEQ;
     while (state != EXIT)
@@ -40,11 +43,11 @@ int main(void)
         if (state == DONE && !done(&state)) goto exit_early;
     }
 
-    return !cleanup();
+    return cleanup() ? EXIT_SUCCESS : EXIT_FAILURE;
 
 exit_early:
     cleanup();
-    return 1;
+    return EXIT_FAILURE;
 }
 
 static bool init(void)
@@ -148,6 +151,11 @@ static bool end_seq(enum state *next)
         return err("failed to pack results");
     }
     return fclose(file) ? err("failed to close results file") : true;
+}
+
+static bool ready(void)
+{
+    return puts("ready") < 0 ? err("failed to write stdin") : true;
 }
 
 static bool done(enum state *next)
