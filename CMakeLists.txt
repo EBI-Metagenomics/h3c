@@ -39,8 +39,8 @@ add_library(
   src/tophits.c
   src/utils.c
   src/zc.c)
-target_link_libraries(h3c PUBLIC LITE_PACK::lite_pack)
-target_link_libraries(h3c INTERFACE $<$<BOOL:${UNIX}>:m>)
+target_link_libraries(h3c PRIVATE LITE_PACK::lite_pack)
+target_link_libraries(h3c PRIVATE $<$<BOOL:${UNIX}>:m>)
 add_library(H3C::h3c ALIAS h3c)
 
 set(EXPORT_FILE ${CMAKE_CURRENT_BINARY_DIR}/h3c/export.h)

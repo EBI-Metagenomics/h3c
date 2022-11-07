@@ -11,7 +11,6 @@
 #endif
 
 #include <ctype.h>
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -89,6 +88,8 @@ static int check_hash(char const *filepath, long hash, char const *source,
 cleanup:
     return exit_status;
 }
+
+static double fabs(double x) { return x < 0 ? -x : x; }
 
 static bool is_close(double a, double b) { return fabs(a - b) < 1e-7; }
 
