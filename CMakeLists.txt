@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 
 project(
   h3client
-  VERSION 0.3.2
+  VERSION 0.3.3
   LANGUAGES C)
 
 set(H3C_MAIN_PROJECT OFF)
@@ -88,14 +88,20 @@ target_include_directories(
   PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
           $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs>)
 
-install(TARGETS h3c EXPORT h3c-targets)
+add_executable(h3client h3client.c)
+target_link_libraries(h3client PRIVATE h3c)
+
+add_executable(h3result h3result.c)
+target_link_libraries(h3result PRIVATE h3c)
+
+install(TARGETS h3c h3client h3result EXPORT h3c-targets)
 
 install(DIRECTORY include/h3c/ DESTINATION include/h3c)
 
 install(
   EXPORT h3c-targets
   FILE h3c-targets.cmake
-  NAMESPACE h3c::
+  NAMESPACE H3C::
   DESTINATION lib/cmake/h3c)
 
 include(CMakePackageConfigHelpers)
@@ -111,12 +117,6 @@ write_basic_package_version_file(${CMAKE_VERSION_FILE}
 install(FILES ${CMAKE_VERSION_FILE} ${CMAKE_CONFIG_FILE}
         DESTINATION lib/cmake/h3c)
 install(FILES ${EXPORT_FILE} DESTINATION include/h3c)
-
-add_executable(h3client h3client.c)
-target_link_libraries(h3client PRIVATE h3c)
-
-add_executable(h3result h3result.c)
-target_link_libraries(h3result PRIVATE h3c)
 
 if(H3C_BUILD_TESTS)
   enable_testing()
