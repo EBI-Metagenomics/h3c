@@ -155,13 +155,17 @@ static bool end_seq(enum state *next)
 
 static bool ready(void)
 {
-    return puts("ready") < 0 ? err("failed to write stdin") : true;
+    if (puts("ready") < 0) return err("failed to write stdin");
+    fflush(stdout);
+    return true;
 }
 
 static bool done(enum state *next)
 {
     *next = BEGIN_SEQ;
-    return puts(filename) < 0 ? err("failed to write stdin") : true;
+    if (puts(filename) < 0) return err("failed to write stdin");
+    fflush(stdout);
+    return true;
 }
 
 static bool err(char const *msg)
