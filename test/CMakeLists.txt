@@ -21,6 +21,7 @@ add_test(NAME stop_daemon COMMAND /bin/bash ${ASSETS}/h3daemon stop
                                   --name=h3daemon_51379)
 
 add_executable(test_h3c h3c.c file_hash.c)
+target_compile_features(test_h3c PRIVATE c_std_11)
 target_link_libraries(test_h3c PRIVATE H3C::h3c)
 add_test(NAME test_h3c COMMAND test_h3c)
 
