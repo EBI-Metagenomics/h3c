@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 
 project(
   h3client
-  VERSION 0.3.6
+  VERSION 0.4.0
   LANGUAGES C)
 
 set(H3C_MAIN_PROJECT OFF)
@@ -24,7 +24,7 @@ include(cmake/compiler-options.cmake)
 include(cmake/sanitizers.cmake)
 include(cmake/CPM.cmake)
 
-cpmaddpackage("gh:EBI-Metagenomics/lite-pack@0.3.2")
+cpmaddpackage("gh:EBI-Metagenomics/lite-pack@0.4.0")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_C_EXTENSIONS OFF)
@@ -76,7 +76,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
   set_target_properties(h3c PROPERTIES INTERPROCEDURAL_OPTIMIZATION ON)
 endif()
 
-target_compile_features(h3c PRIVATE c_std_11)
+target_compile_features(h3c PRIVATE c_std_23)
 target_compile_options(h3c PRIVATE ${WARNING_FLAGS})
 set_target_properties(h3c PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
