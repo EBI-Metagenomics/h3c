@@ -1,3 +1,4 @@
+#define _POSIX_SOURCE 200809L
 #include "h3c/h3c.h"
 #include "answer.h"
 #include "dillerr.h"

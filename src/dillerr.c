@@ -1,4 +1,5 @@
 #include "h3c/rc.h"
+#define _POSIX_SOURCE 200809L
 #include <libdill.h>
 
 int dillerr(int rc)
