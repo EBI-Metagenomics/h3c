@@ -19,7 +19,7 @@ static enum h3c_rc grow_scores(struct domain *dom, unsigned size)
     if (!(dom->pos_score = zc_reallocf(dom->pos_score, sz)))
     {
         domain_cleanup(dom);
-        return H3C_NOT_ENOUGH_MEMORY;
+        return H3C_NOMEM;
     }
     return H3C_OK;
 }

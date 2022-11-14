@@ -60,7 +60,7 @@ float eatf32(unsigned char const **data) { return eatnum32(data).f; }
 enum h3c_rc eatstr(char **dst, unsigned char const **data)
 {
     size_t size = strlen((char const *)*data) + 1;
-    if (!(*dst = zc_reallocf(*dst, size))) return H3C_NOT_ENOUGH_MEMORY;
+    if (!(*dst = zc_reallocf(*dst, size))) return H3C_NOMEM;
     memcpy(*dst, *data, size);
     *data += size;
     return H3C_OK;
@@ -114,7 +114,7 @@ enum h3c_rc read_string(struct lip_file *f, char **str)
 {
     unsigned size = 0;
     if (!lip_read_str_size(f, &size)) return H3C_FAILED_UNPACK;
-    if (!(*str = zc_reallocf(*str, size + 1))) return H3C_NOT_ENOUGH_MEMORY;
+    if (!(*str = zc_reallocf(*str, size + 1))) return H3C_NOMEM;
     if (!lip_read_str_data(f, size, *str)) return H3C_FAILED_UNPACK;
     (*str)[size] = 0;
     return H3C_OK;

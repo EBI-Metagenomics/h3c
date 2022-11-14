@@ -20,7 +20,7 @@ enum h3c_rc buff_ensure(struct buff **buff, size_t capacity)
     if (capacity > (*buff)->capacity)
     {
         struct buff *tmp = realloc(*buff, sizeof(*tmp) + capacity);
-        if (!tmp) return H3C_NOT_ENOUGH_MEMORY;
+        if (!tmp) return H3C_NOMEM;
 
         *buff = tmp;
         (*buff)->capacity = capacity;

@@ -97,7 +97,7 @@ enum h3c_rc hmmd_hit_parse(struct hmmd_hit *hit, unsigned char const **ptr,
         struct hmmd_domain *dcl = realloc(hit->dcl, ndom * sizeof(*hit->dcl));
         if (!dcl)
         {
-            rc = H3C_NOT_ENOUGH_MEMORY;
+            rc = H3C_NOMEM;
             goto cleanup;
         }
 

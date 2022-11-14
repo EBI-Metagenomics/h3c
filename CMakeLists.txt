@@ -23,6 +23,7 @@ message(STATUS "H3C_BUILD_TESTS: " ${H3C_BUILD_TESTS})
 include(cmake/compiler-options.cmake)
 include(cmake/sanitizers.cmake)
 include(cmake/CPM.cmake)
+include(cmake/Findlibdill.cmake)
 
 cpmaddpackage("gh:EBI-Metagenomics/lite-pack@0.4.0")
 
@@ -32,10 +33,10 @@ set(CMAKE_C_EXTENSIONS OFF)
 add_library(
   h3c
   libs/argless.c
-  src/addr.c
   src/alidisplay.c
   src/answer.c
   src/buff.c
+  src/dillerr.c
   src/domain.c
   src/echo.c
   src/h3c.c
@@ -53,7 +54,7 @@ add_library(
   src/tophits.c
   src/utils.c
   src/zc.c)
-target_link_libraries(h3c PRIVATE LITE_PACK::lite_pack)
+target_link_libraries(h3c PRIVATE LITE_PACK::lite_pack ${LIBDILL_LIBRARY})
 target_link_libraries(h3c PRIVATE $<$<BOOL:${UNIX}>:m>)
 add_library(H3C::h3c ALIAS h3c)
 
@@ -87,11 +88,17 @@ target_include_directories(
          $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
          $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs>
   PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-          $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs>)
+          $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs>
+          $<BUILD_INTERFACE:${LIBDILL_INCLUDE_DIR}>)
 
 add_executable(h3client h3client.c)
 target_link_libraries(h3client PRIVATE h3c)
-add_executable(H3C::h3client ALIAS h3client)
+add_executable(h3c::h3client ALIAS h3client)
+
+# add_executable(h3client2 h3client2.c) target_link_libraries(h3client2 PRIVATE
+# h3c) target_link_libraries(h3client2 PUBLIC ${LIBDILL_LIBRARY})
+# target_include_directories(h3client2 PRIVATE ${LIBDILL_INCLUDE_DIR})
+# add_executable(h3c::h3client2 ALIAS h3client2)
 
 add_executable(h3result h3result.c)
 target_link_libraries(h3result PRIVATE h3c)

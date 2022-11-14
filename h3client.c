@@ -21,7 +21,7 @@ enum state
 };
 
 static bool init(void);
-static bool cleanup(void);
+static bool cleanup(bool now);
 static bool begin_seq(enum state *next);
 static bool send_seq(enum state *next);
 static bool end_seq(enum state *next);
@@ -43,21 +43,23 @@ int main(void)
         if (state == DONE && !done(&state)) goto exit_early;
     }
 
-    return cleanup() ? EXIT_SUCCESS : EXIT_FAILURE;
+    return cleanup(true) ? EXIT_SUCCESS : EXIT_FAILURE;
 
 exit_early:
-    cleanup();
+    cleanup(false);
     return EXIT_FAILURE;
 }
+
+static long deadline(void) { return h3c_now() + 1000 * 5; }
 
 static bool init(void)
 {
     int rc = H3C_OK;
-    if ((rc = h3c_open("127.0.0.1", 51371)))
+    if ((rc = h3c_open("127.0.0.1", 51371, deadline())))
         return err("failed to open connection");
     if (!(result = h3c_result_new()))
     {
-        h3c_close();
+        h3c_close(-1);
         return err("failed the allocate results");
     }
     return true;
@@ -65,26 +67,28 @@ static bool init(void)
 
 static bool begin(void)
 {
-    if (h3c_begin("--hmmdb 1 --acc --cut_ga")) return err("failed to begin");
+    if (h3c_begin("--hmmdb 1 --acc --cut_ga", deadline()))
+        return err("failed to begin");
     return true;
 }
 
 static bool send(char const *data)
 {
-    if (h3c_send(data)) return err("failed to send data");
+    if (h3c_put(data, deadline())) return err("failed to send data");
     return true;
 }
 
 static bool end(void)
 {
-    if (h3c_end(result)) return err("failed to end");
+    if (h3c_end(result, deadline())) return err("failed to end");
     return true;
 }
 
-static bool cleanup(void)
+static bool cleanup(bool now)
 {
     int rc = H3C_OK;
-    if ((rc = h3c_close())) err("failed to close connection");
+    if ((rc = h3c_close(now ? -1 : deadline())))
+        err("failed to close connection");
     h3c_result_del(result);
     return rc ? false : true;
 }

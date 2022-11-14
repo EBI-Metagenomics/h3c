@@ -16,6 +16,8 @@
 #include <string.h>
 #include <sys/stat.h>
 
+static long deadline(void) { return h3c_now() + 1000 * 5; }
+
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 #define PORT 51379
 
@@ -37,8 +39,8 @@ static char const cmd[] = "--hmmdb 1 --acc --cut_ga";
 
 static int test_open_close_connection(void)
 {
-    if (h3c_open("127.0.0.1", PORT)) FAIL("h3c_open");
-    if (h3c_close()) FAIL("h3c_close");
+    if (h3c_open("127.0.0.1", PORT, deadline())) FAIL("h3c_open");
+    if (h3c_close(deadline())) FAIL("h3c_close");
 
 cleanup:
     return exit_status;
@@ -47,15 +49,15 @@ cleanup:
 static struct h3c_result *create_result_ross(void)
 {
     struct h3c_result *result = 0;
-    if (h3c_open("127.0.0.1", PORT)) FAIL("h3c_open");
+    if (h3c_open("127.0.0.1", PORT, deadline())) FAIL("h3c_open");
 
     FILE *file = 0;
     if (!(file = fopen(ASSETS "/ross.fasta", "r"))) FAIL("fopen");
     if (!(result = h3c_result_new())) FAIL("h3c_result_new")
-    if (h3c_callf(cmd, file, result)) FAIL("h3c_callf");
+    if (h3c_send(cmd, file, result, deadline())) FAIL("h3c_callf");
     fclose(file);
 
-    if (h3c_close()) FAIL("h3c_close");
+    if (h3c_close(deadline())) FAIL("h3c_close");
 
 cleanup:
     if (exit_status)
@@ -219,9 +221,9 @@ static int test_reuse_results(void)
     if (!(result = h3c_result_new())) FAIL("h3c_result_new")
 
     if (!(file = fopen(ASSETS "/ross.fasta", "r"))) FAIL("fopen");
-    if (h3c_open("127.0.0.1", PORT)) FAIL("h3c_open");
-    if (h3c_callf(cmd, file, result)) FAIL("h3c_callf");
-    if (h3c_close()) FAIL("h3c_close");
+    if (h3c_open("127.0.0.1", PORT, deadline())) FAIL("h3c_open");
+    if (h3c_send(cmd, file, result, deadline())) FAIL("h3c_callf");
+    if (h3c_close(deadline())) FAIL("h3c_close");
     fclose(file);
 
 cleanup:
@@ -239,9 +241,9 @@ static int test_reuse_results_print(void)
     if (!(result = h3c_result_new())) FAIL("h3c_result_new")
 
     if (!(file = fopen(ASSETS "/ross.fasta", "r"))) FAIL("fopen");
-    if (h3c_open("127.0.0.1", PORT)) FAIL("h3c_open");
-    if (h3c_callf(cmd, file, result)) FAIL("h3c_callf");
-    if (h3c_close()) FAIL("h3c_close");
+    if (h3c_open("127.0.0.1", PORT, deadline())) FAIL("h3c_open");
+    if (h3c_send(cmd, file, result, deadline())) FAIL("h3c_callf");
+    if (h3c_close(deadline())) FAIL("h3c_close");
     fclose(file);
 
     file = 0;
@@ -268,22 +270,22 @@ static int test_reuse_connection(void)
     FILE *file = 0;
 
     if (!(result = h3c_result_new())) FAIL("h3c_result_new")
-    if (h3c_open("127.0.0.1", PORT)) FAIL("h3c_open");
+    if (h3c_open("127.0.0.1", PORT, deadline())) FAIL("h3c_open");
     connected = true;
 
     if (!(file = fopen(ASSETS "/ross.fasta", "r"))) FAIL("fopen");
-    if (h3c_callf(cmd, file, result)) FAIL("h3c_callf");
+    if (h3c_send(cmd, file, result, deadline())) FAIL("h3c_callf");
     fclose(file);
 
     if (!(file = fopen(ASSETS "/ross.poor.fasta", "r"))) FAIL("fopen");
-    if (h3c_callf(cmd, file, result)) FAIL("h3c_callf");
+    if (h3c_send(cmd, file, result, deadline())) FAIL("h3c_callf");
     fclose(file);
 
     connected = false;
-    if (h3c_close()) FAIL("h3c_close");
+    if (h3c_close(deadline())) FAIL("h3c_close");
 
 cleanup:
-    if (connected) h3c_close();
+    if (connected) h3c_close(deadline());
     if (result) h3c_result_del(result);
     return exit_status;
 }

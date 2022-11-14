@@ -23,7 +23,7 @@ static enum h3c_rc grow(struct hmmd_tophits *th, uint64_t nhits)
 
     if (!(th->hit = zc_reallocf(th->hit, sizeof(*th->hit) * nhits)))
     {
-        rc = H3C_NOT_ENOUGH_MEMORY;
+        rc = H3C_NOMEM;
         goto cleanup;
     }
 
@@ -31,7 +31,7 @@ static enum h3c_rc grow(struct hmmd_tophits *th, uint64_t nhits)
     struct hmmd_hit *hits = realloc(th->unsrt, sz);
     if (!hits)
     {
-        rc = H3C_NOT_ENOUGH_MEMORY;
+        rc = H3C_NOMEM;
         goto cleanup;
     }
     th->unsrt = hits;

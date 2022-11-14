@@ -76,7 +76,7 @@ enum h3c_rc hmmd_stats_parse(struct hmmd_stats *stats,
         stats->hit_offsets = zc_reallocf(stats->hit_offsets, size);
         if (!stats->hit_offsets)
         {
-            rc = H3C_NOT_ENOUGH_MEMORY;
+            rc = H3C_NOMEM;
             goto cleanup;
         }
 

@@ -18,7 +18,7 @@ enum h3c_rc hit_init(struct hit *hit)
 
 cleanup:
     hit_cleanup(hit);
-    return H3C_NOT_ENOUGH_MEMORY;
+    return H3C_NOMEM;
 }
 
 static enum h3c_rc grow(struct hit *hit, unsigned ndomains)
@@ -38,7 +38,7 @@ static enum h3c_rc grow(struct hit *hit, unsigned ndomains)
 
 cleanup:
     hit_cleanup(hit);
-    return H3C_NOT_ENOUGH_MEMORY;
+    return H3C_NOMEM;
 }
 
 static void shrink(struct hit *hit, unsigned ndomains)

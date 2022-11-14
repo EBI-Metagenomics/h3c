@@ -38,7 +38,7 @@ enum h3c_rc alidisplay_init(struct alidisplay *ad)
 
 cleanup:
     alidisplay_cleanup(ad);
-    return H3C_NOT_ENOUGH_MEMORY;
+    return H3C_NOMEM;
 }
 
 void alidisplay_cleanup(struct alidisplay *ad)

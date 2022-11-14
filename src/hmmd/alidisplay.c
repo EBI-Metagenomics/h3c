@@ -78,7 +78,7 @@ enum h3c_rc hmmd_alidisplay_parse(struct hmmd_alidisplay *ali,
 
     if (!(ali->mem = zc_reallocf(ali->mem, memsize)))
     {
-        rc = H3C_NOT_ENOUGH_MEMORY;
+        rc = H3C_NOMEM;
         goto cleanup;
     }
     ali->memsize = memsize;

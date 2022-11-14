@@ -22,7 +22,7 @@ static enum h3c_rc grow(struct tophits *th, unsigned nhits)
     struct hit *hits = realloc(th->hits, sz);
     if (!hits)
     {
-        rc = H3C_NOT_ENOUGH_MEMORY;
+        rc = H3C_NOMEM;
         goto cleanup;
     }
     th->hits = hits;

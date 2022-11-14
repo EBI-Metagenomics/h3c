@@ -101,7 +101,7 @@ cleanup:
     {                                                                          \
         if ((var) > (val))                                                     \
         {                                                                      \
-            rc = H3C_INTEGER_OVERFLOW;                                         \
+            rc = H3C_OUTRANGE;                                                 \
             goto cleanup;                                                      \
         }                                                                      \
     } while (0);
@@ -109,7 +109,7 @@ cleanup:
 static enum h3c_rc copy_alidisplay(struct alidisplay *dst,
                                    struct hmmd_alidisplay const *src)
 {
-    enum h3c_rc rc = H3C_NOT_ENOUGH_MEMORY;
+    enum h3c_rc rc = H3C_NOMEM;
 
     dst->presence = src->presence;
 
