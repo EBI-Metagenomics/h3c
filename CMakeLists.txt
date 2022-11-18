@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 
 project(
   h3client
-  VERSION 0.4.0
+  VERSION 0.4.1
   LANGUAGES C)
 
 set(H3C_MAIN_PROJECT OFF)
@@ -25,7 +25,7 @@ include(cmake/sanitizers.cmake)
 include(cmake/CPM.cmake)
 include(cmake/Findlibdill.cmake)
 
-cpmaddpackage("gh:EBI-Metagenomics/lite-pack@0.4.0")
+cpmaddpackage("gh:EBI-Metagenomics/lite-pack@0.4.1")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_C_EXTENSIONS OFF)
