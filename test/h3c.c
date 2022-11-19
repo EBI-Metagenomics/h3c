@@ -36,7 +36,7 @@ int main(void)
     return EXIT_SUCCESS;
 }
 
-static long deadline(void) { return h3c_now() + 1000 * 500; }
+static long deadline(void) { return h3c_now() + 1000 * 5; }
 
 static void test_open_close_connection(void)
 {
