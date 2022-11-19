@@ -4,43 +4,58 @@
 #include "timeout.h"
 #include <nng/nng.h>
 #include <stdio.h>
+#include <stdlib.h>
 
-static nng_stream_dialer *stream = NULL;
-static nng_aio *aio = NULL;
-
-static void callb(void *arg)
+struct dialer
 {
-    (void)arg;
-    fprintf(stderr, "Ponto 1\n");
-    int rc = H3C_OK;
-    fprintf(stderr, "Ponto 2\n");
-    rc = nngerr(nng_aio_result(aio));
-    fprintf(stderr, "Ponto 3\n");
-    struct nng_stream *s = nng_aio_get_output(aio, 0);
-    fprintf(stderr, "Ponto 4\n");
+    nng_stream_dialer *stream;
+    nng_aio *aio;
+};
+
+struct dialer *dialer_new(char const *uri)
+{
+    struct dialer *dialer = malloc(sizeof(*dialer));
+    if (!dialer) return NULL;
+    dialer->stream = NULL;
+    dialer->aio = NULL;
+    if (nng_stream_dialer_alloc(&dialer->stream, uri))
+    {
+        free(dialer);
+        return NULL;
+    }
+    return dialer;
 }
 
-int dialer_open(char const *uri, int num_connections, long deadline)
+int dialer_open(struct dialer *dialer, long deadline)
 {
     int rc = H3C_OK;
-    stream = NULL;
-    aio = NULL;
-    if ((rc = nngerr(nng_stream_dialer_alloc(&stream, uri)))) goto cleanup;
-    if ((rc = nngerr(nng_aio_alloc(&aio, &callb, NULL)))) goto cleanup;
-    nng_aio_set_timeout(aio, timeout(deadline));
-    for (int i = 0; i < num_connections; ++i)
-        nng_stream_dialer_dial(stream, aio);
+    if ((rc = nngerr(nng_aio_alloc(&dialer->aio, NULL, NULL)))) goto cleanup;
+    nng_aio_set_timeout(dialer->aio, timeout(deadline));
+    nng_stream_dialer_dial(dialer->stream, dialer->aio);
+    nng_aio_wait(dialer->aio);
+    if ((rc = nngerr(nng_aio_result(dialer->aio)))) goto cleanup;
     return rc;
 
 cleanup:
-    dialer_close();
+    dialer_close(dialer);
     return rc;
 }
 
-void dialer_close(void)
+struct nng_stream *dialer_output(struct dialer *dialer)
 {
-    if (aio) nng_aio_free(aio);
-    if (stream) nng_stream_dialer_free(stream);
-    aio = NULL;
-    stream = NULL;
+    return nng_aio_get_output(dialer->aio, 0);
+}
+
+void dialer_close(struct dialer *dialer)
+{
+    if (dialer->aio) nng_aio_free(dialer->aio);
+    dialer->aio = NULL;
+}
+
+void dialer_del(struct dialer *dialer)
+{
+    if (!dialer) return;
+    if (dialer->stream) nng_stream_dialer_free(dialer->stream);
+    dialer_close(dialer);
+    free(dialer);
 }

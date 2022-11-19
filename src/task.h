@@ -1,20 +1,18 @@
 #ifndef TASK_H
 #define TASK_H
 
-#include "sock.h"
-
+struct task;
+struct sock;
 struct request;
 struct answer;
 
-struct task
-{
-    struct request *request;
-    struct answer *answer;
-    struct sock sock;
-};
-
-void task_init(struct task *);
-int task_open(struct task *);
+struct task *task_new(void);
+void task_open(struct task *, struct sock *);
+int task_recv(struct task *t);
 void task_close(struct task *);
+void task_del(struct task *);
+
+struct request *task_request(struct task *);
+struct answer *task_answer(struct task *);
 
 #endif

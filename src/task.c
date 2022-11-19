@@ -3,48 +3,32 @@
 #include "h3c/code.h"
 #include "hmmd/hmmd.h"
 #include "request.h"
+#include "sock.h"
 #include <stddef.h>
+#include <stdlib.h>
 
-void task_init(struct task *t)
+struct task
 {
-    t->request = NULL;
-    t->answer = NULL;
-    sock_init(&t->sock);
-}
+    struct request *request;
+    struct answer *answer;
+    struct sock *sock;
+};
 
-int task_open(struct task *t)
+struct task *task_new(void)
 {
-    int rc = H3C_OK;
-
-    if (!(t->request = request_new()))
-    {
-        rc = H3C_ENOMEM;
-        goto cleanup;
-    }
-
-    if (!(t->answer = answer_new()))
-    {
-        rc = H3C_ENOMEM;
-        goto cleanup;
-    }
-
-    if ((rc = sock_open(&t->sock))) goto cleanup;
-
-    return rc;
+    struct task *t = malloc(sizeof(*t));
+    if (!t) return NULL;
+    if (!(t->request = request_new())) goto cleanup;
+    if (!(t->answer = answer_new())) goto cleanup;
+    t->sock = NULL;
+    return t;
 
 cleanup:
-    task_close(t);
-    return rc;
+    task_del(t);
+    return NULL;
 }
 
-void task_close(struct task *t)
-{
-    sock_close(&t->sock);
-    if (t->answer) answer_del(t->answer);
-    if (t->request) request_del(t->request);
-    t->answer = NULL;
-    t->request = NULL;
-}
+void task_open(struct task *t, struct sock *sock) { t->sock = sock; }
 
 int task_recv(struct task *t)
 {
@@ -52,7 +36,7 @@ int task_recv(struct task *t)
 
     void *data = answer_status_data(t->answer);
     size_t size = answer_status_size();
-    if ((rc = sock_recv(&t->sock, size, data))) return rc;
+    if ((rc = sock_recv(t->sock, size, data))) return rc;
 
     struct hmmd_status const *status = answer_status_parse(t->answer);
 
@@ -60,7 +44,7 @@ int task_recv(struct task *t)
     if ((rc = answer_setup_size(t->answer, size))) return rc;
 
     data = answer_data(t->answer);
-    if ((rc = sock_recv(&t->sock, size, data))) return rc;
+    if ((rc = sock_recv(t->sock, size, data))) return rc;
 
     if (!status->status)
     {
@@ -70,3 +54,24 @@ int task_recv(struct task *t)
 
     return rc;
 }
+
+void task_close(struct task *t)
+{
+    sock_close(t->sock);
+    if (t->answer) answer_del(t->answer);
+    if (t->request) request_del(t->request);
+    t->answer = NULL;
+    t->request = NULL;
+}
+
+void task_del(struct task *t)
+{
+    if (!t) return;
+    task_close(t);
+    if (t->sock) sock_del(t->sock);
+    free(t);
+}
+
+struct request *task_request(struct task *t) { return t->request; }
+
+struct answer *task_answer(struct task *t) { return t->answer; }

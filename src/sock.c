@@ -5,31 +5,28 @@
 #include "request.h"
 #include "timeout.h"
 #include <nng/nng.h>
-#include <nng/supplemental/util/platform.h>
 #include <stddef.h>
+#include <stdlib.h>
 
-void sock_init(struct sock *s)
+struct sock *sock_new(void)
 {
+    struct sock *s = malloc(sizeof(*s));
+    if (!s) return NULL;
     s->aio = NULL;
     s->stream = NULL;
+    return s;
 }
 
-int sock_open(struct sock *s)
+int sock_open(struct sock *s, struct nng_stream *stream)
 {
     int rc = H3C_OK;
-
     if ((rc = nngerr(nng_aio_alloc(&s->aio, NULL, NULL)))) goto cleanup;
-
+    s->stream = stream;
     return rc;
 
 cleanup:
     sock_close(s);
     return rc;
-}
-
-void sock_set_stream(struct sock *s, struct nng_stream *stream)
-{
-    s->stream = stream;
 }
 
 void sock_set_deadline(struct sock *s, long deadline)
@@ -77,6 +74,12 @@ void sock_close(struct sock *s)
     if (s->aio) nng_aio_free(s->aio);
     s->stream = NULL;
     s->aio = NULL;
+}
+
+void sock_del(struct sock *s)
+{
+    if (s) sock_close(s);
+    free(s);
 }
 
 static int send(struct nng_stream *stream, nng_aio *aio, size_t *len,
