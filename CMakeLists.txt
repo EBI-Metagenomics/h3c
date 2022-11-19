@@ -37,10 +37,14 @@ add_library(
   src/answer.c
   src/buff.c
   src/code.c
+  src/dialer.c
   src/domain.c
   src/echo.c
   src/h3c.c
   src/hit.c
+  src/sock.c
+  src/task.c
+  src/timeout.c
   src/hmmd/alidisplay.c
   src/hmmd/domain.c
   src/hmmd/hit.c
