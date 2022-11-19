@@ -1,7 +1,7 @@
 #include "tophits.h"
 #include "domain.h"
 #include "echo.h"
-#include "h3c/rc.h"
+#include "h3c/code.h"
 #include "hit.h"
 #include "lite_pack/lite_pack.h"
 #include "tophits.h"
@@ -14,15 +14,15 @@
 
 void tophits_init(struct tophits *th) { memset(th, 0, sizeof(*th)); }
 
-static enum h3c_rc grow(struct tophits *th, unsigned nhits)
+static int grow(struct tophits *th, unsigned nhits)
 {
-    enum h3c_rc rc = H3C_OK;
+    int rc = H3C_OK;
 
     size_t sz = nhits * sizeof(*th->hits);
     struct hit *hits = realloc(th->hits, sz);
     if (!hits)
     {
-        rc = H3C_NOMEM;
+        rc = H3C_ENOMEM;
         goto cleanup;
     }
     th->hits = hits;
@@ -48,7 +48,7 @@ static void shrink(struct tophits *th, unsigned nhits)
     th->nhits = nhits;
 }
 
-enum h3c_rc tophits_setup(struct tophits *th, unsigned nhits)
+int tophits_setup(struct tophits *th, unsigned nhits)
 {
     if (th->nhits < nhits) return grow(th, nhits);
     shrink(th, nhits);
@@ -63,17 +63,17 @@ void tophits_cleanup(struct tophits *th)
     th->nhits = 0;
 }
 
-enum h3c_rc tophits_pack(struct tophits const *th, struct lip_file *f)
+int tophits_pack(struct tophits const *th, struct lip_file *f)
 {
     lip_write_array_size(f, 5);
 
     lip_write_map_size(f, 1);
     lip_write_cstr(f, "hits");
-    if (!lip_write_array_size(f, th->nhits)) return H3C_FAILED_PACK;
+    if (!lip_write_array_size(f, th->nhits)) return H3C_EPACK;
 
     for (unsigned i = 0; i < th->nhits; ++i)
     {
-        enum h3c_rc rc = hit_pack(th->hits + i, f);
+        int rc = hit_pack(th->hits + i, f);
         if (rc) return rc;
     }
 
@@ -82,12 +82,12 @@ enum h3c_rc tophits_pack(struct tophits const *th, struct lip_file *f)
     lip_write_bool(f, th->is_sorted_by_sortkey);
     lip_write_bool(f, th->is_sorted_by_seqidx);
 
-    return lip_file_error(f) ? H3C_FAILED_PACK : H3C_OK;
+    return lip_file_error(f) ? H3C_EPACK : H3C_OK;
 }
 
-enum h3c_rc tophits_unpack(struct tophits *th, struct lip_file *f)
+int tophits_unpack(struct tophits *th, struct lip_file *f)
 {
-    enum h3c_rc rc = H3C_FAILED_UNPACK;
+    int rc = H3C_EUNPACK;
 
     if (!expect_array_size(f, 5)) goto cleanup;
 

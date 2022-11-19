@@ -39,8 +39,7 @@ struct hmmd_alidisplay
 
 void hmmd_alidisplay_init(struct hmmd_alidisplay *);
 void hmmd_alidisplay_cleanup(struct hmmd_alidisplay *);
-enum h3c_rc hmmd_alidisplay_parse(struct hmmd_alidisplay *,
-                                  unsigned char const **ptr,
-                                  unsigned char const *end);
+int hmmd_alidisplay_parse(struct hmmd_alidisplay *, unsigned char const **ptr,
+                          unsigned char const *end);
 
 #endif

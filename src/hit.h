@@ -39,10 +39,10 @@ struct hit
 
 STATIC_ASSERT(sizeof(unsigned) >= 4);
 
-enum h3c_rc hit_init(struct hit *);
-enum h3c_rc hit_setup(struct hit *, unsigned ndomains);
+int hit_init(struct hit *);
+int hit_setup(struct hit *, unsigned ndomains);
 void hit_cleanup(struct hit *);
-enum h3c_rc hit_pack(struct hit const *, struct lip_file *);
-enum h3c_rc hit_unpack(struct hit *, struct lip_file *);
+int hit_pack(struct hit const *, struct lip_file *);
+int hit_unpack(struct hit *, struct lip_file *);
 
 #endif

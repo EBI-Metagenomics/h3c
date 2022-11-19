@@ -1,5 +1,5 @@
 #include "utils.h"
-#include "h3c/rc.h"
+#include "h3c/code.h"
 #include "lite_pack/lite_pack.h"
 #include "zc.h"
 #include <assert.h>
@@ -57,10 +57,10 @@ double eatf64(unsigned char const **data) { return eatnum64(data).f; }
 
 float eatf32(unsigned char const **data) { return eatnum32(data).f; }
 
-enum h3c_rc eatstr(char **dst, unsigned char const **data)
+int eatstr(char **dst, unsigned char const **data)
 {
     size_t size = strlen((char const *)*data) + 1;
-    if (!(*dst = zc_reallocf(*dst, size))) return H3C_NOMEM;
+    if (!(*dst = zc_reallocf(*dst, size))) return H3C_ENOMEM;
     memcpy(*dst, *data, size);
     *data += size;
     return H3C_OK;
@@ -110,12 +110,12 @@ bool expect_map_size(struct lip_file *f, unsigned size)
     return !lip_file_error(f) && size == sz;
 }
 
-enum h3c_rc read_string(struct lip_file *f, char **str)
+int read_string(struct lip_file *f, char **str)
 {
     unsigned size = 0;
-    if (!lip_read_str_size(f, &size)) return H3C_FAILED_UNPACK;
-    if (!(*str = zc_reallocf(*str, size + 1))) return H3C_NOMEM;
-    if (!lip_read_str_data(f, size, *str)) return H3C_FAILED_UNPACK;
+    if (!lip_read_str_size(f, &size)) return H3C_EUNPACK;
+    if (!(*str = zc_reallocf(*str, size + 1))) return H3C_ENOMEM;
+    if (!lip_read_str_data(f, size, *str)) return H3C_EUNPACK;
     (*str)[size] = 0;
     return H3C_OK;
 }

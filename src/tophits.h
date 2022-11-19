@@ -21,11 +21,11 @@ struct tophits
 STATIC_ASSERT(sizeof(unsigned) >= 4);
 
 void tophits_init(struct tophits *);
-enum h3c_rc tophits_setup(struct tophits *, unsigned nhits);
+int tophits_setup(struct tophits *, unsigned nhits);
 void tophits_cleanup(struct tophits *);
 
-enum h3c_rc tophits_pack(struct tophits const *, struct lip_file *);
-enum h3c_rc tophits_unpack(struct tophits *result, struct lip_file *);
+int tophits_pack(struct tophits const *, struct lip_file *);
+int tophits_unpack(struct tophits *result, struct lip_file *);
 
 void tophits_print_targets(struct tophits const *, FILE *, double Z);
 void tophits_print_domains(struct tophits const *, FILE *, double Z,

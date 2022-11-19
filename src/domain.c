@@ -1,6 +1,6 @@
 #include "domain.h"
 #include "alidisplay.h"
-#include "h3c/rc.h"
+#include "h3c/code.h"
 #include "lite_pack/lite_pack.h"
 #include "utils.h"
 #include "zc.h"
@@ -13,13 +13,13 @@ void domain_init(struct domain *dom)
     alidisplay_init(&dom->ad);
 }
 
-static enum h3c_rc grow_scores(struct domain *dom, unsigned size)
+static int grow_scores(struct domain *dom, unsigned size)
 {
     size_t sz = size * sizeof(*dom->pos_score);
     if (!(dom->pos_score = zc_reallocf(dom->pos_score, sz)))
     {
         domain_cleanup(dom);
-        return H3C_NOMEM;
+        return H3C_ENOMEM;
     }
     return H3C_OK;
 }
@@ -29,7 +29,7 @@ static void shrink_scores(struct domain *dom, unsigned size)
     dom->pos_score_size = size;
 }
 
-enum h3c_rc domain_setup(struct domain *dom, unsigned scores_size)
+int domain_setup(struct domain *dom, unsigned scores_size)
 {
     if (dom->pos_score_size < scores_size) return grow_scores(dom, scores_size);
     shrink_scores(dom, scores_size);
@@ -43,7 +43,7 @@ void domain_cleanup(struct domain *dom)
     alidisplay_cleanup(&dom->ad);
 }
 
-enum h3c_rc domain_pack(struct domain const *dom, struct lip_file *f)
+int domain_pack(struct domain const *dom, struct lip_file *f)
 {
     lip_write_array_size(f, 14);
 
@@ -73,9 +73,9 @@ enum h3c_rc domain_pack(struct domain const *dom, struct lip_file *f)
     return alidisplay_pack(&dom->ad, f);
 }
 
-enum h3c_rc domain_unpack(struct domain *dom, struct lip_file *f)
+int domain_unpack(struct domain *dom, struct lip_file *f)
 {
-    enum h3c_rc rc = H3C_FAILED_UNPACK;
+    int rc = H3C_EUNPACK;
 
     if (!expect_array_size(f, 14)) goto cleanup;
 

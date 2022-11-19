@@ -18,10 +18,8 @@ jobs:
       - name: Install openssl
         run: sudo apt-get install -y libssl-dev
 
-      - name: Install libdill
-        run: |
-          git clone https://github.com/sustrik/libdill.git
-          cd libdill && mkdir build && cd build
+      - name: Install nnn
+        run: sudo apt-get install -y libnng1 libnng-dev
           cmake .. && make && sudo make install
 
       - name: Install python

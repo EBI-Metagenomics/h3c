@@ -1,5 +1,5 @@
 #include "h3c/result.h"
-#include "h3c/rc.h"
+#include "h3c/code.h"
 #include "lite_pack/lite_pack.h"
 #include "result.h"
 #include "utils.h"
@@ -42,16 +42,16 @@ int h3c_result_unpack(struct h3c_result *result, FILE *file)
     struct lip_file f = {0};
     lip_file_init(&f, file);
 
-    if (!expect_map_size(&f, 1)) return H3C_FAILED_UNPACK;
+    if (!expect_map_size(&f, 1)) return H3C_EUNPACK;
 
-    if (!expect_key(&f, "h3result")) return H3C_FAILED_UNPACK;
+    if (!expect_key(&f, "h3result")) return H3C_EUNPACK;
 
-    if (!expect_map_size(&f, 2)) return H3C_FAILED_UNPACK;
-    if (!expect_key(&f, "stats")) return H3C_FAILED_UNPACK;
+    if (!expect_map_size(&f, 2)) return H3C_EUNPACK;
+    if (!expect_key(&f, "stats")) return H3C_EUNPACK;
     int rc = stats_unpack(&result->stats, &f);
     if (rc) return rc;
 
-    if (!expect_key(&f, "tophits")) return H3C_FAILED_UNPACK;
+    if (!expect_key(&f, "tophits")) return H3C_EUNPACK;
     return tophits_unpack(&result->tophits, &f);
 }
 

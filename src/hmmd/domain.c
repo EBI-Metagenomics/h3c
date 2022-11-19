@@ -1,5 +1,5 @@
 #include "hmmd/domain.h"
-#include "h3c/rc.h"
+#include "h3c/code.h"
 #include "hmmd/alidisplay.h"
 #include "utils.h"
 #include <assert.h>
@@ -23,11 +23,10 @@ void hmmd_domain_cleanup(struct hmmd_domain *dom)
 static_assert(sizeof(float) == 4, "sizeof(float) == 4");
 static_assert(sizeof(double) == 8, "sizeof(double) == 8");
 
-enum h3c_rc hmmd_domain_parse(struct hmmd_domain *dom,
-                              unsigned char const **ptr,
-                              unsigned char const *end)
+int hmmd_domain_parse(struct hmmd_domain *dom, unsigned char const **ptr,
+                      unsigned char const *end)
 {
-    enum h3c_rc rc = H3C_OK;
+    int rc = H3C_OK;
 
     ESCAPE_OVERRUN(rc, *ptr, end, sizeof(uint32_t) + 6 * sizeof(uint64_t));
 
@@ -62,7 +61,7 @@ enum h3c_rc hmmd_domain_parse(struct hmmd_domain *dom,
         float *scores = realloc(dom->pos_score, size);
         if (!scores)
         {
-            rc = H3C_FAILED_PARSE;
+            rc = H3C_EPARSE;
             goto cleanup;
         }
         dom->pos_score = scores;

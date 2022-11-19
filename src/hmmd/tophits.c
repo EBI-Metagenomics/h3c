@@ -1,5 +1,5 @@
 #include "hmmd/tophits.h"
-#include "h3c/rc.h"
+#include "h3c/code.h"
 #include "hmmd/domain.h"
 #include "hmmd/hit.h"
 #include "zc.h"
@@ -17,13 +17,13 @@ void hmmd_tophits_init(struct hmmd_tophits *th)
     th->is_sorted_by_sortkey = true;
 }
 
-static enum h3c_rc grow(struct hmmd_tophits *th, uint64_t nhits)
+static int grow(struct hmmd_tophits *th, uint64_t nhits)
 {
-    enum h3c_rc rc = H3C_OK;
+    int rc = H3C_OK;
 
     if (!(th->hit = zc_reallocf(th->hit, sizeof(*th->hit) * nhits)))
     {
-        rc = H3C_NOMEM;
+        rc = H3C_ENOMEM;
         goto cleanup;
     }
 
@@ -31,7 +31,7 @@ static enum h3c_rc grow(struct hmmd_tophits *th, uint64_t nhits)
     struct hmmd_hit *hits = realloc(th->unsrt, sz);
     if (!hits)
     {
-        rc = H3C_NOMEM;
+        rc = H3C_ENOMEM;
         goto cleanup;
     }
     th->unsrt = hits;
@@ -60,12 +60,11 @@ static void shrink(struct hmmd_tophits *th, uint64_t nhits)
     th->nhits = nhits;
 }
 
-enum h3c_rc hmmd_tophits_setup(struct hmmd_tophits *th,
-                               unsigned char const **ptr,
-                               unsigned char const *end, uint64_t nhits,
-                               uint64_t nreported, uint64_t nincluded)
+int hmmd_tophits_setup(struct hmmd_tophits *th, unsigned char const **ptr,
+                       unsigned char const *end, uint64_t nhits,
+                       uint64_t nreported, uint64_t nincluded)
 {
-    enum h3c_rc rc = H3C_OK;
+    int rc = H3C_OK;
 
     if (th->nhits < nhits)
         rc = grow(th, nhits);

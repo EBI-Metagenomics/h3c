@@ -21,7 +21,7 @@ enum state
 };
 
 static bool init(void);
-static bool cleanup(bool now);
+static void cleanup(void);
 static bool begin_seq(enum state *next);
 static bool send_seq(enum state *next);
 static bool end_seq(enum state *next);
@@ -43,10 +43,11 @@ int main(void)
         if (state == DONE && !done(&state)) goto exit_early;
     }
 
-    return cleanup(true) ? EXIT_SUCCESS : EXIT_FAILURE;
+    cleanup();
+    return EXIT_SUCCESS;
 
 exit_early:
-    cleanup(false);
+    cleanup();
     return EXIT_FAILURE;
 }
 
@@ -59,7 +60,7 @@ static bool init(void)
         return err("failed to open connection");
     if (!(result = h3c_result_new()))
     {
-        h3c_close(-1);
+        h3c_close();
         return err("failed the allocate results");
     }
     return true;
@@ -84,13 +85,10 @@ static bool end(void)
     return true;
 }
 
-static bool cleanup(bool now)
+static void cleanup(void)
 {
-    int rc = H3C_OK;
-    if ((rc = h3c_close(now ? -1 : deadline())))
-        err("failed to close connection");
+    h3c_close();
     h3c_result_del(result);
-    return rc ? false : true;
 }
 
 static void remove_newline(char const *str)

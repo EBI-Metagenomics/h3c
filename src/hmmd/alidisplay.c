@@ -60,25 +60,24 @@ static bool parse_strings(struct hmmd_alidisplay *ali, size_t size, char **mem)
     return true;
 }
 
-enum h3c_rc hmmd_alidisplay_parse(struct hmmd_alidisplay *ali,
-                                  unsigned char const **ptr,
-                                  unsigned char const *end)
+int hmmd_alidisplay_parse(struct hmmd_alidisplay *ali,
+                          unsigned char const **ptr, unsigned char const *end)
 {
-    enum h3c_rc rc = H3C_OK;
+    int rc = H3C_OK;
 
     ESCAPE_OVERRUN(rc, *ptr, end, sizeof(uint32_t));
 
     size_t obj_size = eatu32(ptr);
     if (obj_size <= SER_BASE_SIZE)
     {
-        rc = H3C_FAILED_PARSE;
+        rc = H3C_EPARSE;
         goto cleanup;
     }
     size_t memsize = (size_t)(obj_size - SER_BASE_SIZE);
 
     if (!(ali->mem = zc_reallocf(ali->mem, memsize)))
     {
-        rc = H3C_NOMEM;
+        rc = H3C_ENOMEM;
         goto cleanup;
     }
     ali->memsize = memsize;
@@ -102,7 +101,7 @@ enum h3c_rc hmmd_alidisplay_parse(struct hmmd_alidisplay *ali,
     char *mem = ali->mem;
     if (!parse_strings(ali, ali->memsize, &mem))
     {
-        rc = H3C_FAILED_PARSE;
+        rc = H3C_EPARSE;
         goto cleanup;
     }
 

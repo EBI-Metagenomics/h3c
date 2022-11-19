@@ -1,7 +1,7 @@
 #include "answer.h"
 #include "buff.h"
 #include "domain.h"
-#include "h3c/rc.h"
+#include "h3c/code.h"
 #include "h3c/result.h"
 #include "hit.h"
 #include "hmmd/hmmd.h"
@@ -68,7 +68,7 @@ struct hmmd_status const *answer_status_parse(struct answer *ans)
     return &ans->status.value;
 }
 
-enum h3c_rc answer_setup_size(struct answer *ans, size_t size)
+int answer_setup_size(struct answer *ans, size_t size)
 {
     ans->buff->size = size;
     return buff_ensure(&ans->buff, size);
@@ -76,9 +76,9 @@ enum h3c_rc answer_setup_size(struct answer *ans, size_t size)
 
 unsigned char *answer_data(struct answer *ans) { return ans->buff->data; }
 
-enum h3c_rc answer_parse(struct answer *ans)
+int answer_parse(struct answer *ans)
 {
-    enum h3c_rc rc = H3C_OK;
+    int rc = H3C_OK;
 
     unsigned char const *ptr = ans->buff->data;
     unsigned char const *end = ptr + ans->buff->size;
@@ -88,7 +88,7 @@ enum h3c_rc answer_parse(struct answer *ans)
                             ans->stats.nreported, ans->stats.nincluded);
     if (rc) goto cleanup;
 
-    if (ptr != end) rc = H3C_FAILED_PARSE;
+    if (ptr != end) rc = H3C_EPARSE;
 
 cleanup:
     return rc;
@@ -101,15 +101,15 @@ cleanup:
     {                                                                          \
         if ((var) > (val))                                                     \
         {                                                                      \
-            rc = H3C_OUTRANGE;                                                 \
+            rc = H3C_EOUTRANGE;                                                \
             goto cleanup;                                                      \
         }                                                                      \
     } while (0);
 
-static enum h3c_rc copy_alidisplay(struct alidisplay *dst,
-                                   struct hmmd_alidisplay const *src)
+static int copy_alidisplay(struct alidisplay *dst,
+                           struct hmmd_alidisplay const *src)
 {
-    enum h3c_rc rc = H3C_NOMEM;
+    int rc = H3C_ENOMEM;
 
     dst->presence = src->presence;
 
@@ -148,10 +148,9 @@ cleanup:
     return rc;
 }
 
-static enum h3c_rc copy_domain(struct domain *dst,
-                               struct hmmd_domain const *src)
+static int copy_domain(struct domain *dst, struct hmmd_domain const *src)
 {
-    enum h3c_rc rc = domain_setup(dst, src->scores_size);
+    int rc = domain_setup(dst, src->scores_size);
     if (rc) return rc;
 
     CHECK_OVERFLOW(src->ienv, UINT32_MAX);
@@ -185,9 +184,9 @@ cleanup:
     return rc;
 }
 
-static enum h3c_rc copy_hit(struct hit *dst, struct hmmd_hit const *src)
+static int copy_hit(struct hit *dst, struct hmmd_hit const *src)
 {
-    enum h3c_rc rc = hit_setup(dst, src->ndom);
+    int rc = hit_setup(dst, src->ndom);
     if (rc) return rc;
 
     if (!STRXDUP(dst->name, src->name)) goto cleanup;
@@ -227,10 +226,9 @@ cleanup:
     return rc;
 }
 
-static enum h3c_rc copy_tophits(struct tophits *dst,
-                                struct hmmd_tophits const *src)
+static int copy_tophits(struct tophits *dst, struct hmmd_tophits const *src)
 {
-    enum h3c_rc rc = tophits_setup(dst, src->nhits);
+    int rc = tophits_setup(dst, src->nhits);
     if (rc) return rc;
 
     dst->nreported = src->nreported;
@@ -250,9 +248,9 @@ cleanup:
     return rc;
 }
 
-static enum h3c_rc copy_stats(struct stats *dst, struct hmmd_stats const *src)
+static int copy_stats(struct stats *dst, struct hmmd_stats const *src)
 {
-    enum h3c_rc rc = H3C_OK;
+    int rc = H3C_OK;
 
     dst->Z = src->Z;
     dst->domZ = src->domZ;
@@ -286,7 +284,7 @@ cleanup:
     return rc;
 }
 
-enum h3c_rc answer_copy(struct answer *ans, struct h3c_result *r)
+int answer_copy(struct answer *ans, struct h3c_result *r)
 {
     copy_stats(&r->stats, &ans->stats);
     return copy_tophits(&r->tophits, &ans->tophits);

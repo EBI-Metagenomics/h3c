@@ -1,6 +1,6 @@
 #include "alidisplay.h"
 #include "echo.h"
-#include "h3c/rc.h"
+#include "h3c/code.h"
 #include "lite_pack/lite_pack.h"
 #include "utils.h"
 #include <stdlib.h>
@@ -13,7 +13,7 @@
 #define ASEQ_PRESENT (1 << 4)
 #define NTSEQ_PRESENT (1 << 5)
 
-enum h3c_rc alidisplay_init(struct alidisplay *ad)
+int alidisplay_init(struct alidisplay *ad)
 {
     memset(ad, 0, sizeof(*ad));
 
@@ -38,7 +38,7 @@ enum h3c_rc alidisplay_init(struct alidisplay *ad)
 
 cleanup:
     alidisplay_cleanup(ad);
-    return H3C_NOMEM;
+    return H3C_ENOMEM;
 }
 
 void alidisplay_cleanup(struct alidisplay *ad)
@@ -69,7 +69,7 @@ static void write_cstr(bool presence, struct lip_file *f, char const *str)
         lip_write_cstr(f, "");
 }
 
-enum h3c_rc alidisplay_pack(struct alidisplay const *ad, struct lip_file *f)
+int alidisplay_pack(struct alidisplay const *ad, struct lip_file *f)
 {
     lip_write_array_size(f, 19);
 
@@ -94,12 +94,12 @@ enum h3c_rc alidisplay_pack(struct alidisplay const *ad, struct lip_file *f)
     lip_write_int(f, ad->sqto);
     lip_write_int(f, ad->L);
 
-    return lip_file_error(f) ? H3C_FAILED_PACK : H3C_OK;
+    return lip_file_error(f) ? H3C_EPACK : H3C_OK;
 }
 
-enum h3c_rc alidisplay_unpack(struct alidisplay *ad, struct lip_file *f)
+int alidisplay_unpack(struct alidisplay *ad, struct lip_file *f)
 {
-    enum h3c_rc rc = H3C_FAILED_UNPACK;
+    int rc = H3C_EUNPACK;
 
     if (!expect_array_size(f, 19)) goto cleanup;
 
@@ -124,7 +124,7 @@ enum h3c_rc alidisplay_unpack(struct alidisplay *ad, struct lip_file *f)
     lip_read_int(f, &ad->sqto);
     lip_read_int(f, &ad->L);
 
-    rc = H3C_FAILED_UNPACK;
+    rc = H3C_EUNPACK;
     if (lip_file_error(f)) goto cleanup;
 
     return H3C_OK;

@@ -18,11 +18,10 @@ void hmmd_stats_cleanup(struct hmmd_stats *stats)
     stats->hit_offsets = 0;
 }
 
-static enum h3c_rc parse_first_part(struct hmmd_stats *stats,
-                                    unsigned char const **ptr,
-                                    unsigned char const *end)
+static int parse_first_part(struct hmmd_stats *stats, unsigned char const **ptr,
+                            unsigned char const *end)
 {
-    enum h3c_rc rc = H3C_OK;
+    int rc = H3C_OK;
 
     ESCAPE_OVERRUN(rc, *ptr, end, 14 * sizeof(uint64_t) + 2);
 
@@ -53,11 +52,10 @@ cleanup:
     return rc;
 }
 
-enum h3c_rc hmmd_stats_parse(struct hmmd_stats *stats,
-                             unsigned char const **ptr,
-                             unsigned char const *end)
+int hmmd_stats_parse(struct hmmd_stats *stats, unsigned char const **ptr,
+                     unsigned char const *end)
 {
-    enum h3c_rc rc = H3C_OK;
+    int rc = H3C_OK;
 
     if ((rc = parse_first_part(stats, ptr, end))) goto cleanup;
 
@@ -66,7 +64,7 @@ enum h3c_rc hmmd_stats_parse(struct hmmd_stats *stats,
 
     if (hit_offset == UINT64_MAX && stats->nhits > 0)
     {
-        rc = H3C_FAILED_PARSE;
+        rc = H3C_EPARSE;
         goto cleanup;
     }
 
@@ -76,7 +74,7 @@ enum h3c_rc hmmd_stats_parse(struct hmmd_stats *stats,
         stats->hit_offsets = zc_reallocf(stats->hit_offsets, size);
         if (!stats->hit_offsets)
         {
-            rc = H3C_NOMEM;
+            rc = H3C_ENOMEM;
             goto cleanup;
         }
 

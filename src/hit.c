@@ -1,12 +1,12 @@
 #include "hit.h"
 #include "domain.h"
-#include "h3c/rc.h"
+#include "h3c/code.h"
 #include "lite_pack/lite_pack.h"
 #include "utils.h"
 #include <stdlib.h>
 #include <string.h>
 
-enum h3c_rc hit_init(struct hit *hit)
+int hit_init(struct hit *hit)
 {
     memset(hit, 0, sizeof(*hit));
 
@@ -18,10 +18,10 @@ enum h3c_rc hit_init(struct hit *hit)
 
 cleanup:
     hit_cleanup(hit);
-    return H3C_NOMEM;
+    return H3C_ENOMEM;
 }
 
-static enum h3c_rc grow(struct hit *hit, unsigned ndomains)
+static int grow(struct hit *hit, unsigned ndomains)
 {
     size_t sz = ndomains * sizeof(*hit->domains);
     struct domain *domains = realloc(hit->domains, sz);
@@ -38,7 +38,7 @@ static enum h3c_rc grow(struct hit *hit, unsigned ndomains)
 
 cleanup:
     hit_cleanup(hit);
-    return H3C_NOMEM;
+    return H3C_ENOMEM;
 }
 
 static void shrink(struct hit *hit, unsigned ndomains)
@@ -49,7 +49,7 @@ static void shrink(struct hit *hit, unsigned ndomains)
     hit->ndomains = ndomains;
 }
 
-enum h3c_rc hit_setup(struct hit *hit, unsigned ndomains)
+int hit_setup(struct hit *hit, unsigned ndomains)
 {
     if (hit->ndomains < ndomains) return grow(hit, ndomains);
     shrink(hit, ndomains);
@@ -69,7 +69,7 @@ void hit_cleanup(struct hit *hit)
     DEL(hit->domains);
 }
 
-enum h3c_rc hit_pack(struct hit const *hit, struct lip_file *f)
+int hit_pack(struct hit const *hit, struct lip_file *f)
 {
     lip_write_array_size(f, 20);
 
@@ -103,16 +103,16 @@ enum h3c_rc hit_pack(struct hit const *hit, struct lip_file *f)
 
     for (unsigned i = 0; i < hit->ndomains; ++i)
     {
-        enum h3c_rc rc = domain_pack(hit->domains + i, f);
+        int rc = domain_pack(hit->domains + i, f);
         if (rc) return rc;
     }
 
-    return lip_file_error(f) ? H3C_FAILED_PACK : H3C_OK;
+    return lip_file_error(f) ? H3C_EPACK : H3C_OK;
 }
 
-enum h3c_rc hit_unpack(struct hit *hit, struct lip_file *f)
+int hit_unpack(struct hit *hit, struct lip_file *f)
 {
-    enum h3c_rc rc = H3C_FAILED_UNPACK;
+    int rc = H3C_EUNPACK;
 
     if (!expect_array_size(f, 20)) goto cleanup;
 

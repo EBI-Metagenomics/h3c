@@ -1,5 +1,5 @@
 #include "buff.h"
-#include "h3c/rc.h"
+#include "h3c/code.h"
 #include <assert.h>
 #include <stdlib.h>
 
@@ -15,12 +15,12 @@ struct buff *buff_new(size_t capacity)
     return buff;
 }
 
-enum h3c_rc buff_ensure(struct buff **buff, size_t capacity)
+int buff_ensure(struct buff **buff, size_t capacity)
 {
     if (capacity > (*buff)->capacity)
     {
         struct buff *tmp = realloc(*buff, sizeof(*tmp) + capacity);
-        if (!tmp) return H3C_NOMEM;
+        if (!tmp) return H3C_ENOMEM;
 
         *buff = tmp;
         (*buff)->capacity = capacity;

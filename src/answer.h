@@ -14,9 +14,9 @@ unsigned char *answer_status_data(struct answer *ans);
 size_t answer_status_size(void);
 struct hmmd_status const *answer_status_parse(struct answer *ans);
 
-enum h3c_rc answer_setup_size(struct answer *ans, size_t size);
+int answer_setup_size(struct answer *ans, size_t size);
 unsigned char *answer_data(struct answer *ans);
-enum h3c_rc answer_parse(struct answer *ans);
-enum h3c_rc answer_copy(struct answer *ans, struct h3c_result *);
+int answer_parse(struct answer *ans);
+int answer_copy(struct answer *ans, struct h3c_result *);
 
 #endif

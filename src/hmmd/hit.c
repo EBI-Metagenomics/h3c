@@ -23,13 +23,13 @@ void hmmd_hit_cleanup(struct hmmd_hit *hit)
 #define ACC_PRESENT (1 << 0)
 #define DESC_PRESENT (1 << 1)
 
-static enum h3c_rc parse_strings(struct hmmd_hit *hit, uint8_t presence,
-                                 size_t size, unsigned char const **ptr)
+static int parse_strings(struct hmmd_hit *hit, uint8_t presence, size_t size,
+                         unsigned char const **ptr)
 {
     unsigned n = 1 + !!(presence & ACC_PRESENT) + !!(presence & DESC_PRESENT);
-    if (!expect_n_strings(size, (char const *)*ptr, n)) return H3C_FAILED_PARSE;
+    if (!expect_n_strings(size, (char const *)*ptr, n)) return H3C_EPARSE;
 
-    enum h3c_rc rc = H3C_OK;
+    int rc = H3C_OK;
 
     if ((rc = eatstr(&hit->name, ptr))) return rc;
 
@@ -46,10 +46,10 @@ static enum h3c_rc parse_strings(struct hmmd_hit *hit, uint8_t presence,
     return H3C_OK;
 }
 
-enum h3c_rc hmmd_hit_parse(struct hmmd_hit *hit, unsigned char const **ptr,
-                           unsigned char const *end)
+int hmmd_hit_parse(struct hmmd_hit *hit, unsigned char const **ptr,
+                   unsigned char const *end)
 {
-    enum h3c_rc rc = H3C_OK;
+    int rc = H3C_OK;
 
     ESCAPE_OVERRUN(rc, *ptr, end, 2 * sizeof(uint32_t));
 
@@ -97,7 +97,7 @@ enum h3c_rc hmmd_hit_parse(struct hmmd_hit *hit, unsigned char const **ptr,
         struct hmmd_domain *dcl = realloc(hit->dcl, ndom * sizeof(*hit->dcl));
         if (!dcl)
         {
-            rc = H3C_NOMEM;
+            rc = H3C_ENOMEM;
             goto cleanup;
         }
 

@@ -16,7 +16,7 @@ uint8_t eatu8(unsigned char const **data);
 double eatf64(unsigned char const **data);
 float eatf32(unsigned char const **data);
 
-enum h3c_rc eatstr(char **dst, unsigned char const **data);
+int eatstr(char **dst, unsigned char const **data);
 char *strskip(char **str);
 
 #define ESCAPE_OVERRUN(rc, cur, end, sz)                                       \
@@ -24,7 +24,7 @@ char *strskip(char **str);
     {                                                                          \
         if ((end) < (cur) + (sz))                                              \
         {                                                                      \
-            rc = H3C_FAILED_PARSE;                                             \
+            rc = H3C_EPARSE;                                                   \
             goto cleanup;                                                      \
         }                                                                      \
     } while (0);
@@ -37,7 +37,7 @@ bool expect_key(struct lip_file *f, char const *key);
 bool expect_array_size(struct lip_file *f, unsigned size);
 bool expect_map_size(struct lip_file *f, unsigned size);
 
-enum h3c_rc read_string(struct lip_file *f, char **str);
+int read_string(struct lip_file *f, char **str);
 
 char *strxdup(char *dst, char const *src);
 

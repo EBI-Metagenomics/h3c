@@ -37,10 +37,10 @@ struct alidisplay
 
 STATIC_ASSERT(sizeof(unsigned) >= 4);
 
-enum h3c_rc alidisplay_init(struct alidisplay *);
+int alidisplay_init(struct alidisplay *);
 void alidisplay_cleanup(struct alidisplay *);
-enum h3c_rc alidisplay_pack(struct alidisplay const *, struct lip_file *);
-enum h3c_rc alidisplay_unpack(struct alidisplay *, struct lip_file *);
+int alidisplay_pack(struct alidisplay const *, struct lip_file *);
+int alidisplay_unpack(struct alidisplay *, struct lip_file *);
 void alidisplay_print(struct alidisplay const *, FILE *file);
 
 #endif

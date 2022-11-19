@@ -48,7 +48,7 @@ struct hmmd_hit
 void hmmd_hit_init(struct hmmd_hit *);
 void hmmd_hit_cleanup(struct hmmd_hit *);
 
-enum h3c_rc hmmd_hit_parse(struct hmmd_hit *hit, unsigned char const **ptr,
-                           unsigned char const *end);
+int hmmd_hit_parse(struct hmmd_hit *hit, unsigned char const **ptr,
+                   unsigned char const *end);
 
 #endif
