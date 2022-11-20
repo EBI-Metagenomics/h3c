@@ -34,6 +34,7 @@ add_library(
   h3c
   libs/argless.c
   src/alidisplay.c
+  src/amsg.c
   src/answer.c
   src/buff.c
   src/code.c

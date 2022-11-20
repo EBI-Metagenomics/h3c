@@ -16,15 +16,14 @@ struct msg
 };
 
 static struct msg *alloc(nng_stream *s, void (*submit)(nng_stream *, nng_aio *),
-                         int len, struct nng_iov *, void (*callb)(void *),
-                         void *arg);
+                         int len, struct nng_iov *);
 static void destroy(struct msg *x);
 static void start(struct msg *x);
 static void callback(void *arg);
 
 struct msg *msend(struct nng_stream *s, int len, struct nng_iov *iov)
 {
-    struct msg *x = alloc(s, &nng_stream_send, len, iov, NULL, NULL);
+    struct msg *x = alloc(s, &nng_stream_send, len, iov);
     if (!x) return x;
     start(x);
     return x;
@@ -32,17 +31,7 @@ struct msg *msend(struct nng_stream *s, int len, struct nng_iov *iov)
 
 struct msg *mrecv(struct nng_stream *s, int len, struct nng_iov *iov)
 {
-    struct msg *x = alloc(s, &nng_stream_recv, len, iov, NULL, NULL);
-    if (!x) return x;
-    start(x);
-    return x;
-}
-
-struct msg *mrecv_callb(struct nng_stream *s, size_t size, void *data,
-                        void (*callb)(void *), void *arg)
-{
-    struct nng_iov iov = {.iov_buf = data, .iov_len = size};
-    struct msg *x = alloc(s, &nng_stream_recv, 1, &iov, callb, arg);
+    struct msg *x = alloc(s, &nng_stream_recv, len, iov);
     if (!x) return x;
     start(x);
     return x;
@@ -59,13 +48,12 @@ int mwait(struct msg *x)
 }
 
 static struct msg *alloc(nng_stream *s, void (*submit)(nng_stream *, nng_aio *),
-                         int len, struct nng_iov *iov, void (*callb)(void *),
-                         void *arg)
+                         int len, struct nng_iov *iov)
 {
     struct msg *x;
 
     if ((x = nng_alloc(sizeof(*x))) == NULL) return NULL;
-    if (nng_aio_alloc(&x->upper_aio, callb, arg) != 0)
+    if (nng_aio_alloc(&x->upper_aio, NULL, NULL) != 0)
     {
         destroy(x);
         return NULL;
