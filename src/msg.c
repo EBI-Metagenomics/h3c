@@ -99,12 +99,12 @@ void msg_stop(struct msg *x)
 void msg_del(struct msg *x)
 {
     if (!x) return;
-    if (x->mtx) nng_mtx_free(x->mtx);
     if (x->ans) answer_del(x->ans);
     if (x->send_amsg) adel(x->send_amsg);
     nng_mtx_lock(x->mtx);
     if (x->recv_hmsg) hdel(x->recv_hmsg);
     nng_mtx_unlock(x->mtx);
+    if (x->mtx) nng_mtx_free(x->mtx);
     if (x->aio) nng_aio_free(x->aio);
     free(x);
 }
