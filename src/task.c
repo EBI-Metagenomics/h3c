@@ -4,8 +4,10 @@
 #include "hmmd/hmmd.h"
 #include "request.h"
 #include "sock.h"
+#include <nng/nng.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 
 struct task
 {
@@ -29,6 +31,18 @@ cleanup:
 }
 
 void task_open(struct task *t, struct sock *sock) { t->sock = sock; }
+
+int task_send(struct task *t, char const *args, char const *seq)
+{
+    struct nng_iov iov[5] = {
+        {.iov_buf = "@", .iov_len = 1},
+        {.iov_buf = (void *)args, .iov_len = strlen(args)},
+        {.iov_buf = "\n", .iov_len = 1},
+        {.iov_buf = (void *)seq, .iov_len = strlen(seq)},
+        {.iov_buf = "//", .iov_len = 2},
+    };
+    return sock_send(t->sock, 5, iov, t);
+}
 
 int task_recv(struct task *t)
 {
