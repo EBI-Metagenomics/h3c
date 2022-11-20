@@ -2,12 +2,13 @@
 #include "h3c/code.h"
 #include <nng/nng.h>
 #include <stdint.h>
+#include <string.h>
 
 struct msg
 {
-    uint8_t *base;
     size_t rem;
-    struct nng_iov iov;
+    int len;
+    struct nng_iov iov[8];
     struct nng_aio *upper_aio;
     struct nng_aio *lower_aio;
     struct nng_stream *s;
@@ -15,22 +16,22 @@ struct msg
 };
 
 static struct msg *alloc(nng_stream *s, void (*submit)(nng_stream *, nng_aio *),
-                         size_t size, void *buf);
+                         int len, struct nng_iov *);
 static void destroy(struct msg *x);
 static void start(struct msg *x);
 static void callback(void *arg);
 
-struct msg *msend(struct nng_stream *s, size_t size, void const *buf)
+struct msg *msend(struct nng_stream *s, int len, struct nng_iov *iov)
 {
-    struct msg *x = alloc(s, &nng_stream_send, size, (void *)buf);
+    struct msg *x = alloc(s, &nng_stream_send, len, iov);
     if (!x) return x;
     start(x);
     return x;
 }
 
-struct msg *mrecv(struct nng_stream *s, size_t size, void *buf)
+struct msg *mrecv(struct nng_stream *s, int len, struct nng_iov *iov)
 {
-    struct msg *x = alloc(s, &nng_stream_recv, size, buf);
+    struct msg *x = alloc(s, &nng_stream_recv, len, iov);
     if (!x) return x;
     start(x);
     return x;
@@ -47,7 +48,7 @@ int mwait(struct msg *x)
 }
 
 static struct msg *alloc(nng_stream *s, void (*submit)(nng_stream *, nng_aio *),
-                         size_t size, void *buf)
+                         int len, struct nng_iov *iov)
 {
     struct msg *x;
 
@@ -70,8 +71,11 @@ static struct msg *alloc(nng_stream *s, void (*submit)(nng_stream *, nng_aio *),
     nng_aio_begin(x->upper_aio);
 
     x->s = s;
-    x->rem = size;
-    x->base = buf;
+    x->rem = 0;
+    for (int i = 0; i < len; ++i)
+        x->rem += iov[i].iov_len;
+    x->len = len;
+    memcpy(x->iov, iov, len * sizeof(*iov));
     x->submit = submit;
 
     return x;
@@ -87,11 +91,7 @@ static void destroy(struct msg *x)
 
 static void start(struct msg *x)
 {
-    nng_iov iov;
-    iov.iov_buf = x->base;
-    iov.iov_len = x->rem;
-
-    nng_aio_set_iov(x->lower_aio, 1, &iov);
+    nng_aio_set_iov(x->lower_aio, x->len, x->iov);
     x->submit(x->s, x->lower_aio);
 }
 
@@ -110,7 +110,6 @@ static void callback(void *arg)
     n = nng_aio_count(x->lower_aio);
 
     x->rem -= n;
-    x->base += n;
 
     if (x->rem == 0)
     {

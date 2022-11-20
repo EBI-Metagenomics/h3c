@@ -14,4 +14,6 @@ struct packet *packet_new(void)
     return packet;
 }
 
+int packet_result(struct packet *packet) { return packet->result; }
+
 void packet_del(struct packet *packet) { free(packet); }

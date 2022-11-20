@@ -47,12 +47,13 @@ void sock_set_deadline(struct sock *sock, long deadline)
     nng_aio_set_timeout(sock->aio, timeout(deadline));
 }
 
-int sock_send(struct sock *sock, size_t len, void const *buf, void *arg)
+int sock_send_flat(struct sock *sock, size_t len, void const *buf, void *arg)
 {
     struct packet *packet = packet_new();
     if (!packet) return H3C_ENOMEM;
 
-    if (!(packet->msg = msend(sock->stream, len, buf)))
+    struct nng_iov iov = {.iov_len = len, .iov_buf = (void *)buf};
+    if (!(packet->msg = msend(sock->stream, 1, &iov)))
     {
         packet_del(packet);
         return H3C_ENOMEM;
@@ -63,12 +64,13 @@ int sock_send(struct sock *sock, size_t len, void const *buf, void *arg)
     return H3C_OK;
 }
 
-int sock_recv(struct sock *sock, size_t len, void *buf, void *arg)
+int sock_recv_flat(struct sock *sock, size_t len, void *buf, void *arg)
 {
     struct packet *packet = packet_new();
     if (!packet) return H3C_ENOMEM;
 
-    if (!(packet->msg = mrecv(sock->stream, len, buf)))
+    struct nng_iov iov = {.iov_len = len, .iov_buf = buf};
+    if (!(packet->msg = mrecv(sock->stream, 1, &iov)))
     {
         packet_del(packet);
         return H3C_ENOMEM;
