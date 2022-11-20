@@ -40,9 +40,9 @@ void sock_open(struct sock *sock, struct nng_stream *stream)
     sock->stream = stream;
 }
 
-void sock_set_deadline(struct sock *s, long deadline)
+void sock_set_deadline(struct sock *sock, long deadline)
 {
-    nng_aio_set_timeout(s->aio, timeout(deadline));
+    nng_aio_set_timeout(sock->aio, timeout(deadline));
 }
 
 int sock_send(struct sock *sock, size_t len, void const *buf)
@@ -59,6 +59,18 @@ int sock_recv(struct sock *sock, size_t len, void *buf)
     if (!msg) return H3C_ENOMEM;
     sock->last_recv = msg;
     return H3C_OK;
+}
+
+struct msg *wait_next(struct msg **last);
+
+struct msg *sock_wait_send(struct sock *sock)
+{
+    return wait_next(&sock->last_send);
+}
+
+struct msg *sock_wait_recv(struct sock *sock)
+{
+    return wait_next(&sock->last_recv);
 }
 
 void sock_close(struct sock *sock)
@@ -78,4 +90,15 @@ void sock_del(struct sock *sock)
     if (!sock) return;
     sock_close(sock);
     free(sock);
+}
+
+struct msg *wait_next(struct msg **last)
+{
+    if (!*last) NULL;
+
+    struct msg *msg = *last;
+    *last = mnext(msg);
+
+    mwait(msg);
+    return msg;
 }

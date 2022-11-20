@@ -49,6 +49,8 @@ int mwait(struct msg *x)
     return rv;
 }
 
+struct msg *mnext(struct msg *msg) { return msg->next; }
+
 static struct msg *alloc(nng_stream *s, void (*submit)(nng_stream *, nng_aio *),
                          size_t size, void *buf, struct msg *next)
 {
