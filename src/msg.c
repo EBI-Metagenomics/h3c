@@ -51,7 +51,7 @@ static struct msg *alloc(nng_stream *s, void (*submit)(nng_stream *, nng_aio *),
 {
     struct msg *x;
 
-    if ((x = nng_alloc(size)) == NULL) return NULL;
+    if ((x = nng_alloc(sizeof(*x))) == NULL) return NULL;
     if (nng_aio_alloc(&x->upper_aio, NULL, NULL) != 0)
     {
         destroy(x);
