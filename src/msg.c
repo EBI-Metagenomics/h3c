@@ -87,6 +87,15 @@ void msg_cancel(struct msg *x)
     nng_aio_cancel(x->aio);
 }
 
+void msg_stop(struct msg *x)
+{
+    nng_mtx_lock(x->mtx);
+    if (x->recv_hmsg) hstop(x->recv_hmsg);
+    nng_mtx_unlock(x->mtx);
+    astop(x->send_amsg);
+    nng_aio_stop(x->aio);
+}
+
 void msg_del(struct msg *x)
 {
     if (!x) return;

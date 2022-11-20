@@ -28,6 +28,7 @@ struct msg *msg_new(struct nng_stream *);
 int msg_start(struct msg *, char const *args, char const *seq, long deadline);
 int msg_wait(struct msg *);
 void msg_cancel(struct msg *);
+void msg_stop(struct msg *);
 void msg_del(struct msg *);
 struct answer *msg_answer(struct msg *);
 
