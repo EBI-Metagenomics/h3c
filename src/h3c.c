@@ -1,10 +1,12 @@
 #define _POSIX_SOURCE 200809L
 #include "h3c/h3c.h"
 #include "answer.h"
+#include "dialer.h"
 #include "hmmd/hmmd.h"
 #include "itoa.h"
 #include "nnge.h"
 #include "request.h"
+#include "task.h"
 #include <errno.h>
 #include <nng/nng.h>
 #include <nng/supplemental/util/platform.h>
@@ -17,6 +19,9 @@ static nng_aio *daio = NULL;
 static nng_stream *stream = NULL;
 static struct request *request = NULL;
 static struct answer *answer = NULL;
+
+static struct dialer *dia = NULL;
+static struct task *task = NULL;
 
 static int timeout(long deadline)
 {
@@ -55,6 +60,10 @@ int h3c_open(char const *ip, int port, long deadline)
 
     stream = nng_aio_get_output(daio, 0);
 
+    dia = dialer_new(uri);
+    dialer_dial(dia, deadline);
+    task = task_new(dialer_stream(dia));
+
     return rc;
 
 cleanup:
@@ -64,6 +73,8 @@ cleanup:
 
 void h3c_close(void)
 {
+    if (dia) dialer_del(dia);
+    if (task) task_del(task);
     if (stream)
     {
         nng_stream_close(stream);
@@ -79,6 +90,15 @@ void h3c_close(void)
     answer = NULL;
     request = NULL;
 }
+
+int h3c_send(char const *args, char const *seq, long deadline)
+{
+    return task_put(task, args, seq, deadline);
+}
+
+void h3c_wait(void) { task_wait(task); }
+
+int h3c_pop(struct h3c_result *r) { return task_pop(task, r); }
 
 static int send1(nng_aio *aio, void const *buf, size_t *sz)
 {
@@ -178,8 +198,8 @@ cleanup:
 
 #define READ_SIZE 4096
 
-int h3c_send(char const *args, FILE *fasta, struct h3c_result *result,
-             long deadline)
+int h3c_sendf(char const *args, FILE *fasta, struct h3c_result *result,
+              long deadline)
 {
     int rc = H3C_OK;
     if ((rc = h3c_begin(args, deadline))) return rc;

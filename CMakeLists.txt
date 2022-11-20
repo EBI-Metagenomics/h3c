@@ -99,15 +99,11 @@ target_include_directories(
   PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
           $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs>)
 
-add_executable(h3client h3client.c)
-target_link_libraries(h3client PRIVATE h3c)
-add_executable(h3c::h3client ALIAS h3client)
-
 add_executable(h3result h3result.c)
 target_link_libraries(h3result PRIVATE h3c)
 add_executable(H3C::h3result ALIAS h3result)
 
-install(TARGETS h3c h3client h3result EXPORT h3c-targets)
+install(TARGETS h3c h3result EXPORT h3c-targets)
 
 install(DIRECTORY include/h3c/ DESTINATION include/h3c)
 

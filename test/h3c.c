@@ -1,5 +1,6 @@
 #include "h3c/h3c.h"
 #include "file_hash.h"
+#include "fs.h"
 #include "helper.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,8 +21,20 @@ static void test_reuse_results_print(void);
 static void test_reuse_connection(void);
 static void test_result_api(void);
 
+static char const *ross = NULL;
+static char const *poor = NULL;
+
 int main(void)
 {
+    long size = 0;
+    unsigned char *data = NULL;
+
+    check_code(fs_readall(ASSETS "/ross.fasta", &size, &data));
+    ross = (char *)data;
+
+    check_code(fs_readall(ASSETS "/ross.poor.fasta", &size, &data));
+    poor = (char *)data;
+
     test_open_close_connection();
     test_pack_result();
     test_unpack_result();
@@ -33,6 +46,9 @@ int main(void)
     test_reuse_results_print();
     test_reuse_connection();
     test_result_api();
+
+    free((void *)poor);
+    free((void *)ross);
     return EXIT_SUCCESS;
 }
 
@@ -49,11 +65,10 @@ static struct h3c_result *create_result_ross(void)
     struct h3c_result *result = 0;
     check_code(h3c_open("127.0.0.1", PORT, deadline()));
 
-    FILE *file = 0;
-    if (!(file = fopen(ASSETS "/ross.fasta", "r"))) fail();
-    if (!(result = h3c_result_new())) fail();
-    check_code(h3c_send(cmd, file, result, deadline()));
-    fclose(file);
+    check_code(h3c_send(cmd, ross, deadline()));
+    h3c_wait();
+    result = h3c_result_new();
+    check_code(h3c_pop(result));
 
     h3c_close();
     return result;
@@ -170,15 +185,14 @@ static void test_print_domains_table(void)
 static void test_reuse_results(void)
 {
     struct h3c_result *result = 0;
-    FILE *file = 0;
 
     if (!(result = h3c_result_new())) fail();
 
-    if (!(file = fopen(ASSETS "/ross.fasta", "r"))) fail();
     check_code(h3c_open("127.0.0.1", PORT, deadline()));
-    check_code(h3c_send(cmd, file, result, deadline()));
+    check_code(h3c_send(cmd, ross, deadline()));
+    h3c_wait();
+    check_code(h3c_pop(result));
     h3c_close();
-    fclose(file);
 
     h3c_result_del(result);
 }
@@ -192,11 +206,11 @@ static void test_reuse_results_print(void)
 
     if (!(result = h3c_result_new())) fail();
 
-    if (!(file = fopen(ASSETS "/ross.fasta", "r"))) fail();
     check_code(h3c_open("127.0.0.1", PORT, deadline()));
-    check_code(h3c_send(cmd, file, result, deadline()));
+    check_code(h3c_send(cmd, ross, deadline()));
+    h3c_wait();
+    check_code(h3c_pop(result));
     h3c_close();
-    fclose(file);
 
     file = 0;
     if (!(file = fopen(TMPDIR "/targets.txt", "wb"))) fail();
@@ -216,18 +230,17 @@ static void test_reuse_results_print(void)
 static void test_reuse_connection(void)
 {
     struct h3c_result *result = 0;
-    FILE *file = 0;
 
     if (!(result = h3c_result_new())) fail();
     check_code(h3c_open("127.0.0.1", PORT, deadline()));
 
-    if (!(file = fopen(ASSETS "/ross.fasta", "r"))) fail();
-    check_code(h3c_send(cmd, file, result, deadline()));
-    fclose(file);
+    check_code(h3c_send(cmd, ross, deadline()));
+    h3c_wait();
+    check_code(h3c_pop(result));
 
-    if (!(file = fopen(ASSETS "/ross.poor.fasta", "r"))) fail();
-    check_code(h3c_send(cmd, file, result, deadline()));
-    fclose(file);
+    check_code(h3c_send(cmd, poor, deadline()));
+    h3c_wait();
+    check_code(h3c_pop(result));
 
     h3c_close();
 
