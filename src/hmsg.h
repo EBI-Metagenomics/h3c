@@ -12,6 +12,7 @@ struct hmsg *hrecv(struct nng_stream *, struct answer *, void (*callb)(void *),
 void hstart(struct hmsg *);
 int hwait(struct hmsg *);
 void hcancel(struct hmsg *);
+void hstop(struct hmsg *);
 void hdel(struct hmsg *);
 
 int hresult(struct hmsg *);

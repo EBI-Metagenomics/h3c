@@ -129,10 +129,9 @@ int hwait(struct hmsg *x)
     return nng_aio_result(x->aio);
 }
 
-void hcancel(struct hmsg *x)
-{
-    if (x->aio) nng_aio_cancel(x->aio);
-}
+void hcancel(struct hmsg *x) { nng_aio_cancel(x->aio); }
+
+void hstop(struct hmsg *x) { nng_aio_stop(x->aio); }
 
 void hdel(struct hmsg *x)
 {

@@ -1,91 +1,66 @@
 #include "task.h"
 #include "answer.h"
+#include "atomic.h"
+#include "cco.h"
 #include "h3c/code.h"
-#include "hmmd/hmmd.h"
-#include "request.h"
-#include "sock.h"
+#include "msg.h"
 #include <nng/nng.h>
-#include <stddef.h>
 #include <stdlib.h>
-#include <string.h>
 
 struct task
 {
-    struct request *request;
-    struct answer *answer;
-    struct sock *sock;
+    struct nng_stream *stream;
+    struct cco_queue queue;
 };
 
-struct task *task_new(void)
+struct task *task_new(struct nng_stream *stream)
 {
-    struct task *t = malloc(sizeof(*t));
-    if (!t) return NULL;
-    if (!(t->request = request_new())) goto cleanup;
-    if (!(t->answer = answer_new())) goto cleanup;
-    t->sock = NULL;
-    return t;
-
-cleanup:
-    task_del(t);
-    return NULL;
+    struct task *task = malloc(sizeof(*task));
+    if (!task) return NULL;
+    task->stream = stream;
+    cco_queue_init(&task->queue);
+    return task;
 }
 
-void task_open(struct task *t, struct sock *sock) { t->sock = sock; }
-
-int task_send(struct task *t, char const *args, char const *seq)
+int task_put(struct task *t, char const *args, char const *seq, long deadline)
 {
-    struct nng_iov iov[5] = {
-        {.iov_buf = "@", .iov_len = 1},
-        {.iov_buf = (void *)args, .iov_len = strlen(args)},
-        {.iov_buf = "\n", .iov_len = 1},
-        {.iov_buf = (void *)seq, .iov_len = strlen(seq)},
-        {.iov_buf = "//", .iov_len = 2},
-    };
-    return sock_send(t->sock, 5, iov, t);
-}
+    struct msg *msg = msg_new(t->stream);
+    if (!msg) return H3C_ENOMEM;
 
-int task_recv(struct task *t)
-{
-    int rc = H3C_OK;
-
-    void *data = answer_status_data(t->answer);
-    size_t size = answer_status_size();
-    if ((rc = sock_recv_flat(t->sock, size, data, NULL))) return rc;
-
-    struct hmmd_status const *status = answer_status_parse(t->answer);
-
-    size = status->msg_size;
-    if ((rc = answer_setup_size(t->answer, size))) return rc;
-
-    data = answer_data(t->answer);
-    if ((rc = sock_recv_flat(t->sock, size, data, NULL))) return rc;
-
-    if (!status->status)
+    int rc = msg_start(msg, args, seq, deadline);
+    if (rc)
     {
-        if ((rc = answer_parse(t->answer))) return rc;
-        // if ((rc = answer_copy(s->answer, result))) return rc;
+        msg_del(msg);
+        return rc;
     }
 
-    return rc;
+    cco_queue_put(&t->queue, &msg->node);
+
+    return H3C_OK;
 }
 
-void task_close(struct task *t)
+void task_wait(struct task *t)
 {
-    sock_close(t->sock);
-    if (t->answer) answer_del(t->answer);
-    if (t->request) request_del(t->request);
-    t->answer = NULL;
-    t->request = NULL;
+    if (cco_queue_empty(&t->queue)) return;
+    struct msg *msg = cco_of(cco_queue_pop(&t->queue), struct msg, node);
+    msg_wait(msg);
+    cco_queue_put_first(&t->queue, &msg->node);
+}
+
+int task_pop(struct task *t, struct h3c_result *r)
+{
+    struct msg *msg = cco_of(cco_queue_pop(&t->queue), struct msg, node);
+    int rc = answer_copy(msg_answer(msg), r);
+    msg_del(msg);
+    return rc;
 }
 
 void task_del(struct task *t)
 {
-    if (!t) return;
-    task_close(t);
-    if (t->sock) sock_del(t->sock);
-    free(t);
+    while (!cco_queue_empty(&t->queue))
+    {
+        task_wait(t);
+        struct msg *msg = cco_of(cco_queue_pop(&t->queue), struct msg, node);
+        msg_del(msg);
+    }
 }
-
-struct request *task_request(struct task *t) { return t->request; }
-
-struct answer *task_answer(struct task *t) { return t->answer; }

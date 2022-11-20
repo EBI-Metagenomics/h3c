@@ -47,8 +47,6 @@ add_library(
   src/hmmd/domain.c
   src/hmsg.c
   src/msg.c
-  src/packet.c
-  src/sock.c
   src/task.c
   src/timeout.c
   src/hmmd/hit.c

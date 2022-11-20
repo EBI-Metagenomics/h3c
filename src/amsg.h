@@ -15,6 +15,7 @@ void astart(struct amsg *);
 int await(struct amsg *);
 void adel(struct amsg *);
 void acancel(struct amsg *);
+void astop(struct amsg *);
 int aresult(struct amsg *);
 
 #endif

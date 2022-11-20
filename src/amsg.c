@@ -3,7 +3,6 @@
 #include "timeout.h"
 #include <nng/nng.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <string.h>
 
 struct amsg
@@ -20,9 +19,9 @@ static struct amsg *alloc(nng_stream *s,
                           void (*submit)(nng_stream *, nng_aio *), int len,
                           struct nng_iov *, void (*callb)(void *), void *arg,
                           long deadline);
-static void destroy2(struct amsg *x);
+static void destroy(struct amsg *x);
 static void start(struct amsg *x);
-static void callb4(void *arg);
+static void callback(void *arg);
 
 struct amsg *asend(struct nng_stream *s, int len, struct nng_iov *iov,
                    void (*callb)(void *), void *arg, long deadline)
@@ -33,9 +32,6 @@ struct amsg *asend(struct nng_stream *s, int len, struct nng_iov *iov,
 struct amsg *arecv(struct nng_stream *s, size_t len, void *data,
                    void (*callb)(void *), void *arg, long deadline)
 {
-    fprintf(stderr, "arecv len : %ld\n", len);
-    fprintf(stderr, "arecv data: %p\n", data);
-    fprintf(stderr, "\n");
     struct nng_iov iov = {.iov_buf = data, .iov_len = len};
     return alloc(s, &nng_stream_recv, 1, &iov, callb, arg, deadline);
 }
@@ -48,9 +44,11 @@ int await(struct amsg *x)
     return nng_aio_result(x->upper_aio);
 }
 
-void adel(struct amsg *x) { destroy2(x); }
+void adel(struct amsg *x) { destroy(x); }
 
 void acancel(struct amsg *x) { nng_aio_cancel(x->upper_aio); }
+
+void astop(struct amsg *x) { nng_aio_stop(x->upper_aio); }
 
 int aresult(struct amsg *x) { return nng_aio_result(x->upper_aio); }
 
@@ -66,18 +64,18 @@ static struct amsg *alloc(nng_stream *s,
     if ((x = nng_alloc(sizeof(*x))) == NULL) return NULL;
     if (nng_aio_alloc(&x->upper_aio, callb, arg) != 0)
     {
-        destroy2(x);
+        destroy(x);
         return NULL;
     }
-    if (nng_aio_alloc(&x->lower_aio, &callb4, x) != 0)
+    if (nng_aio_alloc(&x->lower_aio, &callback, x) != 0)
     {
-        destroy2(x);
+        destroy(x);
         return NULL;
     }
 
-    fprintf(stderr, "amsg timeout: %d\n", timeout(deadline));
-    nng_aio_set_timeout(x->upper_aio, timeout(deadline));
-    nng_aio_set_timeout(x->lower_aio, 5000);
+    int duration = timeout(deadline);
+    nng_aio_set_timeout(x->upper_aio, duration);
+    nng_aio_set_timeout(x->lower_aio, duration < 1000 ? duration : 1000);
 
     nng_aio_begin(x->upper_aio);
 
@@ -89,9 +87,8 @@ static struct amsg *alloc(nng_stream *s,
     return x;
 }
 
-static void destroy2(struct amsg *x)
+static void destroy(struct amsg *x)
 {
-    fprintf(stderr, "amsg destroy\n");
     if (!x) return;
     if (x->lower_aio)
     {
@@ -112,21 +109,19 @@ static void start(struct amsg *x)
     x->submit(x->s, x->lower_aio);
 }
 
-static void callb4(void *arg)
+static void callback(void *arg)
 {
     struct amsg *x = arg;
     int rv;
     size_t n;
 
     rv = nng_aio_result(x->lower_aio);
-    fprintf(stderr, "callb4 1: %d\n", rv);
     if (rv != 0)
     {
         nng_aio_finish(x->upper_aio, rv);
         return;
     }
     n = nng_aio_count(x->lower_aio);
-    fprintf(stderr, "callb4 2: %ld\n", n);
 
     if (!consume(x->len, x->iov, n))
     {
