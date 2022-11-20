@@ -13,6 +13,7 @@ void answer_del(struct answer const *ans);
 unsigned char *answer_status_data(struct answer *ans);
 size_t answer_status_size(void);
 struct hmmd_status const *answer_status_parse(struct answer *ans);
+struct hmmd_status const *answer_status(struct answer const *ans);
 
 int answer_setup_size(struct answer *ans, size_t size);
 unsigned char *answer_data(struct answer *ans);

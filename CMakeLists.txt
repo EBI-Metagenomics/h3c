@@ -45,6 +45,7 @@ add_library(
   src/hit.c
   src/hmmd/alidisplay.c
   src/hmmd/domain.c
+  src/hmsg.c
   src/msg.c
   src/packet.c
   src/sock.c

@@ -65,6 +65,11 @@ struct hmmd_status const *answer_status_parse(struct answer *ans)
 {
     size_t size = 0;
     hmmd_status_parse(&ans->status.value, &size, ans->status.data);
+    return answer_status(ans);
+}
+
+struct hmmd_status const *answer_status(struct answer const *ans)
+{
     return &ans->status.value;
 }
 
