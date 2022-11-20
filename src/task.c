@@ -36,7 +36,7 @@ int task_recv(struct task *t)
 
     void *data = answer_status_data(t->answer);
     size_t size = answer_status_size();
-    if ((rc = sock_recv(t->sock, size, data))) return rc;
+    if ((rc = sock_recv(t->sock, size, data, NULL))) return rc;
 
     struct hmmd_status const *status = answer_status_parse(t->answer);
 
@@ -44,7 +44,7 @@ int task_recv(struct task *t)
     if ((rc = answer_setup_size(t->answer, size))) return rc;
 
     data = answer_data(t->answer);
-    if ((rc = sock_recv(t->sock, size, data))) return rc;
+    if ((rc = sock_recv(t->sock, size, data, NULL))) return rc;
 
     if (!status->status)
     {

@@ -8,7 +8,8 @@ struct msg;
 struct packet
 {
     struct msg *msg;
-    int rc;
+    void *arg;
+    int result;
     struct cco_node node;
 };
 

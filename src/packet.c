@@ -7,6 +7,8 @@ struct packet *packet_new(void)
     if (!packet) return NULL;
 
     packet->msg = NULL;
+    packet->arg = NULL;
+    packet->result = 0;
     cco_node_init(&packet->node);
 
     return packet;

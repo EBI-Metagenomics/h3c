@@ -47,33 +47,33 @@ void sock_set_deadline(struct sock *sock, long deadline)
     nng_aio_set_timeout(sock->aio, timeout(deadline));
 }
 
-int sock_send(struct sock *sock, size_t len, void const *buf)
+int sock_send(struct sock *sock, size_t len, void const *buf, void *arg)
 {
     struct packet *packet = packet_new();
     if (!packet) return H3C_ENOMEM;
 
-    struct msg *msg = msend(sock->stream, len, buf);
-    if (!msg)
+    if (!(packet->msg = msend(sock->stream, len, buf)))
     {
         packet_del(packet);
         return H3C_ENOMEM;
     }
+    packet->arg = arg;
 
     cco_queue_put(&sock->send_queue, &packet->node);
     return H3C_OK;
 }
 
-int sock_recv(struct sock *sock, size_t len, void *buf)
+int sock_recv(struct sock *sock, size_t len, void *buf, void *arg)
 {
     struct packet *packet = packet_new();
     if (!packet) return H3C_ENOMEM;
 
-    struct msg *msg = mrecv(sock->stream, len, buf);
-    if (!msg)
+    if (!(packet->msg = mrecv(sock->stream, len, buf)))
     {
         packet_del(packet);
         return H3C_ENOMEM;
     }
+    packet->arg = arg;
 
     cco_queue_put(&sock->recv_queue, &packet->node);
     return H3C_OK;
@@ -116,7 +116,7 @@ static struct packet *wait_next(struct cco_queue *queue)
 
     void *ptr = cco_queue_pop(queue);
     struct packet *packet = cco_of(ptr, struct packet, node);
-    packet->rc = nnge(mwait(packet->msg));
+    packet->result = nnge(mwait(packet->msg));
 
     return packet;
 }
