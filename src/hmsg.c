@@ -4,6 +4,7 @@
 #include "h3c/code.h"
 #include "hmmd/hmmd.h"
 #include "nnge.h"
+#include "timeout.h"
 #include <nng/nng.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -23,6 +24,7 @@ struct hmsg
     struct answer *ans;
     struct amsg *amsg0;
     struct amsg *amsg1;
+    long deadline;
 };
 
 static int read_code(int c)
@@ -32,7 +34,7 @@ static int read_code(int c)
     return c;
 }
 
-static void callback(void *arg)
+static void callb3(void *arg)
 {
     struct hmsg *x = arg;
     int rc = nng_aio_result(x->aio);
@@ -44,6 +46,7 @@ static void callback(void *arg)
 
     if (x->state == STATUS)
     {
+        fprintf(stderr, "callb3: STATUS\n");
         struct hmmd_status const *status = answer_status_parse(x->ans);
         size_t size = status->msg_size;
 
@@ -54,15 +57,23 @@ static void callback(void *arg)
         }
 
         void *data = answer_data(x->ans);
-        x->amsg1 = arecv(x->stream, size, data, &callback, x);
+        if (!(x->amsg1 = arecv(x->stream, size, data, &callb3, x, x->deadline)))
+        {
+            nng_aio_finish(x->aio, H3C_ENOMEM);
+            return;
+        }
+        astart(x->amsg1);
         x->state = DATA;
     }
     else if (x->state == DATA)
     {
+        fprintf(stderr, "callb3: DATA 1\n");
         if (!answer_status(x->ans)->status)
         {
+            fprintf(stderr, "callb3: DATA 2\n");
             if ((rc = answer_parse(x->ans)))
             {
+                fprintf(stderr, "callb3: DATA 3\n");
                 nng_aio_finish(x->aio, rc);
                 return;
             }
@@ -71,7 +82,8 @@ static void callback(void *arg)
     }
 }
 
-struct hmsg *hrecv(struct nng_stream *stream, struct answer *ans, int timeout)
+struct hmsg *hrecv(struct nng_stream *stream, struct answer *ans,
+                   void (*callb)(void *), void *arg, long deadline)
 {
     struct hmsg *x = malloc(sizeof(*x));
     if (!x) return NULL;
@@ -82,21 +94,25 @@ struct hmsg *hrecv(struct nng_stream *stream, struct answer *ans, int timeout)
     x->ans = NULL;
     x->amsg0 = NULL;
     x->amsg1 = NULL;
+    x->deadline = deadline;
 
     x->stream = stream;
-    if ((!nng_aio_alloc(&x->aio, NULL, NULL)))
+    if (nng_aio_alloc(&x->aio, callb, arg))
     {
         hdel(x);
         return NULL;
     }
-    nng_aio_set_timeout(x->aio, timeout);
+    nng_aio_set_timeout(x->aio, timeout(deadline));
     nng_aio_begin(x->aio);
 
     x->ans = ans;
 
     void *data = answer_status_data(ans);
     size_t size = answer_status_size();
-    if (!(x->amsg0 = arecv(stream, size, data, &callback, x)))
+    char *b = data;
+    for (int i = 0; i < (int)size; ++i)
+        b[i] = 0;
+    if (!(x->amsg0 = arecv(stream, size, data, &callb3, x, deadline)))
     {
         hdel(x);
         return NULL;
@@ -105,10 +121,17 @@ struct hmsg *hrecv(struct nng_stream *stream, struct answer *ans, int timeout)
     return x;
 }
 
+void hstart(struct hmsg *x) { astart(x->amsg0); }
+
 int hwait(struct hmsg *x)
 {
     nng_aio_wait(x->aio);
     return nng_aio_result(x->aio);
+}
+
+void hcancel(struct hmsg *x)
+{
+    if (x->aio) nng_aio_cancel(x->aio);
 }
 
 void hdel(struct hmsg *x)
@@ -118,11 +141,6 @@ void hdel(struct hmsg *x)
     if (x->amsg0) adel(x->amsg0);
     if (x->aio) nng_aio_free(x->aio);
     free(x);
-}
-
-void hcancel(struct hmsg *x)
-{
-    if (x->aio) nng_aio_cancel(x->aio);
 }
 
 int hresult(struct hmsg *x) { return nng_aio_result(x->aio); }
