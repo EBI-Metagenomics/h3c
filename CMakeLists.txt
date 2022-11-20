@@ -42,18 +42,19 @@ add_library(
   src/echo.c
   src/h3c.c
   src/hit.c
+  src/hmmd/alidisplay.c
+  src/hmmd/domain.c
+  src/msg.c
   src/sock.c
   src/task.c
   src/timeout.c
-  src/hmmd/alidisplay.c
-  src/hmmd/domain.c
   src/hmmd/hit.c
   src/hmmd/stats.c
   src/hmmd/status.c
   src/hmmd/tophits.c
   src/hmmd/zsetby.c
   src/itoa.c
-  src/nngerr.c
+  src/nnge.c
   src/request.c
   src/result.c
   src/stats.c

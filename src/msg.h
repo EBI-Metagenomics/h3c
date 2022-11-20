@@ -3,11 +3,11 @@
 
 #include <stddef.h>
 
-struct nng_stream;
 struct msg;
+struct nng_stream;
 
-struct msg *msend(struct nng_stream *, void *, size_t);
-struct msg *mrecv(struct nng_stream *, void *, size_t);
+struct msg *msend(struct nng_stream *, size_t, void const *, struct msg *next);
+struct msg *mrecv(struct nng_stream *, size_t, void *, struct msg *next);
 int mwait(struct msg *);
 
 #endif

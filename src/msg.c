@@ -12,25 +12,28 @@ struct msg
     struct nng_aio *lower_aio;
     struct nng_stream *s;
     void (*submit)(struct nng_stream *, struct nng_aio *);
+    struct msg *next;
 };
 
 static struct msg *alloc(nng_stream *s, void (*submit)(nng_stream *, nng_aio *),
-                         void *buf, size_t size);
+                         size_t size, void *buf, struct msg *next);
 static void destroy(struct msg *x);
 static void start(struct msg *x);
 static void callback(void *arg);
 
-struct msg *msend(struct nng_stream *s, void *buf, size_t size)
+struct msg *msend(struct nng_stream *s, size_t size, void const *buf,
+                  struct msg *next)
 {
-    struct msg *x = alloc(s, &nng_stream_send, buf, size);
+    struct msg *x = alloc(s, &nng_stream_send, size, (void *)buf, next);
     if (!x) return x;
     start(x);
     return x;
 }
 
-struct msg *mrecv(struct nng_stream *s, void *buf, size_t size)
+struct msg *mrecv(struct nng_stream *s, size_t size, void *buf,
+                  struct msg *next)
 {
-    struct msg *x = alloc(s, &nng_stream_recv, buf, size);
+    struct msg *x = alloc(s, &nng_stream_recv, size, buf, next);
     if (!x) return x;
     start(x);
     return x;
@@ -47,7 +50,7 @@ int mwait(struct msg *x)
 }
 
 static struct msg *alloc(nng_stream *s, void (*submit)(nng_stream *, nng_aio *),
-                         void *buf, size_t size)
+                         size_t size, void *buf, struct msg *next)
 {
     struct msg *x;
 
@@ -73,6 +76,7 @@ static struct msg *alloc(nng_stream *s, void (*submit)(nng_stream *, nng_aio *),
     x->rem = size;
     x->base = buf;
     x->submit = submit;
+    x->next = next;
 
     return x;
 }

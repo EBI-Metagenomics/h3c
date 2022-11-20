@@ -2,12 +2,11 @@
 #define DIALER_H
 
 struct dialer;
-struct nng_stream;
+struct sock;
 
 struct dialer *dialer_new(char const *uri);
-int dialer_open(struct dialer *, long deadline);
-struct nng_stream *dialer_output(struct dialer *);
-void dialer_close(struct dialer *);
+int dialer_dial(struct dialer *, long deadline);
+struct sock *dialer_sock(struct dialer *);
 void dialer_del(struct dialer *);
 
 #endif

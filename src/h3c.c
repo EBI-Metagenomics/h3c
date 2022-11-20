@@ -3,7 +3,7 @@
 #include "answer.h"
 #include "hmmd/hmmd.h"
 #include "itoa.h"
-#include "nngerr.h"
+#include "nnge.h"
 #include "request.h"
 #include <errno.h>
 #include <nng/nng.h>
@@ -46,12 +46,12 @@ int h3c_open(char const *ip, int port, long deadline)
     strcat(uri, ":");
     itoa(uri + strlen(uri), port);
 
-    if ((rc = nngerr(nng_stream_dialer_alloc(&dialer, uri)))) goto cleanup;
-    if ((rc = nngerr(nng_aio_alloc(&daio, NULL, NULL)))) goto cleanup;
+    if ((rc = nnge(nng_stream_dialer_alloc(&dialer, uri)))) goto cleanup;
+    if ((rc = nnge(nng_aio_alloc(&daio, NULL, NULL)))) goto cleanup;
     nng_aio_set_timeout(daio, timeout(deadline));
     nng_stream_dialer_dial(dialer, daio);
     nng_aio_wait(daio);
-    if ((rc = nngerr(nng_aio_result(daio)))) goto cleanup;
+    if ((rc = nnge(nng_aio_result(daio)))) goto cleanup;
 
     stream = nng_aio_get_output(daio, 0);
 
@@ -90,7 +90,7 @@ static int send1(nng_aio *aio, void const *buf, size_t *sz)
     nng_stream_send(stream, aio);
     nng_aio_wait(aio);
     *sz = nng_aio_count(aio);
-    return nngerr(nng_aio_result(aio));
+    return nnge(nng_aio_result(aio));
 }
 
 static int send(nng_aio *aio, void const *buf, size_t total)
@@ -116,7 +116,7 @@ static int recv1(nng_aio *aio, void *buf, size_t *sz)
     nng_stream_recv(stream, aio);
     nng_aio_wait(aio);
     *sz = nng_aio_count(aio);
-    return nngerr(nng_aio_result(aio));
+    return nnge(nng_aio_result(aio));
 }
 
 static int recv(nng_aio *aio, void *buf, size_t total)
@@ -138,7 +138,7 @@ int h3c_begin(char const *args, long deadline)
 {
     int rc = H3C_OK;
     nng_aio *aio = NULL;
-    if ((rc = nngerr(nng_aio_alloc(&aio, NULL, NULL)))) return rc;
+    if ((rc = nnge(nng_aio_alloc(&aio, NULL, NULL)))) return rc;
     nng_aio_set_timeout(aio, timeout(deadline));
 
     if ((rc = send(aio, "@", 1))) goto cleanup;
@@ -154,7 +154,7 @@ int h3c_put(char const *seq, long deadline)
 {
     int rc = H3C_OK;
     nng_aio *aio = NULL;
-    if ((rc = nngerr(nng_aio_alloc(&aio, NULL, NULL)))) return rc;
+    if ((rc = nnge(nng_aio_alloc(&aio, NULL, NULL)))) return rc;
     nng_aio_set_timeout(aio, timeout(deadline));
     rc = send(aio, seq, strlen(seq));
     nng_aio_free(aio);
@@ -165,7 +165,7 @@ int h3c_end(struct h3c_result *result, long deadline)
 {
     int rc = H3C_OK;
     nng_aio *aio = NULL;
-    if ((rc = nngerr(nng_aio_alloc(&aio, NULL, NULL)))) return rc;
+    if ((rc = nnge(nng_aio_alloc(&aio, NULL, NULL)))) return rc;
     nng_aio_set_timeout(aio, timeout(deadline));
 
     if ((rc = send(aio, "//", 2))) goto cleanup;
@@ -201,7 +201,7 @@ static int recv_answer(struct h3c_result *result, long deadline)
 {
     int rc = H3C_OK;
     nng_aio *aio = NULL;
-    if ((rc = nngerr(nng_aio_alloc(&aio, NULL, NULL)))) return rc;
+    if ((rc = nnge(nng_aio_alloc(&aio, NULL, NULL)))) return rc;
     nng_aio_set_timeout(aio, timeout(deadline));
 
     void *data = answer_status_data(answer);

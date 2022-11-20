@@ -1,8 +1,8 @@
-#include "nngerr.h"
+#include "nnge.h"
 #include "h3c/code.h"
 #include <nng/nng.h>
 
-int nngerr(int c)
+int nnge(int c)
 {
     if (c == NNG_ETIMEDOUT) return H3C_ETIMEDOUT;
     if (c == NNG_ECANCELED) return H3C_ECANCELED;
