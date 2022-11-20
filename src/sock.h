@@ -5,6 +5,7 @@
 
 struct msg;
 struct nng_stream;
+struct packet;
 struct sock;
 
 struct sock *sock_new(void);
@@ -15,8 +16,8 @@ void sock_set_deadline(struct sock *, long deadline);
 int sock_send(struct sock *, size_t len, void const *buf);
 int sock_recv(struct sock *, size_t len, void *buf);
 
-struct msg *sock_wait_send(struct sock *);
-struct msg *sock_wait_recv(struct sock *);
+struct packet *sock_wait_send(struct sock *);
+struct packet *sock_wait_recv(struct sock *);
 
 void sock_close(struct sock *);
 void sock_del(struct sock *);

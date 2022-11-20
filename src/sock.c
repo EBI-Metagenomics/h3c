@@ -1,8 +1,10 @@
 #include "sock.h"
 #include "answer.h"
+#include "cco.h"
 #include "h3c/code.h"
 #include "msg.h"
 #include "nnge.h"
+#include "packet.h"
 #include "request.h"
 #include "timeout.h"
 #include <nng/nng.h>
@@ -13,8 +15,8 @@ struct sock
 {
     struct nng_aio *aio;
     struct nng_stream *stream;
-    struct msg *last_send;
-    struct msg *last_recv;
+    struct cco_queue send_queue;
+    struct cco_queue recv_queue;
 };
 
 struct sock *sock_new(void)
@@ -29,8 +31,8 @@ struct sock *sock_new(void)
     }
 
     sock->stream = NULL;
-    sock->last_send = NULL;
-    sock->last_recv = NULL;
+    cco_queue_init(&sock->send_queue);
+    cco_queue_init(&sock->recv_queue);
 
     return sock;
 }
@@ -47,30 +49,46 @@ void sock_set_deadline(struct sock *sock, long deadline)
 
 int sock_send(struct sock *sock, size_t len, void const *buf)
 {
-    struct msg *msg = msend(sock->stream, len, buf, sock->last_send);
-    if (!msg) return H3C_ENOMEM;
-    sock->last_send = msg;
+    struct packet *packet = packet_new();
+    if (!packet) return H3C_ENOMEM;
+
+    struct msg *msg = msend(sock->stream, len, buf);
+    if (!msg)
+    {
+        packet_del(packet);
+        return H3C_ENOMEM;
+    }
+
+    cco_queue_put(&sock->send_queue, &packet->node);
     return H3C_OK;
 }
 
 int sock_recv(struct sock *sock, size_t len, void *buf)
 {
-    struct msg *msg = mrecv(sock->stream, len, buf, sock->last_recv);
-    if (!msg) return H3C_ENOMEM;
-    sock->last_recv = msg;
+    struct packet *packet = packet_new();
+    if (!packet) return H3C_ENOMEM;
+
+    struct msg *msg = mrecv(sock->stream, len, buf);
+    if (!msg)
+    {
+        packet_del(packet);
+        return H3C_ENOMEM;
+    }
+
+    cco_queue_put(&sock->recv_queue, &packet->node);
     return H3C_OK;
 }
 
-struct msg *wait_next(struct msg **last);
+static struct packet *wait_next(struct cco_queue *queue);
 
-struct msg *sock_wait_send(struct sock *sock)
+struct packet *sock_wait_send(struct sock *sock)
 {
-    return wait_next(&sock->last_send);
+    return wait_next(&sock->send_queue);
 }
 
-struct msg *sock_wait_recv(struct sock *sock)
+struct packet *sock_wait_recv(struct sock *sock)
 {
-    return wait_next(&sock->last_recv);
+    return wait_next(&sock->recv_queue);
 }
 
 void sock_close(struct sock *sock)
@@ -92,13 +110,13 @@ void sock_del(struct sock *sock)
     free(sock);
 }
 
-struct msg *wait_next(struct msg **last)
+static struct packet *wait_next(struct cco_queue *queue)
 {
-    if (!*last) NULL;
+    if (cco_queue_empty(queue)) return NULL;
 
-    struct msg *msg = *last;
-    *last = mnext(msg);
+    void *ptr = cco_queue_pop(queue);
+    struct packet *packet = cco_of(ptr, struct packet, node);
+    packet->rc = nnge(mwait(packet->msg));
 
-    mwait(msg);
-    return msg;
+    return packet;
 }
