@@ -5,6 +5,7 @@
 #include "hmsg.h"
 #include "timeout.h"
 #include <nng/nng.h>
+#include <nng/supplemental/util/platform.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -20,6 +21,7 @@ struct msg *msg_new(struct nng_stream *stream)
     x->ans = NULL;
     x->send_amsg = NULL;
     x->recv_hmsg = NULL;
+    x->mtx = NULL;
     cco_node_init(&x->node);
 
     if (nng_aio_alloc(&x->aio, NULL, NULL))
@@ -34,10 +36,19 @@ struct msg *msg_new(struct nng_stream *stream)
         free(x);
         return NULL;
     }
+
+    if (nng_mtx_alloc(&x->mtx))
+    {
+        answer_del(x->ans);
+        nng_aio_free(x->aio);
+        free(x);
+        return NULL;
+    }
+
     return x;
 }
 
-static void callb2(void *arg);
+static void callback(void *arg);
 
 int msg_start(struct msg *x, char const *args, char const *seq, long deadline)
 {
@@ -54,7 +65,7 @@ int msg_start(struct msg *x, char const *args, char const *seq, long deadline)
     nng_aio_set_timeout(x->aio, timeout(deadline));
     nng_aio_begin(x->aio);
 
-    if (!(x->send_amsg = asend(x->stream, 5, iov, &callb2, x, deadline)))
+    if (!(x->send_amsg = asend(x->stream, 5, iov, &callback, x, deadline)))
         return H3C_ENOMEM;
 
     astart(x->send_amsg);
@@ -69,35 +80,45 @@ int msg_wait(struct msg *x)
 
 void msg_cancel(struct msg *x)
 {
-    if (x->aio) nng_aio_cancel(x->aio);
+    nng_mtx_lock(x->mtx);
+    if (x->recv_hmsg) hcancel(x->recv_hmsg);
+    nng_mtx_unlock(x->mtx);
+    acancel(x->send_amsg);
+    nng_aio_cancel(x->aio);
 }
 
 void msg_del(struct msg *x)
 {
     if (!x) return;
+    if (x->mtx) nng_mtx_free(x->mtx);
     if (x->ans) answer_del(x->ans);
     if (x->send_amsg) adel(x->send_amsg);
+    nng_mtx_lock(x->mtx);
     if (x->recv_hmsg) hdel(x->recv_hmsg);
+    nng_mtx_unlock(x->mtx);
     if (x->aio) nng_aio_free(x->aio);
     free(x);
 }
 
 struct answer *msg_answer(struct msg *x) { return x->ans; }
 
-static void callb2(void *arg)
+static void callback(void *arg)
 {
     struct msg *x = arg;
-    int rc = 0;
 
     if (x->state == SEND)
     {
-        if ((rc = aresult(x->send_amsg)))
+        int rc = aresult(x->send_amsg);
+        if (rc)
         {
             nng_aio_finish(x->aio, rc);
             return;
         }
 
-        if (!(x->recv_hmsg = hrecv(x->stream, x->ans, &callb2, x, x->deadline)))
+        nng_mtx_lock(x->mtx);
+        x->recv_hmsg = hrecv(x->stream, x->ans, &callback, x, x->deadline);
+        nng_mtx_unlock(x->mtx);
+        if (!x->recv_hmsg)
         {
             nng_aio_finish(x->aio, H3C_ENOMEM);
             return;

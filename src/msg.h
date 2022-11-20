@@ -18,6 +18,7 @@ struct msg
     struct answer *ans;
     struct amsg *send_amsg;
     struct hmsg *recv_hmsg;
+    struct nng_mtx *mtx;
     struct cco_node node;
 };
 
