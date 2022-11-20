@@ -14,6 +14,9 @@ void sock_open(struct sock *, struct nng_stream *);
 
 void sock_set_deadline(struct sock *, long deadline);
 
+int sock_send(struct sock *, int len, struct nng_iov *, void *arg);
+int sock_recv(struct sock *, int len, struct nng_iov *, void *arg);
+
 int sock_send_flat(struct sock *, size_t len, void const *buf, void *arg);
 int sock_recv_flat(struct sock *, size_t len, void *buf, void *arg);
 
