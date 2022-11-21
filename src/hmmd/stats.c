@@ -68,21 +68,20 @@ int hmmd_stats_parse(struct hmmd_stats *stats, unsigned char const **ptr,
         goto cleanup;
     }
 
-    if (hit_offset != UINT64_MAX)
-    {
-        size_t size = stats->nhits * sizeof(uint64_t);
-        stats->hit_offsets = zc_reallocf(stats->hit_offsets, size);
-        if (!stats->hit_offsets)
-        {
-            rc = H3C_ENOMEM;
-            goto cleanup;
-        }
+    size_t size = stats->nhits * sizeof(uint64_t);
+    if (hit_offset == UINT64_MAX || size == 0) return H3C_OK;
 
-        ESCAPE_OVERRUN(rc, *ptr, end, stats->nhits * sizeof(uint64_t));
-        stats->hit_offsets[0] = hit_offset;
-        for (uint64_t i = 1; i < stats->nhits; i++)
-            stats->hit_offsets[i] = eatu64(ptr);
+    stats->hit_offsets = zc_reallocf(stats->hit_offsets, size);
+    if (!stats->hit_offsets)
+    {
+        rc = H3C_ENOMEM;
+        goto cleanup;
     }
+
+    ESCAPE_OVERRUN(rc, *ptr, end, stats->nhits * sizeof(uint64_t));
+    stats->hit_offsets[0] = hit_offset;
+    for (uint64_t i = 1; i < stats->nhits; i++)
+        stats->hit_offsets[i] = eatu64(ptr);
 
     return H3C_OK;
 

@@ -8,7 +8,8 @@
 #define PORT 51379
 #define ROSS_GOOD 0
 #define ROSS_BAD 1
-static char const *seqs[2] = {0};
+#define CORRUPTED 2
+static char const *seqs[3] = {0};
 static char const cmd[] = "--hmmdb 1 --acc --cut_ga";
 
 static void test_multi(void);
@@ -51,6 +52,8 @@ static void assets_setup(void)
 
     check_code(fs_readall(ASSETS "/ross.poor.fasta", &size, &data));
     seqs[ROSS_BAD] = append_char(size, (char *)data, '\0');
+
+    seqs[CORRUPTED] = strdup(">a\n__FF\n");
 }
 static void assets_cleanup(void)
 {
