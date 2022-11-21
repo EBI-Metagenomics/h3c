@@ -16,34 +16,17 @@ jobs:
       - name: Apt update
         run: sudo apt-get update
 
-      - name: Install libcurl4
-        run: sudo apt-get install -y libcurl4 libcurl4-openssl-dev
-
       - name: Install openssl
         run: sudo apt-get install -y libssl-dev
 
       - name: Install nng
         run: sudo apt-get install -y libnng1 libnng-dev
 
-      - name: Install python
-        run: sudo apt-get install -y python3-venv python3-pip
-
       - name: Install git
         run: sudo apt-get install -y git
 
       - name: Install cmake
         run: sudo apt-get install -y cmake
-
-      - name: Install pipx
-        run: python3 -m pip install --user -U pipx
-
-      - name: Install eviltest
-        run: curl -fsSL "https://app.danilohorta.me/eviltest" | bash
-
-      - name: Setup eviltest path
-        run: |
-          echo "$HOME/.bats/bin" >> $GITHUB_PATH
-          echo "BATS_LIB_PATH=$HOME/.bats/lib" >> $GITHUB_ENV
 
       - name: Configure CMake
         if: runner.os == 'Linux'
