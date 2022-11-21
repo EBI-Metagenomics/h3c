@@ -29,5 +29,6 @@ target_link_libraries(test_multi PRIVATE H3C::h3c)
 add_test(NAME test_multi COMMAND test_multi)
 
 set_tests_properties(test_single PROPERTIES FIXTURES_REQUIRED daemon)
+set_tests_properties(test_multi PROPERTIES FIXTURES_REQUIRED daemon)
 set_tests_properties(start_daemon PROPERTIES FIXTURES_SETUP daemon)
 set_tests_properties(stop_daemon PROPERTIES FIXTURES_CLEANUP daemon)
