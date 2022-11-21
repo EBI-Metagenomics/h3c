@@ -29,6 +29,8 @@ static void assets_cleanup(void);
 
 int main(void)
 {
+    atexit(h3c_fini);
+
     assets_setup();
     test_open_close_connection();
     test_pack_result();
