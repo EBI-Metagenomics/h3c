@@ -263,10 +263,10 @@ static void assets_setup(void)
     unsigned char *data = NULL;
 
     check_code(fs_readall(ASSETS "/ross.fasta", &size, &data));
-    seqs[ROSS_GOOD] = append_char(size, (char *)data, '\n');
+    seqs[ROSS_GOOD] = append_char(size, (char *)data, '\0');
 
     check_code(fs_readall(ASSETS "/ross.poor.fasta", &size, &data));
-    seqs[ROSS_BAD] = append_char(size, (char *)data, '\n');
+    seqs[ROSS_BAD] = append_char(size, (char *)data, '\0');
 }
 
 static void assets_cleanup(void)
