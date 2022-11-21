@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 
 project(
   h3client
-  VERSION 0.5.2
+  VERSION 0.5.3
   LANGUAGES C)
 
 set(H3C_MAIN_PROJECT OFF)
@@ -99,6 +99,8 @@ target_include_directories(
   PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
 
 add_executable(h3result h3result.c)
+target_include_directories(
+  h3result PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
 target_link_libraries(h3result PRIVATE h3c)
 add_executable(H3C::h3result ALIAS h3result)
 
