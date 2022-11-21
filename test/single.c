@@ -32,15 +32,15 @@ int main(void)
     assets_setup();
     test_open_close_connection();
     test_pack_result();
-    test_unpack_result();
-    test_print_targets();
-    test_print_domains();
-    test_print_targets_table();
-    test_print_domains_table();
-    test_reuse_results();
-    test_reuse_results_print();
-    test_reuse_connection();
-    test_result_api();
+    //test_unpack_result();
+    //test_print_targets();
+    //test_print_domains();
+    //test_print_targets_table();
+    //test_print_domains_table();
+    //test_reuse_results();
+    //test_reuse_results_print();
+    //test_reuse_connection();
+    //test_result_api();
     assets_cleanup();
     return EXIT_SUCCESS;
 }

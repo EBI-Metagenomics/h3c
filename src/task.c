@@ -64,4 +64,5 @@ void task_del(struct task *t)
         struct msg *msg = cco_of(cco_queue_pop(&t->queue), struct msg, node);
         msg_del(msg);
     }
+    free(t);
 }

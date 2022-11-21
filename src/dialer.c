@@ -28,6 +28,7 @@ struct dialer *dialer_new(char const *uri)
 
     if (nng_aio_alloc(&dialer->aio, NULL, NULL))
     {
+        nng_stream_dialer_close(dialer->stream);
         nng_stream_dialer_free(dialer->stream);
         free(dialer);
         return NULL;
@@ -55,7 +56,10 @@ void dialer_del(struct dialer *dialer)
     if (!dialer) return;
 
     if (dialer->aio) nng_aio_free(dialer->aio);
-    if (dialer->stream) nng_stream_dialer_free(dialer->stream);
+    if (dialer->stream) {
+        nng_stream_dialer_close(dialer->stream);
+        nng_stream_dialer_free(dialer->stream);
+    }
 
     free(dialer);
 }

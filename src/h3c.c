@@ -62,7 +62,11 @@ int h3c_open(char const *ip, int port, long deadline)
 
     dia = dialer_new(uri);
     dialer_dial(dia, deadline);
-    task = task_new(dialer_stream(dia));
+    if (!(task = task_new(dialer_stream(dia))))
+    {
+        rc = H3C_ENOMEM;
+        goto cleanup;
+    }
 
     return rc;
 
@@ -84,6 +88,9 @@ void h3c_close(void)
     if (dialer) nng_stream_dialer_free(dialer);
     if (answer) answer_del(answer);
     if (request) request_del(request);
+    dialer = NULL;
+    dia = NULL;
+    task = NULL;
     stream = NULL;
     daio = NULL;
     dialer = NULL;
