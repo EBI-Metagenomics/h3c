@@ -34,6 +34,7 @@ int task_put(struct task *t, char const *args, char const *seq, long deadline)
         return rc;
     }
 
+    task_wait(t);
     cco_queue_put(&t->queue, &msg->node);
 
     return H3C_OK;

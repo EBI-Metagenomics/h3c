@@ -3,6 +3,7 @@
 char const *h3c_decode(int c)
 {
     if (c == H3C_OK) return "success";
+    if (c == H3C_END) return "end of tasks";
     if (c == H3C_EUNKNOWN) return "unknown error";
     if (c == H3C_EPARSE) return "parse error";
     if (c == H3C_EUNPACK) return "unpack failure";

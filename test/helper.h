@@ -13,4 +13,6 @@ _Noreturn void __fail(char const *file, int line);
 
 bool is_close(double a, double b);
 
+#define array_size(arr) (sizeof(arr) / sizeof((arr)[0]))
+
 #endif

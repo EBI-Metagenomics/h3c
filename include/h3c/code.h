@@ -4,6 +4,7 @@
 enum
 {
     H3C_OK,
+    H3C_END,
     H3C_EUNKNOWN,
     H3C_EPARSE,
     H3C_EUNPACK,

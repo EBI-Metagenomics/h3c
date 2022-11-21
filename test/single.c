@@ -1,12 +1,15 @@
-#include "h3c/h3c.h"
 #include "file_hash.h"
 #include "fs.h"
+#include "h3c/h3c.h"
 #include "helper.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #define PORT 51379
+#define ROSS_GOOD 0
+#define ROSS_BAD 1
+static char const *seqs[2] = {0};
 static char const cmd[] = "--hmmdb 1 --acc --cut_ga";
 
 static void test_open_close_connection(void);
@@ -21,20 +24,12 @@ static void test_reuse_results_print(void);
 static void test_reuse_connection(void);
 static void test_result_api(void);
 
-static char const *ross = NULL;
-static char const *poor = NULL;
+static void assets_setup(void);
+static void assets_cleanup(void);
 
 int main(void)
 {
-    long size = 0;
-    unsigned char *data = NULL;
-
-    check_code(fs_readall(ASSETS "/ross.fasta", &size, &data));
-    ross = (char *)data;
-
-    check_code(fs_readall(ASSETS "/ross.poor.fasta", &size, &data));
-    poor = (char *)data;
-
+    assets_setup();
     test_open_close_connection();
     test_pack_result();
     test_unpack_result();
@@ -46,13 +41,13 @@ int main(void)
     test_reuse_results_print();
     test_reuse_connection();
     test_result_api();
-
-    free((void *)poor);
-    free((void *)ross);
+    assets_cleanup();
     return EXIT_SUCCESS;
 }
 
 static long deadline(void) { return h3c_now() + 1000 * 5; }
+
+static bool same_hash(char const *filepath, long hash);
 
 static void test_open_close_connection(void)
 {
@@ -65,20 +60,13 @@ static struct h3c_result *create_result_ross(void)
     struct h3c_result *result = 0;
     check_code(h3c_open("127.0.0.1", PORT, deadline()));
 
-    check_code(h3c_send(cmd, ross, deadline()));
+    check_code(h3c_send(cmd, seqs[ROSS_GOOD], deadline()));
     h3c_wait();
     result = h3c_result_new();
     check_code(h3c_pop(result));
 
     h3c_close();
     return result;
-}
-
-static bool same_hash(char const *filepath, long hash)
-{
-    long expected = 0;
-    if (!file_hash(filepath, &expected)) fail();
-    return expected == hash;
 }
 
 static void test_pack_result(void)
@@ -189,7 +177,7 @@ static void test_reuse_results(void)
     if (!(result = h3c_result_new())) fail();
 
     check_code(h3c_open("127.0.0.1", PORT, deadline()));
-    check_code(h3c_send(cmd, ross, deadline()));
+    check_code(h3c_send(cmd, seqs[ROSS_GOOD], deadline()));
     h3c_wait();
     check_code(h3c_pop(result));
     h3c_close();
@@ -207,7 +195,7 @@ static void test_reuse_results_print(void)
     if (!(result = h3c_result_new())) fail();
 
     check_code(h3c_open("127.0.0.1", PORT, deadline()));
-    check_code(h3c_send(cmd, ross, deadline()));
+    check_code(h3c_send(cmd, seqs[ROSS_GOOD], deadline()));
     h3c_wait();
     check_code(h3c_pop(result));
     h3c_close();
@@ -234,11 +222,11 @@ static void test_reuse_connection(void)
     if (!(result = h3c_result_new())) fail();
     check_code(h3c_open("127.0.0.1", PORT, deadline()));
 
-    check_code(h3c_send(cmd, ross, deadline()));
+    check_code(h3c_send(cmd, seqs[ROSS_GOOD], deadline()));
     h3c_wait();
     check_code(h3c_pop(result));
 
-    check_code(h3c_send(cmd, poor, deadline()));
+    check_code(h3c_send(cmd, seqs[ROSS_BAD], deadline()));
     h3c_wait();
     check_code(h3c_pop(result));
 
@@ -267,4 +255,29 @@ static void test_result_api(void)
     }
 
     h3c_result_del(result);
+}
+
+static void assets_setup(void)
+{
+    long size = 0;
+    unsigned char *data = NULL;
+
+    check_code(fs_readall(ASSETS "/ross.fasta", &size, &data));
+    seqs[ROSS_GOOD] = (char *)data;
+
+    check_code(fs_readall(ASSETS "/ross.poor.fasta", &size, &data));
+    seqs[ROSS_BAD] = (char *)data;
+}
+
+static void assets_cleanup(void)
+{
+    for (size_t i = 0; i < array_size(seqs); ++i)
+        free((void *)seqs[i]);
+}
+
+static bool same_hash(char const *filepath, long hash)
+{
+    long expected = 0;
+    if (!file_hash(filepath, &expected)) fail();
+    return expected == hash;
 }
