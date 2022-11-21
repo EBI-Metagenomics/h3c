@@ -41,13 +41,13 @@ add_library(
   src/dialer.c
   src/domain.c
   src/echo.c
-  src/h3c.c
   src/hit.c
   src/hmmd/alidisplay.c
   src/hmmd/domain.c
   src/hmsg.c
   src/msg.c
-  src/task.c
+  src/stream.c
+  src/now.c
   src/timeout.c
   src/hmmd/hit.c
   src/hmmd/stats.c

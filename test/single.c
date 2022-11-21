@@ -32,15 +32,15 @@ int main(void)
     assets_setup();
     test_open_close_connection();
     test_pack_result();
-    //test_unpack_result();
-    //test_print_targets();
-    //test_print_domains();
-    //test_print_targets_table();
-    //test_print_domains_table();
-    //test_reuse_results();
-    //test_reuse_results_print();
-    //test_reuse_connection();
-    //test_result_api();
+    test_unpack_result();
+    test_print_targets();
+    test_print_domains();
+    test_print_targets_table();
+    test_print_domains_table();
+    test_reuse_results();
+    test_reuse_results_print();
+    test_reuse_connection();
+    test_result_api();
     assets_cleanup();
     return EXIT_SUCCESS;
 }
@@ -51,21 +51,28 @@ static bool same_hash(char const *filepath, long hash);
 
 static void test_open_close_connection(void)
 {
-    check_code(h3c_open("127.0.0.1", PORT, deadline()));
-    h3c_close();
+    struct h3c_dialer *d = h3c_dialer_new("127.0.0.1", PORT);
+    if (!d) fail();
+    check_code(h3c_dialer_dial(d, deadline()));
+    h3c_dialer_del(d);
 }
 
 static struct h3c_result *create_result_ross(void)
 {
     struct h3c_result *result = 0;
-    check_code(h3c_open("127.0.0.1", PORT, deadline()));
+    struct h3c_dialer *d = h3c_dialer_new("127.0.0.1", PORT);
+    if (!d) fail();
+    check_code(h3c_dialer_dial(d, deadline()));
 
-    check_code(h3c_send(cmd, seqs[ROSS_GOOD], deadline()));
-    h3c_wait();
+    struct h3c_stream *s = h3c_dialer_stream(d);
+
+    check_code(h3c_stream_put(s, cmd, seqs[ROSS_GOOD], deadline()));
+    h3c_stream_wait(s);
     result = h3c_result_new();
-    check_code(h3c_pop(result));
+    check_code(h3c_stream_pop(s, result));
 
-    h3c_close();
+    h3c_stream_del(s);
+    h3c_dialer_del(d);
     return result;
 }
 
@@ -176,11 +183,18 @@ static void test_reuse_results(void)
 
     if (!(result = h3c_result_new())) fail();
 
-    check_code(h3c_open("127.0.0.1", PORT, deadline()));
-    check_code(h3c_send(cmd, seqs[ROSS_GOOD], deadline()));
-    h3c_wait();
-    check_code(h3c_pop(result));
-    h3c_close();
+    struct h3c_dialer *d = h3c_dialer_new("127.0.0.1", PORT);
+    if (!d) fail();
+    check_code(h3c_dialer_dial(d, deadline()));
+
+    struct h3c_stream *s = h3c_dialer_stream(d);
+
+    check_code(h3c_stream_put(s, cmd, seqs[ROSS_GOOD], deadline()));
+    h3c_stream_wait(s);
+    check_code(h3c_stream_pop(s, result));
+
+    h3c_stream_del(s);
+    h3c_dialer_del(d);
 
     h3c_result_del(result);
 }
@@ -194,11 +208,18 @@ static void test_reuse_results_print(void)
 
     if (!(result = h3c_result_new())) fail();
 
-    check_code(h3c_open("127.0.0.1", PORT, deadline()));
-    check_code(h3c_send(cmd, seqs[ROSS_GOOD], deadline()));
-    h3c_wait();
-    check_code(h3c_pop(result));
-    h3c_close();
+    struct h3c_dialer *d = h3c_dialer_new("127.0.0.1", PORT);
+    if (!d) fail();
+    check_code(h3c_dialer_dial(d, deadline()));
+
+    struct h3c_stream *s = h3c_dialer_stream(d);
+
+    check_code(h3c_stream_put(s, cmd, seqs[ROSS_GOOD], deadline()));
+    h3c_stream_wait(s);
+    check_code(h3c_stream_pop(s, result));
+
+    h3c_stream_del(s);
+    h3c_dialer_del(d);
 
     file = 0;
     if (!(file = fopen(TMPDIR "/targets.txt", "wb"))) fail();
@@ -220,17 +241,23 @@ static void test_reuse_connection(void)
     struct h3c_result *result = 0;
 
     if (!(result = h3c_result_new())) fail();
-    check_code(h3c_open("127.0.0.1", PORT, deadline()));
 
-    check_code(h3c_send(cmd, seqs[ROSS_GOOD], deadline()));
-    h3c_wait();
-    check_code(h3c_pop(result));
+    struct h3c_dialer *d = h3c_dialer_new("127.0.0.1", PORT);
+    if (!d) fail();
+    check_code(h3c_dialer_dial(d, deadline()));
 
-    check_code(h3c_send(cmd, seqs[ROSS_BAD], deadline()));
-    h3c_wait();
-    check_code(h3c_pop(result));
+    struct h3c_stream *s = h3c_dialer_stream(d);
 
-    h3c_close();
+    check_code(h3c_stream_put(s, cmd, seqs[ROSS_GOOD], deadline()));
+    h3c_stream_wait(s);
+    check_code(h3c_stream_pop(s, result));
+
+    check_code(h3c_stream_put(s, cmd, seqs[ROSS_BAD], deadline()));
+    h3c_stream_wait(s);
+    check_code(h3c_stream_pop(s, result));
+
+    h3c_stream_del(s);
+    h3c_dialer_del(d);
 
     h3c_result_del(result);
 }

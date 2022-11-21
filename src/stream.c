@@ -1,28 +1,29 @@
-#include "task.h"
+#include "h3c/stream.h"
 #include "answer.h"
-#include "atomic.h"
 #include "cco.h"
 #include "h3c/code.h"
 #include "msg.h"
+#include "stream.h"
 #include <nng/nng.h>
 #include <stdlib.h>
 
-struct task
+struct h3c_stream
 {
     struct nng_stream *stream;
     struct cco_queue queue;
 };
 
-struct task *task_new(struct nng_stream *stream)
+struct h3c_stream *h3c_stream_new(struct nng_stream *stream)
 {
-    struct task *task = malloc(sizeof(*task));
+    struct h3c_stream *task = malloc(sizeof(*task));
     if (!task) return NULL;
     task->stream = stream;
     cco_queue_init(&task->queue);
     return task;
 }
 
-int task_put(struct task *t, char const *args, char const *seq, long deadline)
+int h3c_stream_put(struct h3c_stream *t, char const *args, char const *seq,
+                   long deadline)
 {
     struct msg *msg = msg_new(t->stream);
     if (!msg) return H3C_ENOMEM;
@@ -34,13 +35,13 @@ int task_put(struct task *t, char const *args, char const *seq, long deadline)
         return rc;
     }
 
-    task_wait(t);
+    h3c_stream_wait(t);
     cco_queue_put(&t->queue, &msg->node);
 
     return H3C_OK;
 }
 
-void task_wait(struct task *t)
+void h3c_stream_wait(struct h3c_stream *t)
 {
     if (cco_queue_empty(&t->queue)) return;
     struct msg *msg = cco_of(cco_queue_pop(&t->queue), struct msg, node);
@@ -48,7 +49,7 @@ void task_wait(struct task *t)
     cco_queue_put_first(&t->queue, &msg->node);
 }
 
-int task_pop(struct task *t, struct h3c_result *r)
+int h3c_stream_pop(struct h3c_stream *t, struct h3c_result *r)
 {
     struct msg *msg = cco_of(cco_queue_pop(&t->queue), struct msg, node);
     int rc = answer_copy(msg_answer(msg), r);
@@ -56,11 +57,12 @@ int task_pop(struct task *t, struct h3c_result *r)
     return rc;
 }
 
-void task_del(struct task *t)
+void h3c_stream_del(struct h3c_stream *t)
 {
+    if (!t) return;
     while (!cco_queue_empty(&t->queue))
     {
-        task_wait(t);
+        h3c_stream_wait(t);
         struct msg *msg = cco_of(cco_queue_pop(&t->queue), struct msg, node);
         msg_del(msg);
     }

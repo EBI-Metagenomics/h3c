@@ -1,12 +1,12 @@
 #ifndef DIALER_H
 #define DIALER_H
 
-struct dialer;
-struct nng_stream;
+struct h3c_dialer;
+struct h3c_stream;
 
-struct dialer *dialer_new(char const *uri);
-int dialer_dial(struct dialer *, long deadline);
-struct nng_stream *dialer_stream(struct dialer *);
-void dialer_del(struct dialer *);
+struct h3c_dialer *dialer_new(char const *ip, int port);
+int dialer_dial(struct h3c_dialer *, long deadline);
+struct h3c_stream *dialer_stream(struct h3c_dialer *);
+void dialer_del(struct h3c_dialer *);
 
 #endif
