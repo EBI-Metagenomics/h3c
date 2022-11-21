@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 
 project(
   h3client
-  VERSION 0.5.0
+  VERSION 0.5.1
   LANGUAGES C)
 
 set(H3C_MAIN_PROJECT OFF)
@@ -32,10 +32,10 @@ set(CMAKE_C_EXTENSIONS OFF)
 
 add_library(
   h3c
-  libs/argless.c
   src/alidisplay.c
   src/amsg.c
   src/answer.c
+  src/argless.c
   src/buff.c
   src/code.c
   src/dialer.c
@@ -45,21 +45,21 @@ add_library(
   src/hit.c
   src/hmmd/alidisplay.c
   src/hmmd/domain.c
-  src/hmsg.c
-  src/msg.c
-  src/now.c
-  src/stream.c
-  src/timeout.c
   src/hmmd/hit.c
   src/hmmd/stats.c
   src/hmmd/status.c
   src/hmmd/tophits.c
   src/hmmd/zsetby.c
+  src/hmsg.c
   src/itoa.c
+  src/msg.c
   src/nnge.c
+  src/now.c
   src/request.c
   src/result.c
   src/stats.c
+  src/stream.c
+  src/timeout.c
   src/tophits.c
   src/utils.c
   src/zc.c)
@@ -96,9 +96,7 @@ target_include_directories(
   PUBLIC $<INSTALL_INTERFACE:include>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs>
-  PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-          $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs>)
+  PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
 
 add_executable(h3result h3result.c)
 target_link_libraries(h3result PRIVATE h3c)
