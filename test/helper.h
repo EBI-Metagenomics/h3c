@@ -12,6 +12,7 @@ _Noreturn void __fail(char const *file, int line);
 #define fail() __fail(__FILE__, __LINE__)
 
 bool is_close(double a, double b);
+char *append_char(size_t n, char *dst, char c);
 
 #define array_size(arr) (sizeof(arr) / sizeof((arr)[0]))
 
