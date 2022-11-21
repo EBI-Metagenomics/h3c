@@ -15,8 +15,11 @@ struct h3c_stream
 
 struct h3c_stream *h3c_stream_new(struct nng_stream *stream)
 {
+    if (!stream) return NULL;
+
     struct h3c_stream *task = malloc(sizeof(*task));
     if (!task) return NULL;
+
     task->stream = stream;
     cco_queue_init(&task->queue);
     return task;
@@ -28,6 +31,7 @@ int h3c_stream_put(struct h3c_stream *t, char const *args, char const *seq,
     struct msg *msg = msg_new(t->stream);
     if (!msg) return H3C_ENOMEM;
 
+    h3c_stream_wait(t);
     int rc = msg_start(msg, args, seq, deadline);
     if (rc)
     {
@@ -35,7 +39,6 @@ int h3c_stream_put(struct h3c_stream *t, char const *args, char const *seq,
         return rc;
     }
 
-    h3c_stream_wait(t);
     cco_queue_put(&t->queue, &msg->node);
 
     return H3C_OK;
@@ -66,5 +69,7 @@ void h3c_stream_del(struct h3c_stream *t)
         struct msg *msg = cco_of(cco_queue_pop(&t->queue), struct msg, node);
         msg_del(msg);
     }
+    nng_stream_close(t->stream);
+    nng_stream_free(t->stream);
     free(t);
 }

@@ -15,6 +15,7 @@ static void test_multi(void);
 
 int main(void)
 {
+    atexit(h3c_fini);
     test_multi();
     return EXIT_SUCCESS;
 }
