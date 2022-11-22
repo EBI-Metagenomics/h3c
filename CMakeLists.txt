@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 
 project(
   h3client
-  VERSION 0.5.4
+  VERSION 0.6.0
   LANGUAGES C)
 
 set(H3C_MAIN_PROJECT OFF)
