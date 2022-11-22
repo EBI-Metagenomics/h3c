@@ -12,7 +12,9 @@
 static char const *seqs[2] = {0};
 static char const cmd[] = "--hmmdb 1 --acc --cut_ga";
 
+static void test_connection_timedout(void);
 static void test_open_close_connection(void);
+static void test_request_timedout(void);
 static void test_pack_result(void);
 static void test_unpack_result(void);
 static void test_print_targets(void);
@@ -32,7 +34,9 @@ int main(void)
     atexit(h3c_fini);
 
     assets_setup();
+    test_connection_timedout();
     test_open_close_connection();
+    test_request_timedout();
     test_pack_result();
     test_unpack_result();
     test_print_targets();
@@ -47,40 +51,60 @@ int main(void)
     return EXIT_SUCCESS;
 }
 
-static long deadline(void) { return h3c_now() + 1000 * 5; }
+static long earlier(void) { return h3c_now() - 1; }
+static long later(void) { return h3c_now() + 1000 * 5; }
 
 static bool same_hash(char const *filepath, long hash);
+static struct h3c_dialer *conn_new(void);
+static struct h3c_stream *conn_dial(struct h3c_dialer *d, long deadline);
+static void conn_del(struct h3c_dialer *d);
+static struct h3c_result *request(struct h3c_stream *s, char const *seq,
+                                  long deadline);
+
+static void test_connection_timedout(void)
+{
+    struct h3c_dialer *d = conn_new();
+    if (h3c_dialer_dial(d, earlier()) != H3C_ETIMEDOUT) fail();
+    conn_del(d);
+}
 
 static void test_open_close_connection(void)
 {
-    struct h3c_dialer *d = h3c_dialer_new("127.0.0.1", PORT);
-    if (!d) fail();
-    check_code(h3c_dialer_dial(d, deadline()));
+    struct h3c_dialer *d = conn_new();
+    check_code(h3c_dialer_dial(d, later()));
     h3c_dialer_del(d);
 }
 
-static struct h3c_result *create_result_ross(void)
+static void test_request_timedout(void)
 {
-    struct h3c_result *result = 0;
-    struct h3c_dialer *d = h3c_dialer_new("127.0.0.1", PORT);
-    if (!d) fail();
-    check_code(h3c_dialer_dial(d, deadline()));
+    struct h3c_dialer *d = conn_new();
+    struct h3c_stream *s = conn_dial(d, later());
 
-    struct h3c_stream *s = h3c_dialer_stream(d);
-
-    check_code(h3c_stream_put(s, cmd, seqs[ROSS_GOOD], deadline()));
+    check_code(h3c_stream_put(s, cmd, seqs[ROSS_GOOD], earlier()));
     h3c_stream_wait(s);
-    result = h3c_result_new();
-    check_code(h3c_stream_pop(s, result));
+    struct h3c_result *result = h3c_result_new();
+    if (!result) fail();
+    if (h3c_stream_pop(s, result) != H3C_ETIMEDOUT) fail();
+
+    h3c_result_del(result);
+    h3c_stream_del(s);
+    conn_del(d);
+}
+
+static struct h3c_result *request_ross(void)
+{
+    struct h3c_dialer *d = conn_new();
+    struct h3c_stream *s = conn_dial(d, later());
+    struct h3c_result *r = request(s, seqs[ROSS_GOOD], later());
 
     h3c_stream_del(s);
-    h3c_dialer_del(d);
-    return result;
+    conn_del(d);
+    return r;
 }
 
 static void test_pack_result(void)
 {
-    struct h3c_result *result = create_result_ross();
+    struct h3c_result *result = request_ross();
     if (!result) fail();
 
     FILE *file = 0;
@@ -95,7 +119,7 @@ static void test_pack_result(void)
 
 static void test_unpack_result(void)
 {
-    struct h3c_result *result = create_result_ross();
+    struct h3c_result *result = request_ross();
     if (!result) fail();
 
     FILE *file = 0;
@@ -121,7 +145,7 @@ static void test_unpack_result(void)
 
 static void test_print_targets(void)
 {
-    struct h3c_result *result = create_result_ross();
+    struct h3c_result *result = request_ross();
     if (!result) fail();
 
     FILE *file = 0;
@@ -136,7 +160,7 @@ static void test_print_targets(void)
 
 static void test_print_domains(void)
 {
-    struct h3c_result *result = create_result_ross();
+    struct h3c_result *result = request_ross();
     if (!result) fail();
 
     FILE *file = 0;
@@ -151,7 +175,7 @@ static void test_print_domains(void)
 
 static void test_print_targets_table(void)
 {
-    struct h3c_result *result = create_result_ross();
+    struct h3c_result *result = request_ross();
     if (!result) fail();
 
     FILE *file = 0;
@@ -166,7 +190,7 @@ static void test_print_targets_table(void)
 
 static void test_print_domains_table(void)
 {
-    struct h3c_result *result = create_result_ross();
+    struct h3c_result *result = request_ross();
     if (!result) fail();
 
     FILE *file = 0;
@@ -185,13 +209,12 @@ static void test_reuse_results(void)
 
     if (!(result = h3c_result_new())) fail();
 
-    struct h3c_dialer *d = h3c_dialer_new("127.0.0.1", PORT);
-    if (!d) fail();
-    check_code(h3c_dialer_dial(d, deadline()));
+    struct h3c_dialer *d = conn_new();
+    check_code(h3c_dialer_dial(d, later()));
 
     struct h3c_stream *s = h3c_dialer_stream(d);
 
-    check_code(h3c_stream_put(s, cmd, seqs[ROSS_GOOD], deadline()));
+    check_code(h3c_stream_put(s, cmd, seqs[ROSS_GOOD], later()));
     h3c_stream_wait(s);
     check_code(h3c_stream_pop(s, result));
 
@@ -210,13 +233,12 @@ static void test_reuse_results_print(void)
 
     if (!(result = h3c_result_new())) fail();
 
-    struct h3c_dialer *d = h3c_dialer_new("127.0.0.1", PORT);
-    if (!d) fail();
-    check_code(h3c_dialer_dial(d, deadline()));
+    struct h3c_dialer *d = conn_new();
+    check_code(h3c_dialer_dial(d, later()));
 
     struct h3c_stream *s = h3c_dialer_stream(d);
 
-    check_code(h3c_stream_put(s, cmd, seqs[ROSS_GOOD], deadline()));
+    check_code(h3c_stream_put(s, cmd, seqs[ROSS_GOOD], later()));
     h3c_stream_wait(s);
     check_code(h3c_stream_pop(s, result));
 
@@ -244,17 +266,16 @@ static void test_reuse_connection(void)
 
     if (!(result = h3c_result_new())) fail();
 
-    struct h3c_dialer *d = h3c_dialer_new("127.0.0.1", PORT);
-    if (!d) fail();
-    check_code(h3c_dialer_dial(d, deadline()));
+    struct h3c_dialer *d = conn_new();
+    check_code(h3c_dialer_dial(d, later()));
 
     struct h3c_stream *s = h3c_dialer_stream(d);
 
-    check_code(h3c_stream_put(s, cmd, seqs[ROSS_GOOD], deadline()));
+    check_code(h3c_stream_put(s, cmd, seqs[ROSS_GOOD], later()));
     h3c_stream_wait(s);
     check_code(h3c_stream_pop(s, result));
 
-    check_code(h3c_stream_put(s, cmd, seqs[ROSS_BAD], deadline()));
+    check_code(h3c_stream_put(s, cmd, seqs[ROSS_BAD], later()));
     h3c_stream_wait(s);
     check_code(h3c_stream_pop(s, result));
 
@@ -266,7 +287,7 @@ static void test_reuse_connection(void)
 
 static void test_result_api(void)
 {
-    struct h3c_result *result = create_result_ross();
+    struct h3c_result *result = request_ross();
     if (!result) fail();
 
     char const *name[] = {"000000005", "000000003", "000000002", "000000004"};
@@ -309,4 +330,30 @@ static bool same_hash(char const *filepath, long hash)
     long expected = 0;
     if (!file_hash(filepath, &expected)) fail();
     return expected == hash;
+}
+
+static struct h3c_dialer *conn_new(void)
+{
+    struct h3c_dialer *d = h3c_dialer_new("127.0.0.1", PORT);
+    if (!d) fail();
+    return d;
+}
+
+static struct h3c_stream *conn_dial(struct h3c_dialer *d, long deadline)
+{
+    check_code(h3c_dialer_dial(d, deadline));
+    return h3c_dialer_stream(d);
+}
+
+static void conn_del(struct h3c_dialer *d) { h3c_dialer_del(d); }
+
+static struct h3c_result *request(struct h3c_stream *s, char const *seq,
+                                  long deadline)
+{
+    check_code(h3c_stream_put(s, cmd, seq, deadline));
+    h3c_stream_wait(s);
+    struct h3c_result *result = h3c_result_new();
+    if (!result) fail();
+    check_code(h3c_stream_pop(s, result));
+    return result;
 }

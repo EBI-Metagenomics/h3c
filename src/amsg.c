@@ -38,12 +38,6 @@ struct amsg *arecv(struct nng_stream *s, size_t len, void *data,
 
 void astart(struct amsg *x) { start(x); }
 
-int await(struct amsg *x)
-{
-    nng_aio_wait(x->upper_aio);
-    return nng_aio_result(x->upper_aio);
-}
-
 void adel(struct amsg *x) { destroy(x); }
 
 void acancel(struct amsg *x) { nng_aio_cancel(x->upper_aio); }

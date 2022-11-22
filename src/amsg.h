@@ -12,7 +12,6 @@ struct amsg *asend(struct nng_stream *, int len, struct nng_iov *,
 struct amsg *arecv(struct nng_stream *, size_t len, void *data,
                    void (*callb)(void *), void *arg, long deadline);
 void astart(struct amsg *);
-int await(struct amsg *);
 void adel(struct amsg *);
 void acancel(struct amsg *);
 void astop(struct amsg *);

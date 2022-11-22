@@ -55,7 +55,13 @@ void h3c_stream_wait(struct h3c_stream *t)
 int h3c_stream_pop(struct h3c_stream *t, struct h3c_result *r)
 {
     struct msg *msg = cco_of(cco_queue_pop(&t->queue), struct msg, node);
-    int rc = answer_copy(msg_answer(msg), r);
+    int rc = msg_result(msg);
+    if (rc)
+    {
+        msg_del(msg);
+        return rc;
+    }
+    rc = answer_copy(msg_answer(msg), r);
     msg_del(msg);
     return rc;
 }

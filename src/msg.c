@@ -3,6 +3,7 @@
 #include "answer.h"
 #include "h3c/code.h"
 #include "hmsg.h"
+#include "nnge.h"
 #include "timeout.h"
 #include <nng/nng.h>
 #include <nng/supplemental/util/platform.h>
@@ -72,11 +73,9 @@ int msg_start(struct msg *x, char const *args, char const *seq, long deadline)
     return H3C_OK;
 }
 
-int msg_wait(struct msg *x)
-{
-    nng_aio_wait(x->aio);
-    return nng_aio_result(x->aio);
-}
+void msg_wait(struct msg *x) { nng_aio_wait(x->aio); }
+
+int msg_result(struct msg *x) { return nnge(nng_aio_result(x->aio)); }
 
 void msg_cancel(struct msg *x)
 {
