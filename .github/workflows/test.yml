@@ -41,4 +41,4 @@ jobs:
 
       - name: Test
         working-directory: ${{github.workspace}}/build
-        run: ctest -C ${{matrix.build_type}} --rerun-failed --output-on-failure
+        run: ASAN_OPTIONS=allocator_may_return_null=1 ctest -C ${{matrix.build_type}} --rerun-failed --output-on-failure
