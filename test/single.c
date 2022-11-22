@@ -51,8 +51,8 @@ int main(void)
     return EXIT_SUCCESS;
 }
 
-static long earlier(void) { return h3c_now() - 1; }
-static long later(void) { return h3c_now() + 1000 * 5; }
+static long earlier(void) { return h3c_deadline(-1); }
+static long later(void) { return h3c_deadline(1000 * 5); }
 
 static bool same_hash(char const *filepath, long hash);
 static struct h3c_dialer *conn_new(void);

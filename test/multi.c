@@ -29,11 +29,11 @@ static void test_multi(void)
     assets_setup();
     struct h3c_dialer *d = h3c_dialer_new("127.0.0.1", PORT);
     if (!d) fail();
-    check_code(h3c_dialer_dial(d, h3c_now() + 1000));
+    check_code(h3c_dialer_dial(d, h3c_deadline(1000)));
 
     struct h3c_stream *s = h3c_dialer_stream(d);
 
-    long deadline = h3c_now() + 1000 * 5;
+    long deadline = h3c_deadline(1000 * 5);
     for (size_t i = 0; i < array_size(seqs); ++i)
         check_code(h3c_stream_put(s, cmd, seqs[i], deadline));
 

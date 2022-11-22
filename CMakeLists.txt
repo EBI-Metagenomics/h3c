@@ -38,6 +38,7 @@ add_library(
   src/argless.c
   src/buff.c
   src/code.c
+  src/deadline.c
   src/dialer.c
   src/domain.c
   src/echo.c
@@ -54,7 +55,6 @@ add_library(
   src/itoa.c
   src/msg.c
   src/nnge.c
-  src/now.c
   src/request.c
   src/result.c
   src/stats.c
