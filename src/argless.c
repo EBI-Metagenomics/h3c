@@ -21,13 +21,14 @@ static int argvec_nargs(int argc, char *argv[], struct argl_option const *opts);
 static char **argvec_args(int argc, char *argv[],
                           struct argl_option const *opts);
 
-char const *al_basename(char const *path);
+static char const *al_basename(char const *path);
 
 static void echo_start(int indent_width);
 static void echof(char const *fmt, ...);
 static void echos(char const *str);
 static void echoc(char c);
 static void echor(char const *str);
+static void echor2(char const *str, char const *default_value);
 static void echo_flush(void);
 static void echo_end(void);
 
@@ -43,11 +44,11 @@ static void help_requires_arg(char const *program, char const *arg,
 static void help_unrecognized_arg(char const *program, char const *arg,
                                   int exit_status);
 
-struct argl_option const *opts_search(struct argl_option const *opts,
-                                      char const *arg);
-struct argl_option const *opts_get(struct argl_option const *opts,
-                                   char const *name);
-int opts_count(struct argl_option const *opts);
+static struct argl_option const *opts_search(struct argl_option const *opts,
+                                             char const *arg);
+static struct argl_option const *opts_get(struct argl_option const *opts,
+                                          char const *name);
+static int opts_count(struct argl_option const *opts);
 static bool opt_has_user_default(struct argl_option const *opt);
 static char const *opt_get_default(struct argl_option const *opt);
 static bool opt_is_flag(struct argl_option const *opt);
@@ -78,7 +79,7 @@ enum
 
 #include <string.h>
 
-char const *al_basename(char const *path)
+static char const *al_basename(char const *path)
 {
     char *p = strrchr(path, ARGL_PATH_SEP);
     return p ? p + 1 : path;
@@ -147,8 +148,8 @@ static size_t arg_long_compact_opt_size(char const *arg)
 #include <stddef.h>
 #include <string.h>
 
-struct argl_option const *opts_search(struct argl_option const *opts,
-                                      char const *arg)
+static struct argl_option const *opts_search(struct argl_option const *opts,
+                                             char const *arg)
 {
     for (int i = 0; i < opts_count(opts); ++i)
     {
@@ -160,8 +161,8 @@ struct argl_option const *opts_search(struct argl_option const *opts,
     return NULL;
 }
 
-struct argl_option const *opts_get(struct argl_option const *opts,
-                                   char const *name)
+static struct argl_option const *opts_get(struct argl_option const *opts,
+                                          char const *name)
 {
     for (int i = 0; i < opts_count(opts); ++i)
     {
@@ -170,7 +171,7 @@ struct argl_option const *opts_get(struct argl_option const *opts,
     return NULL;
 }
 
-int opts_count(struct argl_option const *opts)
+static int opts_count(struct argl_option const *opts)
 {
     struct argl_option const *opt = opts;
     int size = 0;
@@ -394,7 +395,7 @@ static void echor(char const *str)
     }
 }
 
-void echor2(char const *str, char const *default_value)
+static void echor2(char const *str, char const *default_value)
 {
     size_t size = strlen(str) + 2;
     if (sizeof(buf) > pos + size)
