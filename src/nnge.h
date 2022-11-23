@@ -1,6 +1,6 @@
 #ifndef NNGE_H
 #define NNGE_H
 
-int nnge(int c);
+int h3c_nnge(int c);
 
 #endif

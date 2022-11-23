@@ -28,7 +28,6 @@ static void echof(char const *fmt, ...);
 static void echos(char const *str);
 static void echoc(char c);
 static void echor(char const *str);
-void echor2(char const *str, char const *default_value);
 static void echo_flush(void);
 static void echo_end(void);
 

@@ -7,15 +7,15 @@ struct answer;
 struct hmsg;
 struct nng_stream;
 
-struct hmsg *hrecv(struct nng_stream *, struct answer *, void (*callb)(void *),
-                   void *arg, long deadline);
-void hstart(struct hmsg *);
-int hwait(struct hmsg *);
-void hcancel(struct hmsg *);
-void hstop(struct hmsg *);
-void hdel(struct hmsg *);
+struct hmsg *h3c_hrecv(struct nng_stream *, struct answer *,
+                       void (*callb)(void *), void *arg, long deadline);
+void h3c_hstart(struct hmsg *);
+int h3c_hwait(struct hmsg *);
+void h3c_hcancel(struct hmsg *);
+void h3c_hstop(struct hmsg *);
+void h3c_hdel(struct hmsg *);
 
-int hresult(struct hmsg *);
-struct answer *houtput(struct hmsg *);
+int h3c_hresult(struct hmsg *);
+struct answer *h3c_houtput(struct hmsg *);
 
 #endif

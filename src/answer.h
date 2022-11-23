@@ -7,17 +7,17 @@
 struct answer;
 struct h3c_result;
 
-struct answer *answer_new(void);
-void answer_del(struct answer const *ans);
+struct answer *h3c_answer_new(void);
+void h3c_answer_del(struct answer const *ans);
 
-unsigned char *answer_status_data(struct answer *ans);
-size_t answer_status_size(void);
-struct hmmd_status const *answer_status_parse(struct answer *ans);
-struct hmmd_status const *answer_status(struct answer const *ans);
+unsigned char *h3c_answer_status_data(struct answer *ans);
+size_t h3c_answer_status_size(void);
+struct hmmd_status const *h3c_answer_status_parse(struct answer *ans);
+struct hmmd_status const *h3c_answer_status(struct answer const *ans);
 
-int answer_setup_size(struct answer *ans, size_t size);
-unsigned char *answer_data(struct answer *ans);
-int answer_parse(struct answer *ans);
-int answer_copy(struct answer *ans, struct h3c_result *);
+int h3c_answer_setup_size(struct answer *ans, size_t size);
+unsigned char *h3c_answer_data(struct answer *ans);
+int h3c_answer_parse(struct answer *ans);
+int h3c_answer_copy(struct answer *ans, struct h3c_result *);
 
 #endif

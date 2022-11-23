@@ -17,10 +17,10 @@ struct hmmd_tophits
     bool is_sorted_by_seqidx;
 };
 
-void hmmd_tophits_init(struct hmmd_tophits *);
-int hmmd_tophits_setup(struct hmmd_tophits *, unsigned char const **ptr,
-                       unsigned char const *end, uint64_t nhits,
-                       uint64_t nreported, uint64_t nincluded);
-void hmmd_tophits_cleanup(struct hmmd_tophits *);
+void h3c_hmmd_tophits_init(struct hmmd_tophits *);
+int h3c_hmmd_tophits_setup(struct hmmd_tophits *, unsigned char const **ptr,
+                           unsigned char const *end, uint64_t nhits,
+                           uint64_t nreported, uint64_t nincluded);
+void h3c_hmmd_tophits_cleanup(struct hmmd_tophits *);
 
 #endif

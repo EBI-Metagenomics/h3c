@@ -5,9 +5,9 @@
 #include "utils.h"
 #include <string.h>
 
-void stats_init(struct stats *stats) { memset(stats, 0, sizeof(*stats)); }
+void h3c_stats_init(struct stats *stats) { memset(stats, 0, sizeof(*stats)); }
 
-int stats_pack(struct stats const *stats, struct lip_file *f)
+int h3c_stats_pack(struct stats const *stats, struct lip_file *f)
 {
     lip_write_array_size(f, 13);
 
@@ -31,9 +31,9 @@ int stats_pack(struct stats const *stats, struct lip_file *f)
     return lip_file_error(f) ? H3C_EPACK : H3C_OK;
 }
 
-int stats_unpack(struct stats *stats, struct lip_file *f)
+int h3c_stats_unpack(struct stats *stats, struct lip_file *f)
 {
-    if (!expect_array_size(f, 13)) return H3C_EUNPACK;
+    if (!h3c_expect_array_size(f, 13)) return H3C_EUNPACK;
 
     lip_read_float(f, &stats->Z);
     lip_read_float(f, &stats->domZ);

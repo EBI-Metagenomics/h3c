@@ -1,6 +1,6 @@
 #ifndef ITOA_H
 #define ITOA_H
 
-int itoa(char *buf, int i);
+int h3c_itoa(char *buf, int i);
 
 #endif

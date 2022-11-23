@@ -45,10 +45,10 @@ struct hmmd_hit
     struct hmmd_domain *dcl;
 };
 
-void hmmd_hit_init(struct hmmd_hit *);
-void hmmd_hit_cleanup(struct hmmd_hit *);
+void h3c_hmmd_hit_init(struct hmmd_hit *);
+void h3c_hmmd_hit_cleanup(struct hmmd_hit *);
 
-int hmmd_hit_parse(struct hmmd_hit *hit, unsigned char const **ptr,
-                   unsigned char const *end);
+int h3c_hmmd_hit_parse(struct hmmd_hit *hit, unsigned char const **ptr,
+                       unsigned char const *end);
 
 #endif

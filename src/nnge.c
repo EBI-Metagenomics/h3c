@@ -2,7 +2,7 @@
 #include "h3c/code.h"
 #include <nng/nng.h>
 
-int nnge(int c)
+int h3c_nnge(int c)
 {
     if (c == NNG_ETIMEDOUT) return H3C_ETIMEDOUT;
     if (c == NNG_ECANCELED) return H3C_ECANCELED;

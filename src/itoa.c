@@ -15,7 +15,7 @@ static void reverse(signed char buf[], int size)
 }
 
 // ACK: nanoprintf
-int itoa_rev(char *buf, int i)
+static int itoa_rev(char *buf, int i)
 {
     int n = 0;
     const int sign = (i >= 0) ? 1 : -1;
@@ -28,7 +28,7 @@ int itoa_rev(char *buf, int i)
     return n;
 }
 
-int itoa(char *buf, int i)
+int h3c_itoa(char *buf, int i)
 {
     int n = itoa_rev(buf, i);
     reverse((signed char *)buf, n);

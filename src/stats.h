@@ -30,8 +30,8 @@ struct stats
 
 STATIC_ASSERT(sizeof(unsigned) >= 4);
 
-void stats_init(struct stats *);
-int stats_pack(struct stats const *, struct lip_file *);
-int stats_unpack(struct stats *, struct lip_file *);
+void h3c_stats_init(struct stats *);
+int h3c_stats_pack(struct stats const *, struct lip_file *);
+int h3c_stats_unpack(struct stats *, struct lip_file *);
 
 #endif

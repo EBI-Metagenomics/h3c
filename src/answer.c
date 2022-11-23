@@ -28,69 +28,69 @@ struct answer
     struct hmmd_tophits tophits;
 };
 
-struct answer *answer_new(void)
+struct answer *h3c_answer_new(void)
 {
     struct answer *ans = malloc(sizeof(*ans));
     if (!ans) return 0;
 
     ans->status.data[0] = '\0';
-    hmmd_status_init(&ans->status.value);
+    h3c_hmmd_status_init(&ans->status.value);
 
-    if (!(ans->buff = buff_new(BUFF_SIZE)))
+    if (!(ans->buff = h3c_buff_new(BUFF_SIZE)))
     {
         free(ans);
         return 0;
     }
-    hmmd_stats_init(&ans->stats);
-    hmmd_tophits_init(&ans->tophits);
+    h3c_hmmd_stats_init(&ans->stats);
+    h3c_hmmd_tophits_init(&ans->tophits);
     return ans;
 }
 
-void answer_del(struct answer const *ans)
+void h3c_answer_del(struct answer const *ans)
 {
-    buff_del(ans->buff);
-    hmmd_stats_cleanup((struct hmmd_stats *)&ans->stats);
-    hmmd_tophits_cleanup((struct hmmd_tophits *)&ans->tophits);
+    h3c_buff_del(ans->buff);
+    h3c_hmmd_stats_cleanup((struct hmmd_stats *)&ans->stats);
+    h3c_hmmd_tophits_cleanup((struct hmmd_tophits *)&ans->tophits);
     free((void *)ans);
 }
 
-unsigned char *answer_status_data(struct answer *ans)
+unsigned char *h3c_answer_status_data(struct answer *ans)
 {
     return ans->status.data;
 }
 
-size_t answer_status_size(void) { return HMMD_STATUS_PACK_SIZE; }
+size_t h3c_answer_status_size(void) { return HMMD_STATUS_PACK_SIZE; }
 
-struct hmmd_status const *answer_status_parse(struct answer *ans)
+struct hmmd_status const *h3c_answer_status_parse(struct answer *ans)
 {
     size_t size = 0;
-    hmmd_status_parse(&ans->status.value, &size, ans->status.data);
-    return answer_status(ans);
+    h3c_hmmd_status_parse(&ans->status.value, &size, ans->status.data);
+    return h3c_answer_status(ans);
 }
 
-struct hmmd_status const *answer_status(struct answer const *ans)
+struct hmmd_status const *h3c_answer_status(struct answer const *ans)
 {
     return &ans->status.value;
 }
 
-int answer_setup_size(struct answer *ans, size_t size)
+int h3c_answer_setup_size(struct answer *ans, size_t size)
 {
     ans->buff->size = size;
-    return buff_ensure(&ans->buff, size);
+    return h3c_buff_ensure(&ans->buff, size);
 }
 
-unsigned char *answer_data(struct answer *ans) { return ans->buff->data; }
+unsigned char *h3c_answer_data(struct answer *ans) { return ans->buff->data; }
 
-int answer_parse(struct answer *ans)
+int h3c_answer_parse(struct answer *ans)
 {
     int rc = H3C_OK;
 
     unsigned char const *ptr = ans->buff->data;
     unsigned char const *end = ptr + ans->buff->size;
-    if ((rc = hmmd_stats_parse(&ans->stats, &ptr, end))) goto cleanup;
+    if ((rc = h3c_hmmd_stats_parse(&ans->stats, &ptr, end))) goto cleanup;
 
-    rc = hmmd_tophits_setup(&ans->tophits, &ptr, end, ans->stats.nhits,
-                            ans->stats.nreported, ans->stats.nincluded);
+    rc = h3c_hmmd_tophits_setup(&ans->tophits, &ptr, end, ans->stats.nhits,
+                                ans->stats.nreported, ans->stats.nincluded);
     if (rc) goto cleanup;
 
     if (ptr != end) rc = H3C_EPARSE;
@@ -99,7 +99,7 @@ cleanup:
     return rc;
 }
 
-#define STRXDUP(D, S) (D = strxdup((D), (S)))
+#define STRXDUP(D, S) (D = h3c_strxdup((D), (S)))
 
 #define CHECK_OVERFLOW(var, val)                                               \
     do                                                                         \
@@ -149,13 +149,13 @@ static int copy_alidisplay(struct alidisplay *dst,
     return H3C_OK;
 
 cleanup:
-    alidisplay_cleanup(dst);
+    h3c_alidisplay_cleanup(dst);
     return rc;
 }
 
 static int copy_domain(struct domain *dst, struct hmmd_domain const *src)
 {
-    int rc = domain_setup(dst, src->scores_size);
+    int rc = h3c_domain_setup(dst, src->scores_size);
     if (rc) return rc;
 
     CHECK_OVERFLOW(src->ienv, UINT32_MAX);
@@ -185,13 +185,13 @@ static int copy_domain(struct domain *dst, struct hmmd_domain const *src)
     return H3C_OK;
 
 cleanup:
-    domain_cleanup(dst);
+    h3c_domain_cleanup(dst);
     return rc;
 }
 
 static int copy_hit(struct hit *dst, struct hmmd_hit const *src)
 {
-    int rc = hit_setup(dst, src->ndom);
+    int rc = h3c_hit_setup(dst, src->ndom);
     if (rc) return rc;
 
     if (!STRXDUP(dst->name, src->name)) goto cleanup;
@@ -227,13 +227,13 @@ static int copy_hit(struct hit *dst, struct hmmd_hit const *src)
     return H3C_OK;
 
 cleanup:
-    hit_cleanup(dst);
+    h3c_hit_cleanup(dst);
     return rc;
 }
 
 static int copy_tophits(struct tophits *dst, struct hmmd_tophits const *src)
 {
-    int rc = tophits_setup(dst, src->nhits);
+    int rc = h3c_tophits_setup(dst, src->nhits);
     if (rc) return rc;
 
     dst->nreported = src->nreported;
@@ -249,7 +249,7 @@ static int copy_tophits(struct tophits *dst, struct hmmd_tophits const *src)
     return H3C_OK;
 
 cleanup:
-    tophits_cleanup(dst);
+    h3c_tophits_cleanup(dst);
     return rc;
 }
 
@@ -289,7 +289,7 @@ cleanup:
     return rc;
 }
 
-int answer_copy(struct answer *ans, struct h3c_result *r)
+int h3c_answer_copy(struct answer *ans, struct h3c_result *r)
 {
     copy_stats(&r->stats, &ans->stats);
     return copy_tophits(&r->tophits, &ans->tophits);

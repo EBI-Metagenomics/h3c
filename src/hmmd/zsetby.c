@@ -1,7 +1,7 @@
 #include "hmmd/zsetby.h"
 #include "h3c/h3c.h"
 
-int hmmd_zsetby_parse(enum hmmd_zsetby *dst, unsigned char const **data)
+int h3c_hmmd_zsetby_parse(enum hmmd_zsetby *dst, unsigned char const **data)
 {
     int rc = H3C_OK;
     switch (**data)

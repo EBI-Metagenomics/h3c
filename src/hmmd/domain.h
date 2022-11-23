@@ -28,9 +28,9 @@ struct hmmd_domain
     struct hmmd_alidisplay ad;
 };
 
-void hmmd_domain_init(struct hmmd_domain *);
-void hmmd_domain_cleanup(struct hmmd_domain *);
-int hmmd_domain_parse(struct hmmd_domain *, unsigned char const **ptr,
-                      unsigned char const *end);
+void h3c_hmmd_domain_init(struct hmmd_domain *);
+void h3c_hmmd_domain_cleanup(struct hmmd_domain *);
+int h3c_hmmd_domain_parse(struct hmmd_domain *, unsigned char const **ptr,
+                          unsigned char const *end);
 
 #endif

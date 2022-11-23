@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-struct buff *buff_new(size_t capacity)
+struct buff *h3c_buff_new(size_t capacity)
 {
     assert(capacity > 0);
 
@@ -15,7 +15,7 @@ struct buff *buff_new(size_t capacity)
     return buff;
 }
 
-int buff_ensure(struct buff **buff, size_t capacity)
+int h3c_buff_ensure(struct buff **buff, size_t capacity)
 {
     if (capacity > (*buff)->capacity)
     {
@@ -28,4 +28,4 @@ int buff_ensure(struct buff **buff, size_t capacity)
     return H3C_OK;
 }
 
-void buff_del(struct buff const *buff) { free((void *)buff); }
+void h3c_buff_del(struct buff const *buff) { free((void *)buff); }

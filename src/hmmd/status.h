@@ -10,9 +10,9 @@ struct hmmd_status
     uint64_t msg_size;
 };
 
-void hmmd_status_init(struct hmmd_status *);
+void h3c_hmmd_status_init(struct hmmd_status *);
 
-void hmmd_status_parse(struct hmmd_status *status, size_t *read_size,
-                       unsigned char const *data);
+void h3c_hmmd_status_parse(struct hmmd_status *status, size_t *read_size,
+                           unsigned char const *data);
 
 #endif

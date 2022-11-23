@@ -1,6 +1,6 @@
 #ifndef TIMEOUT_H
 #define TIMEOUT_H
 
-int timeout(long deadline);
+int h3c_timeout(long deadline);
 
 #endif

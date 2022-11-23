@@ -25,9 +25,9 @@ struct hmmd_stats
     uint64_t *hit_offsets;
 };
 
-void hmmd_stats_init(struct hmmd_stats *);
-void hmmd_stats_cleanup(struct hmmd_stats *);
-int hmmd_stats_parse(struct hmmd_stats *stats, unsigned char const **ptr,
-                     unsigned char const *end);
+void h3c_hmmd_stats_init(struct hmmd_stats *);
+void h3c_hmmd_stats_cleanup(struct hmmd_stats *);
+int h3c_hmmd_stats_parse(struct hmmd_stats *stats, unsigned char const **ptr,
+                         unsigned char const *end);
 
 #endif

@@ -23,28 +23,28 @@ static void destroy(struct amsg *x);
 static void start(struct amsg *x);
 static void callback(void *arg);
 
-struct amsg *asend(struct nng_stream *s, int len, struct nng_iov *iov,
-                   void (*callb)(void *), void *arg, long deadline)
+struct amsg *h3c_asend(struct nng_stream *s, int len, struct nng_iov *iov,
+                       void (*callb)(void *), void *arg, long deadline)
 {
     return alloc(s, &nng_stream_send, len, iov, callb, arg, deadline);
 }
 
-struct amsg *arecv(struct nng_stream *s, size_t len, void *data,
-                   void (*callb)(void *), void *arg, long deadline)
+struct amsg *h3c_arecv(struct nng_stream *s, size_t len, void *data,
+                       void (*callb)(void *), void *arg, long deadline)
 {
     struct nng_iov iov = {.iov_buf = data, .iov_len = len};
     return alloc(s, &nng_stream_recv, 1, &iov, callb, arg, deadline);
 }
 
-void astart(struct amsg *x) { start(x); }
+void h3c_astart(struct amsg *x) { start(x); }
 
-void adel(struct amsg *x) { destroy(x); }
+void h3c_adel(struct amsg *x) { destroy(x); }
 
-void acancel(struct amsg *x) { nng_aio_cancel(x->upper_aio); }
+void h3c_acancel(struct amsg *x) { nng_aio_cancel(x->upper_aio); }
 
-void astop(struct amsg *x) { nng_aio_stop(x->upper_aio); }
+void h3c_astop(struct amsg *x) { nng_aio_stop(x->upper_aio); }
 
-int aresult(struct amsg *x) { return nng_aio_result(x->upper_aio); }
+int h3c_aresult(struct amsg *x) { return nng_aio_result(x->upper_aio); }
 
 static int consume(int len, struct nng_iov *iov, size_t amount);
 
@@ -67,7 +67,7 @@ static struct amsg *alloc(nng_stream *s,
         return NULL;
     }
 
-    int duration = timeout(deadline);
+    int duration = h3c_timeout(deadline);
     nng_aio_set_timeout(x->upper_aio, duration);
     nng_aio_set_timeout(x->lower_aio, duration < 1000 ? duration : 1000);
 

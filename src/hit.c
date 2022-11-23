@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int hit_init(struct hit *hit)
+int h3c_hit_init(struct hit *hit)
 {
     memset(hit, 0, sizeof(*hit));
 
@@ -17,7 +17,7 @@ int hit_init(struct hit *hit)
     return H3C_OK;
 
 cleanup:
-    hit_cleanup(hit);
+    h3c_hit_cleanup(hit);
     return H3C_ENOMEM;
 }
 
@@ -30,46 +30,46 @@ static int grow(struct hit *hit, unsigned ndomains)
 
     for (unsigned i = hit->ndomains; i < ndomains; ++i)
     {
-        domain_init(hit->domains + i);
+        h3c_domain_init(hit->domains + i);
         ++hit->ndomains;
     }
 
     return H3C_OK;
 
 cleanup:
-    hit_cleanup(hit);
+    h3c_hit_cleanup(hit);
     return H3C_ENOMEM;
 }
 
 static void shrink(struct hit *hit, unsigned ndomains)
 {
     for (unsigned i = ndomains; i < hit->ndomains; ++i)
-        domain_cleanup(hit->domains + i);
+        h3c_domain_cleanup(hit->domains + i);
 
     hit->ndomains = ndomains;
 }
 
-int hit_setup(struct hit *hit, unsigned ndomains)
+int h3c_hit_setup(struct hit *hit, unsigned ndomains)
 {
     if (hit->ndomains < ndomains) return grow(hit, ndomains);
     shrink(hit, ndomains);
     return H3C_OK;
 }
 
-void hit_cleanup(struct hit *hit)
+void h3c_hit_cleanup(struct hit *hit)
 {
     DEL(hit->name);
     DEL(hit->acc);
     DEL(hit->desc);
 
     for (unsigned i = 0; i < hit->ndomains; ++i)
-        domain_cleanup(hit->domains + i);
+        h3c_domain_cleanup(hit->domains + i);
 
     hit->ndomains = 0;
     DEL(hit->domains);
 }
 
-int hit_pack(struct hit const *hit, struct lip_file *f)
+int h3c_hit_pack(struct hit const *hit, struct lip_file *f)
 {
     lip_write_array_size(f, 20);
 
@@ -103,22 +103,22 @@ int hit_pack(struct hit const *hit, struct lip_file *f)
 
     for (unsigned i = 0; i < hit->ndomains; ++i)
     {
-        int rc = domain_pack(hit->domains + i, f);
+        int rc = h3c_domain_pack(hit->domains + i, f);
         if (rc) return rc;
     }
 
     return lip_file_error(f) ? H3C_EPACK : H3C_OK;
 }
 
-int hit_unpack(struct hit *hit, struct lip_file *f)
+int h3c_hit_unpack(struct hit *hit, struct lip_file *f)
 {
     int rc = H3C_EUNPACK;
 
-    if (!expect_array_size(f, 20)) goto cleanup;
+    if (!h3c_expect_array_size(f, 20)) goto cleanup;
 
-    if ((rc = read_string(f, &hit->name))) goto cleanup;
-    if ((rc = read_string(f, &hit->acc))) goto cleanup;
-    if ((rc = read_string(f, &hit->desc))) goto cleanup;
+    if ((rc = h3c_read_string(f, &hit->name))) goto cleanup;
+    if ((rc = h3c_read_string(f, &hit->acc))) goto cleanup;
+    if ((rc = h3c_read_string(f, &hit->desc))) goto cleanup;
 
     lip_read_float(f, &hit->sortkey);
 
@@ -141,21 +141,21 @@ int hit_unpack(struct hit *hit, struct lip_file *f)
     lip_read_int(f, &hit->nincluded);
     lip_read_int(f, &hit->best_domain);
 
-    if (!expect_map_size(f, 1)) goto cleanup;
-    if (!expect_key(f, "domains")) goto cleanup;
+    if (!h3c_expect_map_size(f, 1)) goto cleanup;
+    if (!h3c_expect_key(f, "domains")) goto cleanup;
 
     unsigned size = 0;
     if (!lip_read_array_size(f, &size)) goto cleanup;
-    if ((rc = hit_setup(hit, size))) goto cleanup;
+    if ((rc = h3c_hit_setup(hit, size))) goto cleanup;
 
     for (unsigned i = 0; i < hit->ndomains; ++i)
     {
-        if ((rc = domain_unpack(hit->domains + i, f))) goto cleanup;
+        if ((rc = h3c_domain_unpack(hit->domains + i, f))) goto cleanup;
     }
 
     return H3C_OK;
 
 cleanup:
-    hit_cleanup(hit);
+    h3c_hit_cleanup(hit);
     return rc;
 }

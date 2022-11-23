@@ -3,6 +3,6 @@
 
 #include <stdio.h>
 
-void echo(FILE *stream, char const *fmt, ...);
+void h3c_echo(FILE *stream, char const *fmt, ...);
 
 #endif

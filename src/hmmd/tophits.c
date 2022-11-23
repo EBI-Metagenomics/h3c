@@ -9,7 +9,7 @@
 #include <string.h>
 #include <tgmath.h>
 
-void hmmd_tophits_init(struct hmmd_tophits *th)
+void h3c_hmmd_tophits_init(struct hmmd_tophits *th)
 {
     memset(th, 0, sizeof(*th));
     th->hit = 0;
@@ -38,14 +38,14 @@ static int grow(struct hmmd_tophits *th, uint64_t nhits)
 
     for (uint64_t i = th->nhits; i < nhits; ++i)
     {
-        hmmd_hit_init(th->unsrt + i);
+        h3c_hmmd_hit_init(th->unsrt + i);
         ++th->nhits;
     }
 
     return H3C_OK;
 
 cleanup:
-    hmmd_tophits_cleanup(th);
+    h3c_hmmd_tophits_cleanup(th);
     return rc;
 }
 
@@ -54,15 +54,15 @@ static void shrink(struct hmmd_tophits *th, uint64_t nhits)
     for (uint64_t i = nhits; i < th->nhits; ++i)
     {
         th->hit[i] = 0;
-        hmmd_hit_cleanup(th->unsrt + i);
+        h3c_hmmd_hit_cleanup(th->unsrt + i);
     }
 
     th->nhits = nhits;
 }
 
-int hmmd_tophits_setup(struct hmmd_tophits *th, unsigned char const **ptr,
-                       unsigned char const *end, uint64_t nhits,
-                       uint64_t nreported, uint64_t nincluded)
+int h3c_hmmd_tophits_setup(struct hmmd_tophits *th, unsigned char const **ptr,
+                           unsigned char const *end, uint64_t nhits,
+                           uint64_t nreported, uint64_t nincluded)
 {
     int rc = H3C_OK;
 
@@ -80,24 +80,24 @@ int hmmd_tophits_setup(struct hmmd_tophits *th, unsigned char const **ptr,
 
     for (uint64_t i = 0; i < nhits; ++i)
     {
-        if ((rc = hmmd_hit_parse(th->unsrt + i, ptr, end))) goto cleanup;
+        if ((rc = h3c_hmmd_hit_parse(th->unsrt + i, ptr, end))) goto cleanup;
         th->hit[i] = th->unsrt + i;
     }
 
     return H3C_OK;
 
 cleanup:
-    hmmd_tophits_cleanup(th);
+    h3c_hmmd_tophits_cleanup(th);
     return rc;
 }
 
-void hmmd_tophits_cleanup(struct hmmd_tophits *th)
+void h3c_hmmd_tophits_cleanup(struct hmmd_tophits *th)
 {
     for (uint64_t i = 0; i < th->nhits; ++i)
     {
-        hmmd_hit_cleanup(th->unsrt + i);
+        h3c_hmmd_hit_cleanup(th->unsrt + i);
     }
     free(th->hit);
     free(th->unsrt);
-    hmmd_tophits_init(th);
+    h3c_hmmd_tophits_init(th);
 }

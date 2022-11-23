@@ -55,7 +55,6 @@ add_library(
   src/itoa.c
   src/msg.c
   src/nnge.c
-  src/request.c
   src/result.c
   src/stats.c
   src/stream.c

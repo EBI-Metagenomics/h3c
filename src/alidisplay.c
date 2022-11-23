@@ -13,7 +13,7 @@
 #define ASEQ_PRESENT (1 << 4)
 #define NTSEQ_PRESENT (1 << 5)
 
-int alidisplay_init(struct alidisplay *ad)
+int h3c_alidisplay_init(struct alidisplay *ad)
 {
     memset(ad, 0, sizeof(*ad));
 
@@ -37,11 +37,11 @@ int alidisplay_init(struct alidisplay *ad)
     return H3C_OK;
 
 cleanup:
-    alidisplay_cleanup(ad);
+    h3c_alidisplay_cleanup(ad);
     return H3C_ENOMEM;
 }
 
-void alidisplay_cleanup(struct alidisplay *ad)
+void h3c_alidisplay_cleanup(struct alidisplay *ad)
 {
     DEL(ad->rfline);
     DEL(ad->mmline);
@@ -69,7 +69,7 @@ static void write_cstr(bool presence, struct lip_file *f, char const *str)
         lip_write_cstr(f, "");
 }
 
-int alidisplay_pack(struct alidisplay const *ad, struct lip_file *f)
+int h3c_alidisplay_pack(struct alidisplay const *ad, struct lip_file *f)
 {
     lip_write_array_size(f, 19);
 
@@ -97,26 +97,26 @@ int alidisplay_pack(struct alidisplay const *ad, struct lip_file *f)
     return lip_file_error(f) ? H3C_EPACK : H3C_OK;
 }
 
-int alidisplay_unpack(struct alidisplay *ad, struct lip_file *f)
+int h3c_alidisplay_unpack(struct alidisplay *ad, struct lip_file *f)
 {
     int rc = H3C_EUNPACK;
 
-    if (!expect_array_size(f, 19)) goto cleanup;
+    if (!h3c_expect_array_size(f, 19)) goto cleanup;
 
     if (!lip_read_int(f, &ad->presence)) goto cleanup;
-    if ((rc = read_string(f, &ad->rfline))) goto cleanup;
-    if ((rc = read_string(f, &ad->mmline))) goto cleanup;
-    if ((rc = read_string(f, &ad->csline))) goto cleanup;
-    if ((rc = read_string(f, &ad->model))) goto cleanup;
-    if ((rc = read_string(f, &ad->mline))) goto cleanup;
-    if ((rc = read_string(f, &ad->aseq))) goto cleanup;
-    if ((rc = read_string(f, &ad->ntseq))) goto cleanup;
-    if ((rc = read_string(f, &ad->ppline))) goto cleanup;
+    if ((rc = h3c_read_string(f, &ad->rfline))) goto cleanup;
+    if ((rc = h3c_read_string(f, &ad->mmline))) goto cleanup;
+    if ((rc = h3c_read_string(f, &ad->csline))) goto cleanup;
+    if ((rc = h3c_read_string(f, &ad->model))) goto cleanup;
+    if ((rc = h3c_read_string(f, &ad->mline))) goto cleanup;
+    if ((rc = h3c_read_string(f, &ad->aseq))) goto cleanup;
+    if ((rc = h3c_read_string(f, &ad->ntseq))) goto cleanup;
+    if ((rc = h3c_read_string(f, &ad->ppline))) goto cleanup;
     lip_read_int(f, &ad->N);
 
-    if ((rc = read_string(f, &ad->hmmname))) goto cleanup;
-    if ((rc = read_string(f, &ad->hmmacc))) goto cleanup;
-    if ((rc = read_string(f, &ad->hmmdesc))) goto cleanup;
+    if ((rc = h3c_read_string(f, &ad->hmmname))) goto cleanup;
+    if ((rc = h3c_read_string(f, &ad->hmmacc))) goto cleanup;
+    if ((rc = h3c_read_string(f, &ad->hmmdesc))) goto cleanup;
     lip_read_int(f, &ad->hmmfrom);
     lip_read_int(f, &ad->hmmto);
     lip_read_int(f, &ad->M);
@@ -130,7 +130,7 @@ int alidisplay_unpack(struct alidisplay *ad, struct lip_file *f)
     return H3C_OK;
 
 cleanup:
-    alidisplay_cleanup(ad);
+    h3c_alidisplay_cleanup(ad);
     return rc;
 }
 
@@ -145,7 +145,7 @@ static unsigned textwidth(unsigned n)
     return w;
 }
 
-void alidisplay_print(struct alidisplay const *ad, FILE *f)
+void h3c_alidisplay_print(struct alidisplay const *ad, FILE *f)
 {
     /* implement the --acc option for preferring accessions over names in output
      */
@@ -168,7 +168,7 @@ void alidisplay_print(struct alidisplay const *ad, FILE *f)
     unsigned k1 = ad->hmmfrom;
     for (unsigned pos = 0; pos < ad->N; pos += aliwidth)
     {
-        if (pos > 0) echo(f, "");
+        if (pos > 0) h3c_echo(f, "");
 
         unsigned ni = 0;
         unsigned nk = 0;
@@ -190,42 +190,42 @@ void alidisplay_print(struct alidisplay const *ad, FILE *f)
         if (ad->presence & CSLINE_PRESENT)
         {
             strncpy(buf, ad->csline + pos, aliwidth);
-            echo(f, "  %*s %s CS", namewidth + coordwidth + 1, "", buf);
+            h3c_echo(f, "  %*s %s CS", namewidth + coordwidth + 1, "", buf);
         }
         if (ad->presence & RFLINE_PRESENT)
         {
             strncpy(buf, ad->rfline + pos, aliwidth);
-            echo(f, "  %*s %s RF", namewidth + coordwidth + 1, "", buf);
+            h3c_echo(f, "  %*s %s RF", namewidth + coordwidth + 1, "", buf);
         }
         if (ad->presence & MMLINE_PRESENT)
         {
             strncpy(buf, ad->mmline + pos, aliwidth);
-            echo(f, "  %*s %s MM", namewidth + coordwidth + 1, "", buf);
+            h3c_echo(f, "  %*s %s MM", namewidth + coordwidth + 1, "", buf);
         }
 
         strncpy(buf, ad->model + pos, aliwidth);
-        echo(f, "  %*s %*d %s %-*d", namewidth, hmmname, coordwidth, k1, buf,
-             coordwidth, k2);
+        h3c_echo(f, "  %*s %*d %s %-*d", namewidth, hmmname, coordwidth, k1,
+                 buf, coordwidth, k2);
 
         strncpy(buf, ad->mline + pos, aliwidth);
-        echo(f, "  %*s %s", namewidth + coordwidth + 1, " ", buf);
+        h3c_echo(f, "  %*s %s", namewidth + coordwidth + 1, " ", buf);
 
         strncpy(buf, ad->aseq + pos, aliwidth);
         if (ni > 0)
         {
-            echo(f, "  %*s %*ld %s %-*ld", namewidth, seqname, coordwidth, i1,
-                 buf, coordwidth, i2);
+            h3c_echo(f, "  %*s %*ld %s %-*ld", namewidth, seqname, coordwidth,
+                     i1, buf, coordwidth, i2);
         }
         else
         {
-            echo(f, "  %*s %*s %s %*s", namewidth, seqname, coordwidth, "-",
-                 buf, coordwidth, "-");
+            h3c_echo(f, "  %*s %*s %s %*s", namewidth, seqname, coordwidth, "-",
+                     buf, coordwidth, "-");
         }
 
         if (ad->ppline != 0)
         {
             strncpy(buf, ad->ppline + pos, aliwidth);
-            echo(f, "  %*s %s PP", namewidth + coordwidth + 1, "", buf);
+            h3c_echo(f, "  %*s %s PP", namewidth + coordwidth + 1, "", buf);
         }
 
         k1 += nk;

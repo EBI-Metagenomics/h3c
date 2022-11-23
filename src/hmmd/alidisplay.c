@@ -6,15 +6,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-void hmmd_alidisplay_init(struct hmmd_alidisplay *ali)
+void h3c_hmmd_alidisplay_init(struct hmmd_alidisplay *ali)
 {
     memset(ali, 0, sizeof(*ali));
 }
 
-void hmmd_alidisplay_cleanup(struct hmmd_alidisplay *ali)
+void h3c_hmmd_alidisplay_cleanup(struct hmmd_alidisplay *ali)
 {
     if (ali->mem) DEL(ali->mem);
-    hmmd_alidisplay_init(ali);
+    h3c_hmmd_alidisplay_init(ali);
 }
 
 static_assert(sizeof(int) == sizeof(uint32_t), "HMMER3 undefired requirement");
@@ -39,35 +39,36 @@ static bool parse_strings(struct hmmd_alidisplay *ali, size_t size, char **mem)
     nstrings += !!(ali->presence & PPLINE_PRESENT);
     nstrings += 6;
 
-    if (!expect_n_strings(size, *mem, nstrings)) return false;
+    if (!h3c_expect_n_strings(size, *mem, nstrings)) return false;
 
-    ali->rfline = ali->presence & RFLINE_PRESENT ? strskip(mem) : 0;
-    ali->mmline = ali->presence & MMLINE_PRESENT ? strskip(mem) : 0;
-    ali->csline = ali->presence & CSLINE_PRESENT ? strskip(mem) : 0;
-    ali->model = strskip(mem);
-    ali->mline = strskip(mem);
-    ali->aseq = ali->presence & ASEQ_PRESENT ? strskip(mem) : 0;
-    ali->ntseq = ali->presence & NTSEQ_PRESENT ? strskip(mem) : 0;
-    ali->ppline = ali->presence & PPLINE_PRESENT ? strskip(mem) : 0;
+    ali->rfline = ali->presence & RFLINE_PRESENT ? h3c_strskip(mem) : 0;
+    ali->mmline = ali->presence & MMLINE_PRESENT ? h3c_strskip(mem) : 0;
+    ali->csline = ali->presence & CSLINE_PRESENT ? h3c_strskip(mem) : 0;
+    ali->model = h3c_strskip(mem);
+    ali->mline = h3c_strskip(mem);
+    ali->aseq = ali->presence & ASEQ_PRESENT ? h3c_strskip(mem) : 0;
+    ali->ntseq = ali->presence & NTSEQ_PRESENT ? h3c_strskip(mem) : 0;
+    ali->ppline = ali->presence & PPLINE_PRESENT ? h3c_strskip(mem) : 0;
 
-    ali->hmmname = strskip(mem);
-    ali->hmmacc = strskip(mem);
-    ali->hmmdesc = strskip(mem);
-    ali->sqname = strskip(mem);
-    ali->sqacc = strskip(mem);
-    ali->sqdesc = strskip(mem);
+    ali->hmmname = h3c_strskip(mem);
+    ali->hmmacc = h3c_strskip(mem);
+    ali->hmmdesc = h3c_strskip(mem);
+    ali->sqname = h3c_strskip(mem);
+    ali->sqacc = h3c_strskip(mem);
+    ali->sqdesc = h3c_strskip(mem);
 
     return true;
 }
 
-int hmmd_alidisplay_parse(struct hmmd_alidisplay *ali,
-                          unsigned char const **ptr, unsigned char const *end)
+int h3c_hmmd_alidisplay_parse(struct hmmd_alidisplay *ali,
+                              unsigned char const **ptr,
+                              unsigned char const *end)
 {
     int rc = H3C_OK;
 
     ESCAPE_OVERRUN(rc, *ptr, end, sizeof(uint32_t));
 
-    size_t obj_size = eatu32(ptr);
+    size_t obj_size = h3c_eatu32(ptr);
     if (obj_size <= SER_BASE_SIZE)
     {
         rc = H3C_EPARSE;
@@ -83,16 +84,16 @@ int hmmd_alidisplay_parse(struct hmmd_alidisplay *ali,
     ali->memsize = memsize;
 
     ESCAPE_OVERRUN(rc, *ptr, end, 4 * sizeof(uint32_t) + 3 * sizeof(uint64_t));
-    ali->N = eatu32(ptr);
-    ali->hmmfrom = eatu32(ptr);
-    ali->hmmto = eatu32(ptr);
-    ali->M = eatu32(ptr);
-    ali->sqfrom = eatu64(ptr);
-    ali->sqto = eatu64(ptr);
-    ali->L = eatu64(ptr);
+    ali->N = h3c_eatu32(ptr);
+    ali->hmmfrom = h3c_eatu32(ptr);
+    ali->hmmto = h3c_eatu32(ptr);
+    ali->M = h3c_eatu32(ptr);
+    ali->sqfrom = h3c_eatu64(ptr);
+    ali->sqto = h3c_eatu64(ptr);
+    ali->L = h3c_eatu64(ptr);
 
     ESCAPE_OVERRUN(rc, *ptr, end, sizeof(uint8_t));
-    ali->presence = eatu8(ptr);
+    ali->presence = h3c_eatu8(ptr);
 
     ESCAPE_OVERRUN(rc, *ptr, end, memsize);
     memcpy(ali->mem, *ptr, memsize);
@@ -108,6 +109,6 @@ int hmmd_alidisplay_parse(struct hmmd_alidisplay *ali,
     return H3C_OK;
 
 cleanup:
-    hmmd_alidisplay_cleanup(ali);
+    h3c_hmmd_alidisplay_cleanup(ali);
     return rc;
 }

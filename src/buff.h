@@ -10,8 +10,8 @@ struct buff
     unsigned char data[];
 };
 
-struct buff *buff_new(size_t capacity);
-int buff_ensure(struct buff **buff, size_t capacity);
-void buff_del(struct buff const *buff);
+struct buff *h3c_buff_new(size_t capacity);
+int h3c_buff_ensure(struct buff **buff, size_t capacity);
+void h3c_buff_del(struct buff const *buff);
 
 #endif

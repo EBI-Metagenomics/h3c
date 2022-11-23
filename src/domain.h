@@ -30,10 +30,10 @@ struct domain
 
 STATIC_ASSERT(sizeof(long) >= 8);
 
-void domain_init(struct domain *);
-int domain_setup(struct domain *, unsigned scores_size);
-void domain_cleanup(struct domain *);
-int domain_pack(struct domain const *, struct lip_file *);
-int domain_unpack(struct domain *, struct lip_file *);
+void h3c_domain_init(struct domain *);
+int h3c_domain_setup(struct domain *, unsigned scores_size);
+void h3c_domain_cleanup(struct domain *);
+int h3c_domain_pack(struct domain const *, struct lip_file *);
+int h3c_domain_unpack(struct domain *, struct lip_file *);
 
 #endif

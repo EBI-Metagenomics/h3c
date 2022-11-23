@@ -7,10 +7,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-void domain_init(struct domain *dom)
+void h3c_domain_init(struct domain *dom)
 {
     memset(dom, 0, offsetof(struct domain, ad));
-    alidisplay_init(&dom->ad);
+    h3c_alidisplay_init(&dom->ad);
 }
 
 static int grow_scores(struct domain *dom, unsigned size)
@@ -18,7 +18,7 @@ static int grow_scores(struct domain *dom, unsigned size)
     size_t sz = size * sizeof(*dom->pos_score);
     if (!(dom->pos_score = zc_reallocf(dom->pos_score, sz)))
     {
-        domain_cleanup(dom);
+        h3c_domain_cleanup(dom);
         return H3C_ENOMEM;
     }
     return H3C_OK;
@@ -29,21 +29,21 @@ static void shrink_scores(struct domain *dom, unsigned size)
     dom->pos_score_size = size;
 }
 
-int domain_setup(struct domain *dom, unsigned scores_size)
+int h3c_domain_setup(struct domain *dom, unsigned scores_size)
 {
     if (dom->pos_score_size < scores_size) return grow_scores(dom, scores_size);
     shrink_scores(dom, scores_size);
     return H3C_OK;
 }
 
-void domain_cleanup(struct domain *dom)
+void h3c_domain_cleanup(struct domain *dom)
 {
     DEL(dom->pos_score);
     dom->pos_score_size = 0;
-    alidisplay_cleanup(&dom->ad);
+    h3c_alidisplay_cleanup(&dom->ad);
 }
 
-int domain_pack(struct domain const *dom, struct lip_file *f)
+int h3c_domain_pack(struct domain const *dom, struct lip_file *f)
 {
     lip_write_array_size(f, 14);
 
@@ -70,14 +70,14 @@ int domain_pack(struct domain const *dom, struct lip_file *f)
     lip_write_map_size(f, 1);
     lip_write_cstr(f, "alidisplay");
 
-    return alidisplay_pack(&dom->ad, f);
+    return h3c_alidisplay_pack(&dom->ad, f);
 }
 
-int domain_unpack(struct domain *dom, struct lip_file *f)
+int h3c_domain_unpack(struct domain *dom, struct lip_file *f)
 {
     int rc = H3C_EUNPACK;
 
-    if (!expect_array_size(f, 14)) goto cleanup;
+    if (!h3c_expect_array_size(f, 14)) goto cleanup;
 
     lip_read_int(f, &dom->ienv);
     lip_read_int(f, &dom->jenv);
@@ -97,19 +97,19 @@ int domain_unpack(struct domain *dom, struct lip_file *f)
 
     unsigned size = 0;
     lip_read_array_size(f, &size);
-    if ((rc = domain_setup(dom, size))) goto cleanup;
+    if ((rc = h3c_domain_setup(dom, size))) goto cleanup;
 
     for (unsigned long i = 0; i < dom->pos_score_size; i++)
         lip_read_float(f, dom->pos_score + i);
 
-    if (!expect_map_size(f, 1)) goto cleanup;
-    if (!expect_key(f, "alidisplay")) goto cleanup;
+    if (!h3c_expect_map_size(f, 1)) goto cleanup;
+    if (!h3c_expect_key(f, "alidisplay")) goto cleanup;
 
-    if ((rc = alidisplay_unpack(&dom->ad, f))) goto cleanup;
+    if ((rc = h3c_alidisplay_unpack(&dom->ad, f))) goto cleanup;
 
     return H3C_OK;
 
 cleanup:
-    domain_cleanup(dom);
+    h3c_domain_cleanup(dom);
     return rc;
 }

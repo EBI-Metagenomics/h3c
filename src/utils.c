@@ -37,15 +37,15 @@ static union num32 eatnum32(unsigned char const **data)
     return ui;
 }
 
-uint64_t eatu64(unsigned char const **data) { return eatnum64(data).u; }
+uint64_t h3c_eatu64(unsigned char const **data) { return eatnum64(data).u; }
 
-int64_t eati64(unsigned char const **data) { return eatnum64(data).i; }
+int64_t h3c_eati64(unsigned char const **data) { return eatnum64(data).i; }
 
-uint32_t eatu32(unsigned char const **data) { return eatnum32(data).u; }
+uint32_t h3c_eatu32(unsigned char const **data) { return eatnum32(data).u; }
 
-int32_t eati32(unsigned char const **data) { return eatnum32(data).i; }
+int32_t h3c_eati32(unsigned char const **data) { return eatnum32(data).i; }
 
-uint8_t eatu8(unsigned char const **data)
+uint8_t h3c_eatu8(unsigned char const **data)
 {
     uint8_t u8 = 0;
     memcpy(&u8, *data, sizeof(u8));
@@ -53,11 +53,11 @@ uint8_t eatu8(unsigned char const **data)
     return u8;
 }
 
-double eatf64(unsigned char const **data) { return eatnum64(data).f; }
+double h3c_eatf64(unsigned char const **data) { return eatnum64(data).f; }
 
-float eatf32(unsigned char const **data) { return eatnum32(data).f; }
+float h3c_eatf32(unsigned char const **data) { return eatnum32(data).f; }
 
-int eatstr(char **dst, unsigned char const **data)
+int h3c_eatstr(char **dst, unsigned char const **data)
 {
     size_t size = strlen((char const *)*data) + 1;
     if (!(*dst = zc_reallocf(*dst, size))) return H3C_ENOMEM;
@@ -66,14 +66,14 @@ int eatstr(char **dst, unsigned char const **data)
     return H3C_OK;
 }
 
-char *strskip(char **str)
+char *h3c_strskip(char **str)
 {
     char *tmp = *str;
     *str += strlen(*str) + 1;
     return tmp;
 }
 
-bool expect_n_strings(size_t size, char const *ptr, unsigned n)
+bool h3c_expect_n_strings(size_t size, char const *ptr, unsigned n)
 {
     char const *end = ptr + size;
     unsigned i = 0;
@@ -87,7 +87,7 @@ bool expect_n_strings(size_t size, char const *ptr, unsigned n)
     return i == n;
 }
 
-bool expect_key(struct lip_file *f, char const *key)
+bool h3c_expect_key(struct lip_file *f, char const *key)
 {
     char str[16] = {0};
     unsigned size = (unsigned)strlen(key) + 1;
@@ -96,21 +96,21 @@ bool expect_key(struct lip_file *f, char const *key)
     return !lip_file_error(f) && strncmp(str, key, sizeof(str)) == 0;
 }
 
-bool expect_array_size(struct lip_file *f, unsigned size)
+bool h3c_expect_array_size(struct lip_file *f, unsigned size)
 {
     unsigned sz = 0;
     lip_read_array_size(f, &sz);
     return !lip_file_error(f) && size == sz;
 }
 
-bool expect_map_size(struct lip_file *f, unsigned size)
+bool h3c_expect_map_size(struct lip_file *f, unsigned size)
 {
     unsigned sz = 0;
     lip_read_map_size(f, &sz);
     return !lip_file_error(f) && size == sz;
 }
 
-int read_string(struct lip_file *f, char **str)
+int h3c_read_string(struct lip_file *f, char **str)
 {
     unsigned size = 0;
     if (!lip_read_str_size(f, &size)) return H3C_EUNPACK;
@@ -120,7 +120,7 @@ int read_string(struct lip_file *f, char **str)
     return H3C_OK;
 }
 
-char *strxdup(char *dst, char const *src)
+char *h3c_strxdup(char *dst, char const *src)
 {
     assert(dst != 0);
     if (!src)

@@ -28,14 +28,14 @@ struct h3c_stream *h3c_stream_new(struct nng_stream *stream)
 int h3c_stream_put(struct h3c_stream *t, char const *args, char const *seq,
                    long deadline)
 {
-    struct msg *msg = msg_new(t->stream);
+    struct msg *msg = h3c_msg_new(t->stream);
     if (!msg) return H3C_ENOMEM;
 
     h3c_stream_wait(t);
-    int rc = msg_start(msg, args, seq, deadline);
+    int rc = h3c_msg_start(msg, args, seq, deadline);
     if (rc)
     {
-        msg_del(msg);
+        h3c_msg_del(msg);
         return rc;
     }
 
@@ -48,21 +48,21 @@ void h3c_stream_wait(struct h3c_stream *t)
 {
     if (cco_queue_empty(&t->queue)) return;
     struct msg *msg = cco_of(cco_queue_pop(&t->queue), struct msg, node);
-    msg_wait(msg);
+    h3c_msg_wait(msg);
     cco_queue_put_first(&t->queue, &msg->node);
 }
 
 int h3c_stream_pop(struct h3c_stream *t, struct h3c_result *r)
 {
     struct msg *msg = cco_of(cco_queue_pop(&t->queue), struct msg, node);
-    int rc = msg_result(msg);
+    int rc = h3c_msg_result(msg);
     if (rc)
     {
-        msg_del(msg);
+        h3c_msg_del(msg);
         return rc;
     }
-    rc = answer_copy(msg_answer(msg), r);
-    msg_del(msg);
+    rc = h3c_answer_copy(h3c_msg_answer(msg), r);
+    h3c_msg_del(msg);
     return rc;
 }
 
@@ -73,7 +73,7 @@ void h3c_stream_del(struct h3c_stream *t)
     {
         h3c_stream_wait(t);
         struct msg *msg = cco_of(cco_queue_pop(&t->queue), struct msg, node);
-        msg_del(msg);
+        h3c_msg_del(msg);
     }
     nng_stream_close(t->stream);
     nng_stream_free(t->stream);

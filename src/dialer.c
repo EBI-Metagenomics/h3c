@@ -24,7 +24,7 @@ struct h3c_dialer *h3c_dialer_new(char const *ip, int port)
     char uri[512] = "tcp://";
     strncat(uri, ip, sizeof(uri) - strlen(uri) - 27);
     strcat(uri, ":");
-    itoa(uri + strlen(uri), port);
+    h3c_itoa(uri + strlen(uri), port);
 
     dialer->stream = NULL;
     dialer->aio = NULL;
@@ -49,11 +49,11 @@ struct h3c_dialer *h3c_dialer_new(char const *ip, int port)
 
 int h3c_dialer_dial(struct h3c_dialer *x, long deadline)
 {
-    nng_aio_set_timeout(x->aio, timeout(deadline));
+    nng_aio_set_timeout(x->aio, h3c_timeout(deadline));
     nng_stream_dialer_dial(x->stream, x->aio);
     nng_aio_wait(x->aio);
 
-    int rc = nnge(nng_aio_result(x->aio));
+    int rc = h3c_nnge(nng_aio_result(x->aio));
     if (rc) return rc;
 
     struct nng_stream *s = nng_aio_get_output(x->aio, 0);

@@ -5,19 +5,19 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-uint64_t eatu64(unsigned char const **data);
-int64_t eati64(unsigned char const **data);
+uint64_t h3c_eatu64(unsigned char const **data);
+int64_t h3c_eati64(unsigned char const **data);
 
-uint32_t eatu32(unsigned char const **data);
-int32_t eati32(unsigned char const **data);
+uint32_t h3c_eatu32(unsigned char const **data);
+int32_t h3c_eati32(unsigned char const **data);
 
-uint8_t eatu8(unsigned char const **data);
+uint8_t h3c_eatu8(unsigned char const **data);
 
-double eatf64(unsigned char const **data);
-float eatf32(unsigned char const **data);
+double h3c_eatf64(unsigned char const **data);
+float h3c_eatf32(unsigned char const **data);
 
-int eatstr(char **dst, unsigned char const **data);
-char *strskip(char **str);
+int h3c_eatstr(char **dst, unsigned char const **data);
+char *h3c_strskip(char **str);
 
 #define ESCAPE_OVERRUN(rc, cur, end, sz)                                       \
     do                                                                         \
@@ -29,17 +29,17 @@ char *strskip(char **str);
         }                                                                      \
     } while (0);
 
-bool expect_n_strings(size_t size, char const *ptr, unsigned n);
+bool h3c_expect_n_strings(size_t size, char const *ptr, unsigned n);
 
 struct lip_file;
 
-bool expect_key(struct lip_file *f, char const *key);
-bool expect_array_size(struct lip_file *f, unsigned size);
-bool expect_map_size(struct lip_file *f, unsigned size);
+bool h3c_expect_key(struct lip_file *f, char const *key);
+bool h3c_expect_array_size(struct lip_file *f, unsigned size);
+bool h3c_expect_map_size(struct lip_file *f, unsigned size);
 
-int read_string(struct lip_file *f, char **str);
+int h3c_read_string(struct lip_file *f, char **str);
 
-char *strxdup(char *dst, char const *src);
+char *h3c_strxdup(char *dst, char const *src);
 
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
