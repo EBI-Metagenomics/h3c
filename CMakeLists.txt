@@ -62,8 +62,8 @@ add_library(
   src/tophits.c
   src/utils.c
   src/zc.c)
-target_link_libraries(h3c PRIVATE LITE_PACK::lite_pack -Wl,-warn_commons)
-target_link_libraries(h3c PRIVATE nng::nng -Wl,-warn_commons)
+target_link_libraries(h3c PRIVATE LITE_PACK::lite_pack)
+target_link_libraries(h3c PRIVATE nng::nng)
 target_link_libraries(h3c PRIVATE $<$<BOOL:${UNIX}>:m>)
 add_library(H3C::h3c ALIAS h3c)
 
