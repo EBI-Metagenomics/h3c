@@ -40,7 +40,7 @@ static void callback(void *arg)
     int rc = nng_aio_result(x->aio);
     if (rc != 0)
     {
-        nng_aio_finish(x->aio, read_code(rc));
+        nng_aio_finish(x->aio, rc);
         return;
     }
 
@@ -51,7 +51,7 @@ static void callback(void *arg)
 
         if ((rc = h3c_answer_setup_size(x->ans, size)))
         {
-            nng_aio_finish(x->aio, H3C_ENOMEM);
+            nng_aio_finish(x->aio, NNG_ENOMEM);
             return;
         }
 
@@ -59,7 +59,7 @@ static void callback(void *arg)
         if (!(x->amsg1 =
                   h3c_arecv(x->stream, size, data, &callback, x, x->deadline)))
         {
-            nng_aio_finish(x->aio, H3C_ENOMEM);
+            nng_aio_finish(x->aio, NNG_ENOMEM);
             return;
         }
         h3c_astart(x->amsg1);
@@ -71,11 +71,11 @@ static void callback(void *arg)
         {
             if ((rc = h3c_answer_parse(x->ans)))
             {
-                nng_aio_finish(x->aio, rc);
+                nng_aio_finish(x->aio, NNG_EINVAL);
                 return;
             }
         }
-        nng_aio_finish(x->aio, H3C_OK);
+        nng_aio_finish(x->aio, 0);
     }
 }
 
@@ -119,12 +119,6 @@ struct hmsg *h3c_hrecv(struct nng_stream *stream, struct answer *ans,
 }
 
 void h3c_hstart(struct hmsg *x) { h3c_astart(x->amsg0); }
-
-int h3c_hwait(struct hmsg *x)
-{
-    nng_aio_wait(x->aio);
-    return nng_aio_result(x->aio);
-}
 
 void h3c_hcancel(struct hmsg *x) { nng_aio_cancel(x->aio); }
 
