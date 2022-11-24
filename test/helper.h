@@ -16,4 +16,17 @@ char *append_char(size_t n, char *dst, char c);
 
 #define array_size(arr) (sizeof(arr) / sizeof((arr)[0]))
 
+#define GOOD 0
+#define BAD 1
+#define CORRUPTED 2
+
+struct query
+{
+    char const *name;
+    char const *desc;
+    char const *seq;
+};
+
+extern struct query const ross[3];
+
 #endif

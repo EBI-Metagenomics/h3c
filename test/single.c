@@ -7,9 +7,6 @@
 #include <string.h>
 
 #define PORT 51379
-#define ROSS_GOOD 0
-#define ROSS_BAD 1
-static char const *seqs[2] = {0};
 static char const cmd[] = "--hmmdb 1 --acc --cut_ga";
 
 static void test_connection_timedout(void);
@@ -26,14 +23,9 @@ static void test_reuse_results_print(void);
 static void test_reuse_connection(void);
 static void test_result_api(void);
 
-static void assets_setup(void);
-static void assets_cleanup(void);
-
 int main(void)
 {
     atexit(h3c_fini);
-
-    assets_setup();
     test_connection_timedout();
     test_open_close_connection();
     test_request_timedout();
@@ -47,7 +39,6 @@ int main(void)
     test_reuse_results_print();
     test_reuse_connection();
     test_result_api();
-    assets_cleanup();
     return EXIT_SUCCESS;
 }
 
@@ -58,8 +49,8 @@ static bool same_hash(char const *filepath, long hash);
 static struct h3c_dialer *conn_new(void);
 static struct h3c_stream *conn_dial(struct h3c_dialer *d, long deadline);
 static void conn_del(struct h3c_dialer *d);
-static struct h3c_result *request(struct h3c_stream *s, char const *seq,
-                                  long deadline);
+static struct h3c_result *request(struct h3c_stream *s, char const *name,
+                                  char const *seq, long deadline);
 
 static void test_connection_timedout(void)
 {
@@ -80,7 +71,8 @@ static void test_request_timedout(void)
     struct h3c_dialer *d = conn_new();
     struct h3c_stream *s = conn_dial(d, later());
 
-    check_code(h3c_stream_put(s, cmd, seqs[ROSS_GOOD], earlier()));
+    check_code(
+        h3c_stream_put(s, cmd, ross[GOOD].name, ross[GOOD].seq, earlier()));
     h3c_stream_wait(s);
     struct h3c_result *result = h3c_result_new();
     if (!result) fail();
@@ -95,7 +87,7 @@ static struct h3c_result *request_ross(void)
 {
     struct h3c_dialer *d = conn_new();
     struct h3c_stream *s = conn_dial(d, later());
-    struct h3c_result *r = request(s, seqs[ROSS_GOOD], later());
+    struct h3c_result *r = request(s, ross[GOOD].name, ross[GOOD].seq, later());
 
     h3c_stream_del(s);
     conn_del(d);
@@ -214,7 +206,8 @@ static void test_reuse_results(void)
 
     struct h3c_stream *s = h3c_dialer_stream(d);
 
-    check_code(h3c_stream_put(s, cmd, seqs[ROSS_GOOD], later()));
+    check_code(
+        h3c_stream_put(s, cmd, ross[GOOD].name, ross[GOOD].seq, later()));
     h3c_stream_wait(s);
     check_code(h3c_stream_pop(s, result));
 
@@ -238,7 +231,8 @@ static void test_reuse_results_print(void)
 
     struct h3c_stream *s = h3c_dialer_stream(d);
 
-    check_code(h3c_stream_put(s, cmd, seqs[ROSS_GOOD], later()));
+    check_code(
+        h3c_stream_put(s, cmd, ross[GOOD].name, ross[GOOD].seq, later()));
     h3c_stream_wait(s);
     check_code(h3c_stream_pop(s, result));
 
@@ -271,11 +265,12 @@ static void test_reuse_connection(void)
 
     struct h3c_stream *s = h3c_dialer_stream(d);
 
-    check_code(h3c_stream_put(s, cmd, seqs[ROSS_GOOD], later()));
+    check_code(
+        h3c_stream_put(s, cmd, ross[GOOD].name, ross[GOOD].seq, later()));
     h3c_stream_wait(s);
     check_code(h3c_stream_pop(s, result));
 
-    check_code(h3c_stream_put(s, cmd, seqs[ROSS_BAD], later()));
+    check_code(h3c_stream_put(s, cmd, ross[BAD].name, ross[BAD].seq, later()));
     h3c_stream_wait(s);
     check_code(h3c_stream_pop(s, result));
 
@@ -307,24 +302,6 @@ static void test_result_api(void)
     h3c_result_del(result);
 }
 
-static void assets_setup(void)
-{
-    long size = 0;
-    unsigned char *data = NULL;
-
-    check_code(fs_readall(ASSETS "/ross.fasta", &size, &data));
-    seqs[ROSS_GOOD] = append_char(size, (char *)data, '\0');
-
-    check_code(fs_readall(ASSETS "/ross.poor.fasta", &size, &data));
-    seqs[ROSS_BAD] = append_char(size, (char *)data, '\0');
-}
-
-static void assets_cleanup(void)
-{
-    for (size_t i = 0; i < array_size(seqs); ++i)
-        free((void *)seqs[i]);
-}
-
 static bool same_hash(char const *filepath, long hash)
 {
     long expected = 0;
@@ -347,10 +324,10 @@ static struct h3c_stream *conn_dial(struct h3c_dialer *d, long deadline)
 
 static void conn_del(struct h3c_dialer *d) { h3c_dialer_del(d); }
 
-static struct h3c_result *request(struct h3c_stream *s, char const *seq,
-                                  long deadline)
+static struct h3c_result *request(struct h3c_stream *s, char const *name,
+                                  char const *seq, long deadline)
 {
-    check_code(h3c_stream_put(s, cmd, seq, deadline));
+    check_code(h3c_stream_put(s, cmd, name, seq, deadline));
     h3c_stream_wait(s);
     struct h3c_result *result = h3c_result_new();
     if (!result) fail();

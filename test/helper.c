@@ -25,3 +25,21 @@ char *append_char(size_t n, char *dst, char c)
     t[n] = c;
     return t;
 }
+
+struct query const ross[3] = {
+    [GOOD] = {.name = "tr|Q949S7|Q949S7_ARATH",
+              .desc = "NAD(P)-binding Rossmann-fold superfamily protein "
+                      "OS=Arabidopsis thaliana OX=3702 GN=At5g15910 PE=1 SV=1",
+              .seq =
+                  "MLRSLIWKRSQAYSSVVTMSSISQRGNERLLSEVAGSHSRDNKILVLGGNGYVGSHICKE"
+                  "ALRQGFSVSSLSRSGRSSLHDSWVDDVTWHQGDLLSPDSLKPALEGITSVISCVGGFGSN"
+                  "SQMVRINGTANINAVKAAAEQGVKRFVYISAADFGVINNLIRGYFEGKRATEAEILDKFG"
+                  "NRGSVLRPGFIHGTRQVGSIKLPLSLIGAPLEMVLKLLPKEVTKIPVIGPLLIPPVNVKS"
+                  "VAATAVKAAVDPEFASGVIDVYRILQHGH"},
+    [BAD] = {.name = ">tr|Q|Q_ARATH",
+             .desc = "NAD(P)-binding Rossmann-fold",
+             .seq = "MLRSLIWRSQAYSSVVTMSSISQRGNERLLSEVAGSHSRDNKILVLGNGYVGSHICKE"
+                    "SQMVRINGTANINAVKAAAEQGVKRFVYISADFGVINNLIRGYFEGKRATEAEILDKF"
+                    "NRGSVLRPGFIHGTRQVGSIKLPLSLIGAPLMVLKLLPKEVTKIPVIGPLLIPPVNVS"
+                    "TAATAVKAAVDPEFASGVIDVYRILQHGH"},
+    [CORRUPTED] = {.name = ">a", .desc = "", .seq = "__FF"}};

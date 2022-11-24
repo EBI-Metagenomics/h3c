@@ -1,6 +1,7 @@
 #include "msg.h"
 #include "amsg.h"
 #include "answer.h"
+#include "array_size.h"
 #include "h3c/code.h"
 #include "hmsg.h"
 #include "nnge.h"
@@ -51,15 +52,17 @@ struct msg *h3c_msg_new(struct nng_stream *stream)
 
 static void callback(void *arg);
 
-int h3c_msg_start(struct msg *x, char const *args, char const *seq,
-                  long deadline)
+int h3c_msg_start(struct msg *x, char const *args, char const *name,
+                  char const *seq, long deadline)
 {
-    struct nng_iov iov[5] = {
+    struct nng_iov iov[] = {
         {.iov_buf = "@", .iov_len = 1},
         {.iov_buf = (void *)args, .iov_len = strlen(args)},
+        {.iov_buf = "\n>", .iov_len = 2},
+        {.iov_buf = (void *)name, .iov_len = strlen(name)},
         {.iov_buf = "\n", .iov_len = 1},
         {.iov_buf = (void *)seq, .iov_len = strlen(seq)},
-        {.iov_buf = "//", .iov_len = 2},
+        {.iov_buf = "\n//", .iov_len = 3},
     };
     x->state = SEND;
     x->deadline = deadline;
@@ -67,7 +70,8 @@ int h3c_msg_start(struct msg *x, char const *args, char const *seq,
     nng_aio_set_timeout(x->aio, h3c_timeout(deadline));
     nng_aio_begin(x->aio);
 
-    if (!(x->send_amsg = h3c_asend(x->stream, 5, iov, &callback, x, deadline)))
+    if (!(x->send_amsg = h3c_asend(x->stream, array_size(iov), iov, &callback,
+                                   x, deadline)))
         return H3C_ENOMEM;
 
     h3c_astart(x->send_amsg);

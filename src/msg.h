@@ -25,8 +25,8 @@ struct msg
 struct h3c_result;
 
 struct msg *h3c_msg_new(struct nng_stream *);
-int h3c_msg_start(struct msg *, char const *args, char const *seq,
-                  long deadline);
+int h3c_msg_start(struct msg *, char const *args, char const *name,
+                  char const *seq, long deadline);
 void h3c_msg_wait(struct msg *);
 int h3c_msg_result(struct msg *);
 void h3c_msg_cancel(struct msg *);

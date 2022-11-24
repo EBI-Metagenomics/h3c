@@ -25,14 +25,14 @@ struct h3c_stream *h3c_stream_new(struct nng_stream *stream)
     return task;
 }
 
-int h3c_stream_put(struct h3c_stream *t, char const *args, char const *seq,
-                   long deadline)
+int h3c_stream_put(struct h3c_stream *t, char const *args, char const *name,
+                   char const *seq, long deadline)
 {
     struct msg *msg = h3c_msg_new(t->stream);
     if (!msg) return H3C_ENOMEM;
 
     h3c_stream_wait(t);
-    int rc = h3c_msg_start(msg, args, seq, deadline);
+    int rc = h3c_msg_start(msg, args, name, seq, deadline);
     if (rc)
     {
         h3c_msg_del(msg);

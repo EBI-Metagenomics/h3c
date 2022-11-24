@@ -27,13 +27,6 @@ struct hmsg
     long deadline;
 };
 
-static int read_code(int c)
-{
-    if (c == NNG_ETIMEDOUT) return H3C_ETIMEDOUT;
-    if (c == NNG_ECANCELED) return H3C_ECANCELED;
-    return c;
-}
-
 static void callback(void *arg)
 {
     struct hmsg *x = arg;
