@@ -39,6 +39,12 @@ static void callback(void *arg)
 
     if (x->state == STATUS)
     {
+        rc = h3c_aresult(x->amsg0);
+        if (rc != 0)
+        {
+            nng_aio_finish(x->aio, rc);
+            return;
+        }
         struct hmmd_status const *status = h3c_answer_status_parse(x->ans);
         size_t size = status->msg_size;
 
@@ -60,6 +66,12 @@ static void callback(void *arg)
     }
     else if (x->state == DATA)
     {
+        rc = h3c_aresult(x->amsg1);
+        if (rc != 0)
+        {
+            nng_aio_finish(x->aio, rc);
+            return;
+        }
         if (!h3c_answer_status(x->ans)->status)
         {
             if ((rc = h3c_answer_parse(x->ans)))

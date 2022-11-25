@@ -21,5 +21,6 @@ char const *h3c_decode(int c)
     if (c == H3C_EPEERAUTH) return "authentication failure";
     if (c == H3C_EPROTO) return "protocol error occurred";
     if (c == H3C_EUNREACHABLE) return "address is not reachable";
+    if (c == H3C_ECONNSHUT) return "remote peer shutdown after sending data";
     return "(null)";
 }

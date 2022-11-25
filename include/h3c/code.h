@@ -22,6 +22,7 @@ enum
     H3C_EPEERAUTH,
     H3C_EPROTO,
     H3C_EUNREACHABLE,
+    H3C_ECONNSHUT,
 };
 
 char const *h3c_decode(int code);

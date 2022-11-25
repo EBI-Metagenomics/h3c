@@ -15,5 +15,6 @@ int h3c_nnge(int c)
     if (c == NNG_EPEERAUTH) return H3C_EPEERAUTH;
     if (c == NNG_EPROTO) return H3C_EPROTO;
     if (c == NNG_EUNREACHABLE) return H3C_EUNREACHABLE;
+    if (c == NNG_ECONNSHUT) return H3C_ECONNSHUT;
     return c ? H3C_EUNKNOWN : H3C_OK;
 }
