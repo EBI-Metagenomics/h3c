@@ -2,6 +2,7 @@
 #include "fs.h"
 #include "h3c/h3c.h"
 #include "helper.h"
+#include "hope.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -45,7 +46,7 @@ int main(void)
 static long earlier(void) { return h3c_deadline(-1); }
 static long later(void) { return h3c_deadline(1000 * 5); }
 
-static bool same_hash(char const *filepath, long hash);
+static long hash(char const *filepath);
 static struct h3c_dialer *conn_new(void);
 static struct h3c_stream *conn_dial(struct h3c_dialer *d, long deadline);
 static void conn_del(struct h3c_dialer *d);
@@ -55,14 +56,14 @@ static struct h3c_result *request(struct h3c_stream *s, char const *name,
 static void test_connection_timedout(void)
 {
     struct h3c_dialer *d = conn_new();
-    if (h3c_dialer_dial(d, earlier()) != H3C_ETIMEDOUT) fail();
+    eq(h3c_dialer_dial(d, earlier()), H3C_ETIMEDOUT);
     conn_del(d);
 }
 
 static void test_open_close_connection(void)
 {
     struct h3c_dialer *d = conn_new();
-    check_code(h3c_dialer_dial(d, later()));
+    eq(h3c_dialer_dial(d, later()), 0);
     h3c_dialer_del(d);
 }
 
@@ -71,12 +72,11 @@ static void test_request_timedout(void)
     struct h3c_dialer *d = conn_new();
     struct h3c_stream *s = conn_dial(d, later());
 
-    check_code(
-        h3c_stream_put(s, cmd, ross[GOOD].name, ross[GOOD].seq, earlier()));
+    eq(h3c_stream_put(s, cmd, ross[GOOD].name, ross[GOOD].seq, earlier()), 0);
     h3c_stream_wait(s);
     struct h3c_result *result = h3c_result_new();
-    if (!result) fail();
-    if (h3c_stream_pop(s, result) != H3C_ETIMEDOUT) fail();
+    notnull(result);
+    eq(h3c_stream_pop(s, result), H3C_ETIMEDOUT);
 
     h3c_result_del(result);
     h3c_stream_del(s);
@@ -97,14 +97,14 @@ static struct h3c_result *request_ross(void)
 static void test_pack_result(void)
 {
     struct h3c_result *result = request_ross();
-    if (!result) fail();
+    notnull(result);
 
-    FILE *file = 0;
-    if (!(file = fopen(TMPDIR "/h3result.mp", "wb"))) fail();
-    check_code(h3c_result_pack(result, file));
+    FILE *file = fopen(TMPDIR "/h3result.mp", "wb");
+    notnull(file);
+    eq(h3c_result_pack(result, file), 0);
     fclose(file);
 
-    if (!same_hash(TMPDIR "/h3result.mp", 63792L)) fail();
+    eq(hash(TMPDIR "/h3result.mp"), 63792L);
 
     h3c_result_del(result);
 }
@@ -112,25 +112,26 @@ static void test_pack_result(void)
 static void test_unpack_result(void)
 {
     struct h3c_result *result = request_ross();
-    if (!result) fail();
+    notnull(result);
 
-    FILE *file = 0;
-    if (!(file = fopen(TMPDIR "/h3result.mp", "wb"))) fail();
-    check_code(h3c_result_pack(result, file));
+    FILE *file = fopen(TMPDIR "/h3result.mp", "wb");
+    notnull(file);
+    eq(h3c_result_pack(result, file), 0);
     fclose(file);
 
-    if (!same_hash(TMPDIR "/h3result.mp", 63792L)) fail();
+    eq(hash(TMPDIR "/h3result.mp"), 63792L);
 
-    if (!(file = fopen(TMPDIR "/h3result.mp", "rb"))) fail();
-    check_code(h3c_result_unpack(result, file));
+    file = fopen(TMPDIR "/h3result.mp", "rb");
+    notnull(file);
+    eq(h3c_result_unpack(result, file), 0);
     fclose(file);
 
-    file = 0;
-    if (!(file = fopen(TMPDIR "/h3result.mp", "wb"))) fail();
-    check_code(h3c_result_pack(result, file));
+    file = fopen(TMPDIR "/h3result.mp", "wb");
+    notnull(file);
+    eq(h3c_result_pack(result, file), 0);
     fclose(file);
 
-    if (!same_hash(TMPDIR "/h3result.mp", 63792L)) fail();
+    eq(hash(TMPDIR "/h3result.mp"), 63792L);
 
     h3c_result_del(result);
 }
@@ -138,14 +139,14 @@ static void test_unpack_result(void)
 static void test_print_targets(void)
 {
     struct h3c_result *result = request_ross();
-    if (!result) fail();
+    notnull(result);
 
-    FILE *file = 0;
-    if (!(file = fopen(TMPDIR "/targets.txt", "wb"))) fail();
+    FILE *file = fopen(TMPDIR "/targets.txt", "wb");
+    notnull(file);
     h3c_result_print_targets(result, file);
     fclose(file);
 
-    if (!same_hash(TMPDIR "/targets.txt", 57543L)) fail();
+    eq(hash(TMPDIR "/targets.txt"), 57543L);
 
     h3c_result_del(result);
 }
@@ -153,14 +154,14 @@ static void test_print_targets(void)
 static void test_print_domains(void)
 {
     struct h3c_result *result = request_ross();
-    if (!result) fail();
+    notnull(result);
 
-    FILE *file = 0;
-    if (!(file = fopen(TMPDIR "/domains.txt", "wb"))) fail();
+    FILE *file = fopen(TMPDIR "/domains.txt", "wb");
+    notnull(file);
     h3c_result_print_domains(result, file);
     fclose(file);
 
-    if (!same_hash(TMPDIR "/domains.txt", 46469L)) fail();
+    eq(hash(TMPDIR "/domains.txt"), 46469L);
 
     h3c_result_del(result);
 }
@@ -168,14 +169,14 @@ static void test_print_domains(void)
 static void test_print_targets_table(void)
 {
     struct h3c_result *result = request_ross();
-    if (!result) fail();
+    notnull(result);
 
-    FILE *file = 0;
-    if (!(file = fopen(TMPDIR "/targets.tbl", "wb"))) fail();
+    FILE *file = fopen(TMPDIR "/targets.tbl", "wb");
+    notnull(file);
     h3c_result_print_targets_table(result, file);
     fclose(file);
 
-    if (!same_hash(TMPDIR "/targets.tbl", 34790L)) fail();
+    eq(hash(TMPDIR "/targets.tbl"), 34790L);
 
     h3c_result_del(result);
 }
@@ -183,33 +184,31 @@ static void test_print_targets_table(void)
 static void test_print_domains_table(void)
 {
     struct h3c_result *result = request_ross();
-    if (!result) fail();
+    notnull(result);
 
-    FILE *file = 0;
-    if (!(file = fopen(TMPDIR "/domains.tbl", "wb"))) fail();
+    FILE *file = fopen(TMPDIR "/domains.tbl", "wb");
+    notnull(file);
     h3c_result_print_domains_table(result, file);
     fclose(file);
 
-    if (!same_hash(TMPDIR "/domains.tbl", 3913L)) fail();
+    eq(hash(TMPDIR "/domains.tbl"), 3913L);
 
     h3c_result_del(result);
 }
 
 static void test_reuse_results(void)
 {
-    struct h3c_result *result = 0;
-
-    if (!(result = h3c_result_new())) fail();
+    struct h3c_result *result = h3c_result_new();
+    notnull(result);
 
     struct h3c_dialer *d = conn_new();
-    check_code(h3c_dialer_dial(d, later()));
+    eq(h3c_dialer_dial(d, later()), 0);
 
     struct h3c_stream *s = h3c_dialer_stream(d);
 
-    check_code(
-        h3c_stream_put(s, cmd, ross[GOOD].name, ross[GOOD].seq, later()));
+    eq(h3c_stream_put(s, cmd, ross[GOOD].name, ross[GOOD].seq, later()), 0);
     h3c_stream_wait(s);
-    check_code(h3c_stream_pop(s, result));
+    eq(h3c_stream_pop(s, result), 0);
 
     h3c_stream_del(s);
     h3c_dialer_del(d);
@@ -221,58 +220,54 @@ static void test_reuse_results_print(void)
 {
     int64_t target = 57543L;
     int64_t domain = 46469L;
-    struct h3c_result *result = 0;
-    FILE *file = 0;
 
-    if (!(result = h3c_result_new())) fail();
+    struct h3c_result *result = h3c_result_new();
+    notnull(result);
 
     struct h3c_dialer *d = conn_new();
-    check_code(h3c_dialer_dial(d, later()));
+    eq(h3c_dialer_dial(d, later()), 0);
 
     struct h3c_stream *s = h3c_dialer_stream(d);
 
-    check_code(
-        h3c_stream_put(s, cmd, ross[GOOD].name, ross[GOOD].seq, later()));
+    eq(h3c_stream_put(s, cmd, ross[GOOD].name, ross[GOOD].seq, later()), 0);
     h3c_stream_wait(s);
-    check_code(h3c_stream_pop(s, result));
+    eq(h3c_stream_pop(s, result), 0);
 
     h3c_stream_del(s);
     h3c_dialer_del(d);
 
-    file = 0;
-    if (!(file = fopen(TMPDIR "/targets.txt", "wb"))) fail();
+    FILE *file = fopen(TMPDIR "/targets.txt", "wb");
+    notnull(file);
     h3c_result_print_targets(result, file);
     fclose(file);
-    if (!same_hash(TMPDIR "/targets.txt", target)) fail();
+    eq(hash(TMPDIR "/targets.txt"), target);
 
-    file = 0;
-    if (!(file = fopen(TMPDIR "/domains.txt", "wb"))) fail();
+    file = fopen(TMPDIR "/domains.txt", "wb");
+    notnull(file);
     h3c_result_print_domains(result, file);
     fclose(file);
-    if (!same_hash(TMPDIR "/domains.txt", domain)) fail();
+    eq(hash(TMPDIR "/domains.txt"), domain);
 
     h3c_result_del(result);
 }
 
 static void test_reuse_connection(void)
 {
-    struct h3c_result *result = 0;
-
-    if (!(result = h3c_result_new())) fail();
+    struct h3c_result *result = h3c_result_new();
+    notnull(result);
 
     struct h3c_dialer *d = conn_new();
-    check_code(h3c_dialer_dial(d, later()));
+    eq(h3c_dialer_dial(d, later()), 0);
 
     struct h3c_stream *s = h3c_dialer_stream(d);
 
-    check_code(
-        h3c_stream_put(s, cmd, ross[GOOD].name, ross[GOOD].seq, later()));
+    eq(h3c_stream_put(s, cmd, ross[GOOD].name, ross[GOOD].seq, later()), 0);
     h3c_stream_wait(s);
-    check_code(h3c_stream_pop(s, result));
+    eq(h3c_stream_pop(s, result), 0);
 
-    check_code(h3c_stream_put(s, cmd, ross[BAD].name, ross[BAD].seq, later()));
+    eq(h3c_stream_put(s, cmd, ross[BAD].name, ross[BAD].seq, later()), 0);
     h3c_stream_wait(s);
-    check_code(h3c_stream_pop(s, result));
+    eq(h3c_stream_pop(s, result), 0);
 
     h3c_stream_del(s);
     h3c_dialer_del(d);
@@ -283,42 +278,42 @@ static void test_reuse_connection(void)
 static void test_result_api(void)
 {
     struct h3c_result *result = request_ross();
-    if (!result) fail();
+    notnull(result);
 
     char const *name[] = {"000000005", "000000003", "000000002", "000000004"};
     char const *acc[] = {"PF13460.8", "PF01370.23", "PF01073.21", "PF05368.15"};
     double eln[] = {-53.808984215028, -38.604817925966, -34.047928969184,
                     -31.743561848164};
 
-    if (h3c_result_nhits(result) != 4) fail();
+    eq(h3c_result_nhits(result), 4);
 
     for (int i = 0; i < 4; ++i)
     {
-        if (strcmp(name[i], h3c_result_hit_name(result, i))) fail();
-        if (strcmp(acc[i], h3c_result_hit_acc(result, i))) fail();
-        if (!is_close(eln[i], h3c_result_hit_evalue_ln(result, i))) fail();
+        eq(name[i], h3c_result_hit_name(result, i));
+        eq(acc[i], h3c_result_hit_acc(result, i));
+        close(eln[i], h3c_result_hit_evalue_ln(result, i));
     }
 
     h3c_result_del(result);
 }
 
-static bool same_hash(char const *filepath, long hash)
+static long hash(char const *filepath)
 {
-    long expected = 0;
-    if (!file_hash(filepath, &expected)) fail();
-    return expected == hash;
+    long actual = 0;
+    cond(file_hash(filepath, &actual));
+    return actual;
 }
 
 static struct h3c_dialer *conn_new(void)
 {
     struct h3c_dialer *d = h3c_dialer_new("127.0.0.1", PORT);
-    if (!d) fail();
+    notnull(d);
     return d;
 }
 
 static struct h3c_stream *conn_dial(struct h3c_dialer *d, long deadline)
 {
-    check_code(h3c_dialer_dial(d, deadline));
+    eq(h3c_dialer_dial(d, deadline), 0);
     return h3c_dialer_stream(d);
 }
 
@@ -327,10 +322,10 @@ static void conn_del(struct h3c_dialer *d) { h3c_dialer_del(d); }
 static struct h3c_result *request(struct h3c_stream *s, char const *name,
                                   char const *seq, long deadline)
 {
-    check_code(h3c_stream_put(s, cmd, name, seq, deadline));
+    eq(h3c_stream_put(s, cmd, name, seq, deadline), 0);
     h3c_stream_wait(s);
     struct h3c_result *result = h3c_result_new();
-    if (!result) fail();
-    check_code(h3c_stream_pop(s, result));
+    notnull(result);
+    eq(h3c_stream_pop(s, result), 0);
     return result;
 }

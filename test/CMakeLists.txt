@@ -28,7 +28,12 @@ add_executable(test_multi multi.c file_hash.c helper.c fs.c)
 target_link_libraries(test_multi PRIVATE H3C::h3c)
 add_test(NAME test_multi COMMAND test_multi)
 
+add_executable(test_corrupt corrupt.c file_hash.c helper.c fs.c)
+target_link_libraries(test_corrupt PRIVATE H3C::h3c)
+add_test(NAME test_corrupt COMMAND test_corrupt)
+
 set_tests_properties(test_single PROPERTIES FIXTURES_REQUIRED daemon)
 set_tests_properties(test_multi PROPERTIES FIXTURES_REQUIRED daemon)
+set_tests_properties(test_corrupt PROPERTIES FIXTURES_REQUIRED daemon)
 set_tests_properties(start_daemon PROPERTIES FIXTURES_SETUP daemon)
 set_tests_properties(stop_daemon PROPERTIES FIXTURES_CLEANUP daemon)
