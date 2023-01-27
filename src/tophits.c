@@ -3,7 +3,7 @@
 #include "echo.h"
 #include "h3c/code.h"
 #include "hit.h"
-#include "lite_pack/lite_pack.h"
+#include "lip/lip.h"
 #include "tophits.h"
 #include "utils.h"
 #include <inttypes.h>

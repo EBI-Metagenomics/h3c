@@ -1,7 +1,7 @@
 #include "domain.h"
 #include "alidisplay.h"
 #include "h3c/code.h"
-#include "lite_pack/lite_pack.h"
+#include "lip/lip.h"
 #include "utils.h"
 #include "zc.h"
 #include <stdlib.h>

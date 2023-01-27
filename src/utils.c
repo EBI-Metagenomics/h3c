@@ -1,6 +1,6 @@
 #include "utils.h"
 #include "h3c/code.h"
-#include "lite_pack/lite_pack.h"
+#include "lip/lip.h"
 #include "zc.h"
 #include <assert.h>
 #include <string.h>

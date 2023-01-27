@@ -1,6 +1,8 @@
 #ifndef H3C_CODE_H
 #define H3C_CODE_H
 
+#include "h3c/export.h"
+
 enum
 {
     H3C_OK,
@@ -25,6 +27,6 @@ enum
     H3C_ECONNSHUT,
 };
 
-char const *h3c_decode(int code);
+H3C_API char const *h3c_decode(int code);
 
 #endif

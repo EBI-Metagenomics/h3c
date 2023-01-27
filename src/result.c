@@ -1,6 +1,6 @@
 #include "h3c/result.h"
 #include "h3c/code.h"
-#include "lite_pack/lite_pack.h"
+#include "lip/lip.h"
 #include "result.h"
 #include "utils.h"
 #include <stdlib.h>
