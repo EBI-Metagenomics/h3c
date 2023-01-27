@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define PORT 51379
+#define PORT 51371
 static char const cmd[] = "--hmmdb 1 --acc --cut_ga --hmmdb_ranges 0..4";
 
 static void test_multi(void);
