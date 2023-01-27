@@ -1,6 +1,13 @@
 @PACKAGE_INIT@
 
 include(CMakeFindDependencyMacro)
-find_dependency(lite_pack)
+
+find_dependency(lip)
+find_dependency(nng)
+
+if (NOT TARGET H3C::h3c)
 include("${CMAKE_CURRENT_LIST_DIR}/h3c-targets.cmake")
-check_required_components(lite_pack)
+endif()
+
+check_required_components(nng)
+check_required_components(lip)

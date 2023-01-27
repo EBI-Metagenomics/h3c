@@ -1,33 +1,18 @@
 cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
-
 project(
   h3client
-  VERSION 0.8.0
+  VERSION 0.9.0
   LANGUAGES C)
 
-set(H3C_MAIN_PROJECT OFF)
-if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-  set(H3C_MAIN_PROJECT ON)
-endif()
-
-if(H3C_MAIN_PROJECT)
-  set(H3C_BUILD_TESTS_DEFAULT ON)
-else()
-  set(H3C_BUILD_TESTS_DEFAULT OFF)
-endif()
-
-option(H3C_BUILD_TESTS "Build the unit tests" ${H3C_BUILD_TESTS_DEFAULT})
-message(STATUS "H3C_MAIN_PROJECT: " ${H3C_MAIN_PROJECT})
-message(STATUS "H3C_BUILD_TESTS: " ${H3C_BUILD_TESTS})
-
-include(cmake/compiler-options.cmake)
+include(cmake/warnings.cmake)
 include(cmake/sanitizers.cmake)
 include(cmake/CPM.cmake)
 
 find_package(nng REQUIRED)
-cpmaddpackage("gh:EBI-Metagenomics/lite-pack@0.4.1")
+cpmaddpackage("gh:EBI-Metagenomics/lip@0.5.0")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_EXTENSIONS OFF)
 
 add_library(
@@ -62,23 +47,26 @@ add_library(
   src/tophits.c
   src/utils.c
   src/zc.c)
-target_link_libraries(h3c PRIVATE LITE_PACK::lite_pack)
-target_link_libraries(h3c PRIVATE nng::nng)
-target_link_libraries(h3c PRIVATE $<$<BOOL:${UNIX}>:m>)
 add_library(H3C::h3c ALIAS h3c)
 
-set(EXPORT_FILE ${CMAKE_CURRENT_BINARY_DIR}/h3c/export.h)
-include(GenerateExportHeader)
-generate_export_header(
+if(NOT BUILD_SHARED_LIBS)
+  target_compile_definitions(h3c PUBLIC -DH3C_STATIC_DEFINE)
+endif()
+
+target_include_directories(
   h3c
-  BASE_NAME
-  H3C
-  INCLUDE_GUARD_NAME
-  C3CLIENT_EXPORT_H
-  EXPORT_MACRO_NAME
-  H3C_API
-  EXPORT_FILE_NAME
-  ${EXPORT_FILE})
+  PUBLIC $<INSTALL_INTERFACE:include>
+         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
+  PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>)
+
+set_target_properties(h3c PROPERTIES VERSION ${PROJECT_VERSION})
+set_target_properties(h3c PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
+target_compile_options(h3c PRIVATE ${WARNING_FLAGS})
+
+target_link_libraries(h3c PRIVATE LIP::lip)
+target_link_libraries(h3c PRIVATE nng::nng)
+target_link_libraries(h3c PRIVATE $<$<BOOL:${UNIX}>:m>)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
   include(CheckIPOSupported)
@@ -86,64 +74,48 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
   set_target_properties(h3c PROPERTIES INTERPROCEDURAL_OPTIMIZATION ON)
 endif()
 
-target_compile_features(h3c PRIVATE c_std_23)
-target_compile_options(h3c PRIVATE ${WARNING_FLAGS})
-set_target_properties(h3c PROPERTIES POSITION_INDEPENDENT_CODE ON)
-
-target_include_directories(
-  h3c
-  PUBLIC $<INSTALL_INTERFACE:include>
-         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-  PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
-
 add_executable(h3result h3result.c)
 target_include_directories(
-  h3result PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
+  h3result PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>)
 target_link_libraries(h3result PRIVATE h3c)
 add_executable(H3C::h3result ALIAS h3result)
 
-install(TARGETS h3c h3result EXPORT h3c-targets)
-
+install(
+  TARGETS h3c
+  EXPORT h3c-targets
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)
 install(DIRECTORY include/h3c/ DESTINATION include/h3c)
+install(FILES ${CONFIG_FILE} DESTINATION include/h3c)
 
+export(
+  TARGETS h3c
+  NAMESPACE H3C::
+  FILE h3c-targets.cmake)
 install(
   EXPORT h3c-targets
-  FILE h3c-targets.cmake
   NAMESPACE H3C::
   DESTINATION lib/cmake/h3c)
 
+install(FILES ${PROJECT_SOURCE_DIR}/README.md ${PROJECT_SOURCE_DIR}/LICENSE
+        DESTINATION share/docs/h3c)
+
 include(CMakePackageConfigHelpers)
 
-set(CMAKE_CONFIG_FILE ${CMAKE_CURRENT_BINARY_DIR}/h3c-config.cmake)
-configure_package_config_file(h3c-config.cmake.in ${CMAKE_CONFIG_FILE}
+set(project_config ${PROJECT_BINARY_DIR}/h3c-config.cmake)
+set(version_config ${PROJECT_BINARY_DIR}/h3c-config-version.cmake)
+
+configure_package_config_file(h3c-config.cmake.in ${project_config}
                               INSTALL_DESTINATION lib/cmake/h3c)
 
-set(CMAKE_VERSION_FILE ${CMAKE_CURRENT_BINARY_DIR}/h3c-config-version.cmake)
-write_basic_package_version_file(${CMAKE_VERSION_FILE}
+write_basic_package_version_file(${version_config}
                                  COMPATIBILITY SameMajorVersion)
 
-install(FILES ${CMAKE_VERSION_FILE} ${CMAKE_CONFIG_FILE}
+install(FILES ${project_config} ${version_config}
         DESTINATION lib/cmake/h3c)
-install(FILES ${EXPORT_FILE} DESTINATION include/h3c)
 
-if(H3C_BUILD_TESTS)
+if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   enable_testing()
   add_subdirectory(test)
 endif()
-
-set(CPACK_PACKAGE_NAME h3c)
-set(CPACK_PACKAGE_VENDOR "Danilo Horta")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
-    "Library and executable to communicate with h3daemon")
-set(CPACK_PACKAGE_CONTACT "Danilo Horta")
-set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
-set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
-set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
-set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE)
-set(CPACK_RESOURCE_FILE_README ${CMAKE_CURRENT_SOURCE_DIR}/README.md)
-set(CPACK_OUTPUT_FILE_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/package)
-set(CPACK_VERBATIM_VARIABLES YES)
-set(CPACK_PACKAGE_RELOCATABLE YES)
-set(CPACK_MONOLITHIC_INSTALL YES)
-include(CPack)
