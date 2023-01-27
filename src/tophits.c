@@ -7,10 +7,10 @@
 #include "tophits.h"
 #include "utils.h"
 #include <inttypes.h>
+#include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <tgmath.h>
 
 void h3c_tophits_init(struct tophits *th) { memset(th, 0, sizeof(*th)); }
 

@@ -4,10 +4,10 @@
 #include "hmmd/hit.h"
 #include "zc.h"
 #include <inttypes.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <tgmath.h>
 
 void h3c_hmmd_tophits_init(struct hmmd_tophits *th)
 {
