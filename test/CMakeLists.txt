@@ -1,5 +1,8 @@
-set(ASSETS ${CMAKE_CURRENT_BINARY_DIR}/assets)
-set(TMPDIR ${CMAKE_CURRENT_BINARY_DIR}/tmp)
+set(BINDIR ${CMAKE_CURRENT_BINARY_DIR})
+set(SRCDIR ${CMAKE_CURRENT_SOURCE_DIR})
+
+set(ASSETS ${BINDIR}/assets)
+set(TMPDIR ${BINDIR}/tmp)
 
 file(MAKE_DIRECTORY ${ASSETS})
 file(MAKE_DIRECTORY ${TMPDIR})
@@ -10,10 +13,11 @@ add_compile_definitions(TMPDIR=\"${TMPDIR}\")
 file(COPY assets/ross.fasta DESTINATION ${ASSETS})
 file(COPY assets/ross.poor.fasta DESTINATION ${ASSETS})
 
-file(DOWNLOAD https://s3.danilohorta.me/blx/8969e825379a9fed339e4676c0c7125cc41d4e643b9aaba1628894ab9044bbc8 ${ASSETS}/ross.5.hmm)
+set(HASH 8969e825379a9fed339e4676c0c7125cc41d4e643b9aaba1628894ab9044bbc8)
+file(DOWNLOAD https://s3.danilohorta.me/blx/${HASH} ${ASSETS}/ross.5.hmm)
 
-add_test(NAME start_daemon COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/start_daemon.sh ${ASSETS}/ross.5.hmm)
-add_test(NAME stop_daemon COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/stop_daemon.sh ${ASSETS}/ross.5.hmm)
+add_test(NAME start_daemon COMMAND ${SRCDIR}/start_daemon.sh ${ASSETS}/ross.5.hmm)
+add_test(NAME stop_daemon COMMAND ${SRCDIR}/stop_daemon.sh ${ASSETS}/ross.5.hmm)
 
 add_executable(single single.c file_hash.c helper.c fs.c)
 target_link_libraries(single PRIVATE H3C::h3c)
