@@ -4,7 +4,7 @@ on: push
 
 jobs:
   test:
-    name: Test with build type ${{ matrix.build_type }}
+    name: Test ${{ matrix.build_type }}
     runs-on: ubuntu-22.04
     strategy:
       matrix:
