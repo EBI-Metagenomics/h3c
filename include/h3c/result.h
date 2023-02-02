@@ -13,6 +13,9 @@ H3C_API void h3c_result_del(struct h3c_result const *);
 H3C_API int h3c_result_pack(struct h3c_result const *, FILE *file);
 H3C_API int h3c_result_unpack(struct h3c_result *, FILE *file);
 
+H3C_API int h3c_result_errnum(struct h3c_result const *);
+H3C_API char const *h3c_result_errstr(struct h3c_result const *);
+
 H3C_API void h3c_result_print_targets(struct h3c_result const *, FILE *file);
 H3C_API void h3c_result_print_domains(struct h3c_result const *, FILE *file);
 

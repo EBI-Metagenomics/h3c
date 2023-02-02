@@ -24,6 +24,8 @@ struct answer
     } status;
 
     struct buff *buff;
+    int errnum;
+    char const *errstr;
     struct hmmd_stats stats;
     struct hmmd_tophits tophits;
 };
@@ -41,6 +43,9 @@ struct answer *h3c_answer_new(void)
         free(ans);
         return 0;
     }
+
+    ans->errnum = 0;
+    ans->errstr = NULL;
     h3c_hmmd_stats_init(&ans->stats);
     h3c_hmmd_tophits_init(&ans->tophits);
     return ans;
@@ -49,6 +54,7 @@ struct answer *h3c_answer_new(void)
 void h3c_answer_del(struct answer const *ans)
 {
     h3c_buff_del(ans->buff);
+    if (ans->errstr) free((void *)ans->errstr);
     h3c_hmmd_stats_cleanup((struct hmmd_stats *)&ans->stats);
     h3c_hmmd_tophits_cleanup((struct hmmd_tophits *)&ans->tophits);
     free((void *)ans);
@@ -97,6 +103,20 @@ int h3c_answer_parse(struct answer *ans)
 
 cleanup:
     return rc;
+}
+
+int h3c_answer_parse_error(struct answer *x)
+{
+    x->errnum = x->status.value.status;
+
+    size_t msg_size = x->status.value.msg_size;
+    char *errstr = malloc(msg_size + 1);
+    if (!errstr) return H3C_ENOMEM;
+    memcpy(errstr, x->buff->data, msg_size);
+    errstr[msg_size] = '\0';
+    x->errstr = errstr;
+
+    return 0;
 }
 
 #define STRXDUP(D, S) (D = h3c_strxdup((D), (S)))
@@ -289,8 +309,12 @@ cleanup:
     return rc;
 }
 
-int h3c_answer_copy(struct answer *ans, struct h3c_result *r)
+int h3c_answer_copy(struct answer *x, struct h3c_result *y)
 {
-    copy_stats(&r->stats, &ans->stats);
-    return copy_tophits(&r->tophits, &ans->tophits);
+    y->errnum = x->errnum;
+    y->errstr = x->errstr;
+    x->errstr = NULL;
+    if (y->errnum) return 0;
+    copy_stats(&y->stats, &x->stats);
+    return copy_tophits(&y->tophits, &x->tophits);
 }

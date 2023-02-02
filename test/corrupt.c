@@ -30,17 +30,12 @@ static void test_corrupt(void)
     notnull(result);
 
     long deadline = h3c_deadline(1000 * 5);
-    for (size_t i = 0; i < array_size(corrupt); ++i)
-    {
-        eq(h3c_stream_put(s, cmd, corrupt[i].name, corrupt[i].seq, deadline),
-           0);
-    }
+    eq(h3c_stream_put(s, cmd, corrupt->name, corrupt->seq, deadline), 0);
 
-    for (size_t i = 0; i < array_size(corrupt); ++i)
-    {
-        h3c_stream_wait(s);
-        eq(h3c_stream_pop(s, result), H3C_ECONNSHUT);
-    }
+    h3c_stream_wait(s);
+    eq(h3c_stream_pop(s, result), 0);
+    eq(h3c_result_errnum(result), 7);
+    eq(h3c_result_errstr(result), "Error parsing FASTA sequence");
 
     h3c_result_del(result);
     h3c_stream_del(s);

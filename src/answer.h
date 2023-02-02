@@ -18,6 +18,7 @@ struct hmmd_status const *h3c_answer_status(struct answer const *ans);
 int h3c_answer_setup_size(struct answer *ans, size_t size);
 unsigned char *h3c_answer_data(struct answer *ans);
 int h3c_answer_parse(struct answer *ans);
+int h3c_answer_parse_error(struct answer *ans);
 int h3c_answer_copy(struct answer *ans, struct h3c_result *);
 
 #endif

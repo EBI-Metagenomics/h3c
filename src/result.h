@@ -6,6 +6,8 @@
 
 struct h3c_result
 {
+    int errnum;
+    char const *errstr;
     struct stats stats;
     struct tophits tophits;
 };

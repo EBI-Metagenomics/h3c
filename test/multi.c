@@ -39,6 +39,7 @@ static void test_multi(void)
     {
         h3c_stream_wait(s);
         eq(h3c_stream_pop(s, result), 0);
+        eq(h3c_result_errnum(result), 0);
         eq(h3c_result_nhits(result), ross[i].expect.nhits);
         if (h3c_result_nhits(result) > 0)
         {

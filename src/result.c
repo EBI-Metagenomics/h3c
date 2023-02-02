@@ -9,6 +9,8 @@ struct h3c_result *h3c_result_new(void)
 {
     struct h3c_result *result = malloc(sizeof(*result));
     if (!result) return 0;
+    result->errnum = 0;
+    result->errstr = NULL;
     h3c_stats_init(&result->stats);
     h3c_tophits_init(&result->tophits);
     return result;
@@ -16,6 +18,7 @@ struct h3c_result *h3c_result_new(void)
 
 void h3c_result_del(struct h3c_result const *result)
 {
+    if (result->errstr) free((void *)result->errstr);
     h3c_tophits_cleanup((struct tophits *)&result->tophits);
     free((void *)result);
 }
@@ -54,6 +57,10 @@ int h3c_result_unpack(struct h3c_result *result, FILE *file)
     if (!h3c_expect_key(&f, "tophits")) return H3C_EUNPACK;
     return h3c_tophits_unpack(&result->tophits, &f);
 }
+
+int h3c_result_errnum(struct h3c_result const *x) { return x->errnum; }
+
+char const *h3c_result_errstr(struct h3c_result const *x) { return x->errstr; }
 
 void h3c_result_print_targets(struct h3c_result const *r, FILE *file)
 {

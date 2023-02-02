@@ -286,6 +286,7 @@ static void test_result_api(void)
                     -31.743561848164};
 
     eq(h3c_result_nhits(result), 4);
+    eq(h3c_result_errnum(result), 0);
 
     for (int i = 0; i < 4; ++i)
     {

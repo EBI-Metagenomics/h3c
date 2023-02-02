@@ -72,7 +72,15 @@ static void callback(void *arg)
             nng_aio_finish(x->aio, rc);
             return;
         }
-        if (!h3c_answer_status(x->ans)->status)
+        if (h3c_answer_status(x->ans)->status)
+        {
+            if ((rc = h3c_answer_parse_error(x->ans)))
+            {
+                nng_aio_finish(x->aio, NNG_EINVAL);
+                return;
+            }
+        }
+        else
         {
             if ((rc = h3c_answer_parse(x->ans)))
             {
