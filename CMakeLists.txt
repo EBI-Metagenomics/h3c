@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 project(
   h3client
-  VERSION 0.10.1
+  VERSION 0.10.2
   LANGUAGES C)
 
 include(cmake/warnings.cmake)
@@ -70,7 +70,7 @@ set_target_properties(h3c PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
 target_compile_options(h3c PRIVATE ${WARNING_FLAGS})
 
 target_link_libraries(h3c PRIVATE LIP::lip)
-target_link_libraries(h3c PRIVATE nng)
+target_link_libraries(h3c PRIVATE nng::nng)
 target_link_libraries(h3c PRIVATE $<$<BOOL:${UNIX}>:m>)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")

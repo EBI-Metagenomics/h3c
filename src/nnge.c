@@ -1,6 +1,6 @@
 #include "nnge.h"
 #include "h3c/code.h"
-#include <nng/nng.h>
+#include "nng/nng.h"
 
 int h3c_nnge(int c)
 {

@@ -1,6 +1,6 @@
 #include "timeout.h"
-#include <nng/nng.h>
-#include <nng/supplemental/util/platform.h>
+#include "nng/nng.h"
+#include "nng/supplemental/util/platform.h"
 
 int h3c_timeout(long deadline)
 {

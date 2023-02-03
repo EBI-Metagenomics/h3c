@@ -3,8 +3,8 @@
 #include "cco.h"
 #include "h3c/code.h"
 #include "msg.h"
+#include "nng/nng.h"
 #include "stream.h"
-#include <nng/nng.h>
 #include <stdlib.h>
 
 struct h3c_stream
