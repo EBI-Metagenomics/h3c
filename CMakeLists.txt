@@ -8,7 +8,12 @@ include(cmake/warnings.cmake)
 include(cmake/sanitizers.cmake)
 include(cmake/CPM.cmake)
 
-find_package(nng REQUIRED)
+cpmaddpackage(
+  GITHUB_REPOSITORY nanomsg/nng
+  VERSION 1.5.2
+  OPTIONS "NNG_TESTS OFF"
+          "NNG_TOOLS OFF"
+          "NNG_ENABLE_NNGCAT OFF")
 cpmaddpackage("gh:EBI-Metagenomics/lip@0.5.0")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -65,7 +70,7 @@ set_target_properties(h3c PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
 target_compile_options(h3c PRIVATE ${WARNING_FLAGS})
 
 target_link_libraries(h3c PRIVATE LIP::lip)
-target_link_libraries(h3c PRIVATE nng::nng)
+target_link_libraries(h3c PRIVATE nng)
 target_link_libraries(h3c PRIVATE $<$<BOOL:${UNIX}>:m>)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
