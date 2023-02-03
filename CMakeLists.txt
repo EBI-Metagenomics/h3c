@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 project(
   h3client
-  VERSION 0.10.3
+  VERSION 0.10.4
   LANGUAGES C)
 
 include(cmake/warnings.cmake)
@@ -54,6 +54,10 @@ add_library(
   src/zc.c)
 add_library(H3C::h3c ALIAS h3c)
 
+if(NOT TARGET nng::nng)
+  add_library(nng::nng ALIAS nng)
+endif()
+
 if(NOT BUILD_SHARED_LIBS)
   target_compile_definitions(h3c PUBLIC -DH3C_STATIC_DEFINE)
 endif()
@@ -69,13 +73,8 @@ set_target_properties(h3c PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(h3c PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
 target_compile_options(h3c PRIVATE ${WARNING_FLAGS})
 
-message(STATUS "NNG_LIBRARY: ${NNG_LIBRARY}")
-if (NOT DEFINED NNG_LIBRARY)
-  set(NNG_LIBRARY "nng")
-endif()
-message(STATUS "NNG_LIBRARY: ${NNG_LIBRARY}")
 target_link_libraries(h3c PRIVATE LIP::lip)
-target_link_libraries(h3c PRIVATE ${NNG_LIBRARY})
+target_link_libraries(h3c PRIVATE nng::nng)
 target_link_libraries(h3c PRIVATE $<$<BOOL:${UNIX}>:m>)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
