@@ -71,7 +71,7 @@ static void write_cstr(bool presence, struct lip_file *f, char const *str)
 
 int h3c_alidisplay_pack(struct alidisplay const *ad, struct lip_file *f)
 {
-    lip_write_array_size(f, 19);
+    lip_write_array_size(f, 22);
 
     lip_write_int(f, ad->presence);
     write_cstr(ad->presence & RFLINE_PRESENT, f, ad->rfline);
@@ -90,6 +90,10 @@ int h3c_alidisplay_pack(struct alidisplay const *ad, struct lip_file *f)
     lip_write_int(f, ad->hmmfrom);
     lip_write_int(f, ad->hmmto);
     lip_write_int(f, ad->M);
+
+    lip_write_cstr(f, ad->sqname);
+    lip_write_cstr(f, ad->sqacc);
+    lip_write_cstr(f, ad->sqdesc);
     lip_write_int(f, ad->sqfrom);
     lip_write_int(f, ad->sqto);
     lip_write_int(f, ad->L);
@@ -101,7 +105,7 @@ int h3c_alidisplay_unpack(struct alidisplay *ad, struct lip_file *f)
 {
     int rc = H3C_EUNPACK;
 
-    if (!h3c_expect_array_size(f, 19)) goto cleanup;
+    if (!h3c_expect_array_size(f, 22)) goto cleanup;
 
     if (!lip_read_int(f, &ad->presence)) goto cleanup;
     if ((rc = h3c_read_string(f, &ad->rfline))) goto cleanup;
@@ -120,6 +124,10 @@ int h3c_alidisplay_unpack(struct alidisplay *ad, struct lip_file *f)
     lip_read_int(f, &ad->hmmfrom);
     lip_read_int(f, &ad->hmmto);
     lip_read_int(f, &ad->M);
+
+    if ((rc = h3c_read_string(f, &ad->sqname))) goto cleanup;
+    if ((rc = h3c_read_string(f, &ad->sqacc))) goto cleanup;
+    if ((rc = h3c_read_string(f, &ad->sqdesc))) goto cleanup;
     lip_read_int(f, &ad->sqfrom);
     lip_read_int(f, &ad->sqto);
     lip_read_int(f, &ad->L);
