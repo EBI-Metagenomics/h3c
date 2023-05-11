@@ -1,7 +1,7 @@
 #include "tophits.h"
 #include "domain.h"
 #include "echo.h"
-#include "h3c/code.h"
+#include "h3c/errno.h"
 #include "hit.h"
 #include "lip/lip.h"
 #include "tophits.h"
@@ -16,7 +16,7 @@ void h3c_tophits_init(struct tophits *th) { memset(th, 0, sizeof(*th)); }
 
 static int grow(struct tophits *th, unsigned nhits)
 {
-    int rc = H3C_OK;
+    int rc = 0;
 
     size_t sz = nhits * sizeof(*th->hits);
     struct hit *hits = realloc(th->hits, sz);
@@ -33,7 +33,7 @@ static int grow(struct tophits *th, unsigned nhits)
         ++th->nhits;
     }
 
-    return H3C_OK;
+    return 0;
 
 cleanup:
     h3c_tophits_cleanup(th);
@@ -52,7 +52,7 @@ int h3c_tophits_setup(struct tophits *th, unsigned nhits)
 {
     if (th->nhits < nhits) return grow(th, nhits);
     shrink(th, nhits);
-    return H3C_OK;
+    return 0;
 }
 
 void h3c_tophits_cleanup(struct tophits *th)
@@ -82,7 +82,7 @@ int h3c_tophits_pack(struct tophits const *th, struct lip_file *f)
     lip_write_bool(f, th->is_sorted_by_sortkey);
     lip_write_bool(f, th->is_sorted_by_seqidx);
 
-    return lip_file_error(f) ? H3C_EPACK : H3C_OK;
+    return lip_file_error(f) ? H3C_EPACK : 0;
 }
 
 int h3c_tophits_unpack(struct tophits *th, struct lip_file *f)
@@ -111,7 +111,7 @@ int h3c_tophits_unpack(struct tophits *th, struct lip_file *f)
 
     if (lip_file_error(f)) goto cleanup;
 
-    return H3C_OK;
+    return 0;
 
 cleanup:
     h3c_tophits_cleanup(th);

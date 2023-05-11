@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 project(
   h3c
-  VERSION 0.10.6
+  VERSION 0.11.0
   LANGUAGES C)
 
 include(cmake/warnings.cmake)
@@ -27,13 +27,13 @@ add_library(
   src/answer.c
   src/argless.c
   src/buff.c
-  src/code.c
   src/deadline.c
   src/dialer.c
   src/domain.c
   src/echo.c
   src/fini.c
   src/hit.c
+  src/strerror.c
   src/hmmd/alidisplay.c
   src/hmmd/domain.c
   src/hmmd/hit.c

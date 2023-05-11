@@ -1,5 +1,5 @@
 #include "dialer.h"
-#include "h3c/code.h"
+#include "h3c/errno.h"
 #include "h3c/stream.h"
 #include "itoa.h"
 #include "nng/nng.h"
@@ -65,7 +65,7 @@ int h3c_dialer_dial(struct h3c_dialer *x, long deadline)
         return H3C_ENOMEM;
     }
     x->h3c_stream = stream;
-    return H3C_OK;
+    return 0;
 }
 
 struct h3c_stream *h3c_dialer_stream(struct h3c_dialer *x)

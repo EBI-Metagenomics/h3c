@@ -1,5 +1,5 @@
 #include "hmmd/status.h"
-#include "h3c/code.h"
+#include "h3c/errno.h"
 #include "utils.h"
 #include <stdlib.h>
 #include <string.h>

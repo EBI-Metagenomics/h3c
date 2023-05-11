@@ -1,7 +1,7 @@
 #include "answer.h"
 #include "buff.h"
 #include "domain.h"
-#include "h3c/code.h"
+#include "h3c/errno.h"
 #include "h3c/result.h"
 #include "hit.h"
 #include "hmmd/hmmd.h"
@@ -89,7 +89,7 @@ unsigned char *h3c_answer_data(struct answer *ans) { return ans->buff->data; }
 
 int h3c_answer_parse(struct answer *ans)
 {
-    int rc = H3C_OK;
+    int rc = 0;
 
     unsigned char const *ptr = ans->buff->data;
     unsigned char const *end = ptr + ans->buff->size;
@@ -166,7 +166,7 @@ static int copy_alidisplay(struct alidisplay *dst,
     dst->sqto = src->sqto;
     dst->L = src->L;
 
-    return H3C_OK;
+    return 0;
 
 cleanup:
     h3c_alidisplay_cleanup(dst);
@@ -202,7 +202,7 @@ static int copy_domain(struct domain *dst, struct hmmd_domain const *src)
 
     if ((rc = copy_alidisplay(&dst->ad, &src->ad))) goto cleanup;
 
-    return H3C_OK;
+    return 0;
 
 cleanup:
     h3c_domain_cleanup(dst);
@@ -244,7 +244,7 @@ static int copy_hit(struct hit *dst, struct hmmd_hit const *src)
         if ((rc = copy_domain(dst->domains + i, src->dcl + i))) goto cleanup;
     }
 
-    return H3C_OK;
+    return 0;
 
 cleanup:
     h3c_hit_cleanup(dst);
@@ -266,7 +266,7 @@ static int copy_tophits(struct tophits *dst, struct hmmd_tophits const *src)
         if ((rc = copy_hit(dst->hits + i, src->hit[i]))) goto cleanup;
     }
 
-    return H3C_OK;
+    return 0;
 
 cleanup:
     h3c_tophits_cleanup(dst);
@@ -275,7 +275,7 @@ cleanup:
 
 static int copy_stats(struct stats *dst, struct hmmd_stats const *src)
 {
-    int rc = H3C_OK;
+    int rc = 0;
 
     dst->Z = src->Z;
     dst->domZ = src->domZ;

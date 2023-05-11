@@ -3,7 +3,7 @@
 
 int h3c_hmmd_zsetby_parse(enum hmmd_zsetby *dst, unsigned char const **data)
 {
-    int rc = H3C_OK;
+    int rc = 0;
     switch (**data)
     {
     case 0:

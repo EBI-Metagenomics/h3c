@@ -1,5 +1,5 @@
 #include "h3c/result.h"
-#include "h3c/code.h"
+#include "h3c/errno.h"
 #include "lip/lip.h"
 #include "result.h"
 #include "utils.h"

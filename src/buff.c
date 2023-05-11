@@ -1,5 +1,5 @@
 #include "buff.h"
-#include "h3c/code.h"
+#include "h3c/errno.h"
 #include <assert.h>
 #include <stdlib.h>
 
@@ -25,7 +25,7 @@ int h3c_buff_ensure(struct buff **buff, size_t capacity)
         *buff = tmp;
         (*buff)->capacity = capacity;
     }
-    return H3C_OK;
+    return 0;
 }
 
 void h3c_buff_del(struct buff const *buff) { free((void *)buff); }

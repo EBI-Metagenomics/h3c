@@ -1,7 +1,7 @@
 #include "h3c/stream.h"
 #include "answer.h"
 #include "cco.h"
-#include "h3c/code.h"
+#include "h3c/errno.h"
 #include "msg.h"
 #include "nng/nng.h"
 #include "stream.h"
@@ -41,7 +41,7 @@ int h3c_stream_put(struct h3c_stream *t, char const *args, char const *name,
 
     cco_queue_put(&t->queue, &msg->node);
 
-    return H3C_OK;
+    return 0;
 }
 
 void h3c_stream_wait(struct h3c_stream *t)

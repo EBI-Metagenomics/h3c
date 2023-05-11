@@ -1,6 +1,6 @@
 #include "alidisplay.h"
 #include "echo.h"
-#include "h3c/code.h"
+#include "h3c/errno.h"
 #include "lip/lip.h"
 #include "utils.h"
 #include <stdlib.h>
@@ -34,7 +34,7 @@ int h3c_alidisplay_init(struct alidisplay *ad)
     if (!(ad->sqacc = calloc(1, sizeof(char)))) goto cleanup;
     if (!(ad->sqdesc = calloc(1, sizeof(char)))) goto cleanup;
 
-    return H3C_OK;
+    return 0;
 
 cleanup:
     h3c_alidisplay_cleanup(ad);
@@ -98,7 +98,7 @@ int h3c_alidisplay_pack(struct alidisplay const *ad, struct lip_file *f)
     lip_write_int(f, ad->sqto);
     lip_write_int(f, ad->L);
 
-    return lip_file_error(f) ? H3C_EPACK : H3C_OK;
+    return lip_file_error(f) ? H3C_EPACK : 0;
 }
 
 int h3c_alidisplay_unpack(struct alidisplay *ad, struct lip_file *f)
@@ -135,7 +135,7 @@ int h3c_alidisplay_unpack(struct alidisplay *ad, struct lip_file *f)
     rc = H3C_EUNPACK;
     if (lip_file_error(f)) goto cleanup;
 
-    return H3C_OK;
+    return 0;
 
 cleanup:
     h3c_alidisplay_cleanup(ad);

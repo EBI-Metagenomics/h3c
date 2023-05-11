@@ -1,5 +1,5 @@
 #include "hmmd/tophits.h"
-#include "h3c/code.h"
+#include "h3c/errno.h"
 #include "hmmd/domain.h"
 #include "hmmd/hit.h"
 #include "zc.h"
@@ -19,7 +19,7 @@ void h3c_hmmd_tophits_init(struct hmmd_tophits *th)
 
 static int grow(struct hmmd_tophits *th, uint64_t nhits)
 {
-    int rc = H3C_OK;
+    int rc = 0;
 
     if (!(th->hit = zc_reallocf(th->hit, sizeof(*th->hit) * nhits)))
     {
@@ -42,7 +42,7 @@ static int grow(struct hmmd_tophits *th, uint64_t nhits)
         ++th->nhits;
     }
 
-    return H3C_OK;
+    return 0;
 
 cleanup:
     h3c_hmmd_tophits_cleanup(th);
@@ -64,7 +64,7 @@ int h3c_hmmd_tophits_setup(struct hmmd_tophits *th, unsigned char const **ptr,
                            unsigned char const *end, uint64_t nhits,
                            uint64_t nreported, uint64_t nincluded)
 {
-    int rc = H3C_OK;
+    int rc = 0;
 
     if (th->nhits < nhits)
         rc = grow(th, nhits);
@@ -84,7 +84,7 @@ int h3c_hmmd_tophits_setup(struct hmmd_tophits *th, unsigned char const **ptr,
         th->hit[i] = th->unsrt + i;
     }
 
-    return H3C_OK;
+    return 0;
 
 cleanup:
     h3c_hmmd_tophits_cleanup(th);

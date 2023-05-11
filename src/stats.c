@@ -1,5 +1,5 @@
 #include "stats.h"
-#include "h3c/code.h"
+#include "h3c/errno.h"
 #include "lip/lip.h"
 #include "stats.h"
 #include "utils.h"
@@ -28,7 +28,7 @@ int h3c_stats_pack(struct stats const *stats, struct lip_file *f)
     lip_write_int(f, stats->nreported);
     lip_write_int(f, stats->nincluded);
 
-    return lip_file_error(f) ? H3C_EPACK : H3C_OK;
+    return lip_file_error(f) ? H3C_EPACK : 0;
 }
 
 int h3c_stats_unpack(struct stats *stats, struct lip_file *f)
@@ -52,5 +52,5 @@ int h3c_stats_unpack(struct stats *stats, struct lip_file *f)
     lip_read_int(f, &stats->nreported);
     lip_read_int(f, &stats->nincluded);
 
-    return lip_file_error(f) ? H3C_EPACK : H3C_OK;
+    return lip_file_error(f) ? H3C_EPACK : 0;
 }

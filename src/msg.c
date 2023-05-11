@@ -2,7 +2,7 @@
 #include "amsg.h"
 #include "answer.h"
 #include "array_size.h"
-#include "h3c/code.h"
+#include "h3c/errno.h"
 #include "hmsg.h"
 #include "nng/nng.h"
 #include "nng/supplemental/util/platform.h"
@@ -75,7 +75,7 @@ int h3c_msg_start(struct msg *x, char const *args, char const *name,
         return H3C_ENOMEM;
 
     h3c_astart(x->send_amsg);
-    return H3C_OK;
+    return 0;
 }
 
 void h3c_msg_wait(struct msg *x) { nng_aio_wait(x->aio); }

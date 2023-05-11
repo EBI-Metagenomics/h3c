@@ -1,7 +1,7 @@
 #include "hmsg.h"
 #include "amsg.h"
 #include "answer.h"
-#include "h3c/code.h"
+#include "h3c/errno.h"
 #include "hmmd/hmmd.h"
 #include "nng/nng.h"
 #include "nnge.h"

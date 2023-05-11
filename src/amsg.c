@@ -1,5 +1,5 @@
 #include "amsg.h"
-#include "h3c/code.h"
+#include "h3c/errno.h"
 #include "nng/nng.h"
 #include "timeout.h"
 #include <stdint.h>

@@ -1,5 +1,5 @@
 #include "utils.h"
-#include "h3c/code.h"
+#include "h3c/errno.h"
 #include "lip/lip.h"
 #include "zc.h"
 #include <assert.h>
@@ -63,7 +63,7 @@ int h3c_eatstr(char **dst, unsigned char const **data)
     if (!(*dst = zc_reallocf(*dst, size))) return H3C_ENOMEM;
     memcpy(*dst, *data, size);
     *data += size;
-    return H3C_OK;
+    return 0;
 }
 
 char *h3c_strskip(char **str)
@@ -117,7 +117,7 @@ int h3c_read_string(struct lip_file *f, char **str)
     if (!(*str = zc_reallocf(*str, size + 1))) return H3C_ENOMEM;
     if (!lip_read_str_data(f, size, *str)) return H3C_EUNPACK;
     (*str)[size] = 0;
-    return H3C_OK;
+    return 0;
 }
 
 char *h3c_strxdup(char *dst, char const *src)

@@ -1,6 +1,6 @@
 #include "domain.h"
 #include "alidisplay.h"
-#include "h3c/code.h"
+#include "h3c/errno.h"
 #include "lip/lip.h"
 #include "utils.h"
 #include "zc.h"
@@ -21,7 +21,7 @@ static int grow_scores(struct domain *dom, unsigned size)
         h3c_domain_cleanup(dom);
         return H3C_ENOMEM;
     }
-    return H3C_OK;
+    return 0;
 }
 
 static void shrink_scores(struct domain *dom, unsigned size)
@@ -33,7 +33,7 @@ int h3c_domain_setup(struct domain *dom, unsigned scores_size)
 {
     if (dom->pos_score_size < scores_size) return grow_scores(dom, scores_size);
     shrink_scores(dom, scores_size);
-    return H3C_OK;
+    return 0;
 }
 
 void h3c_domain_cleanup(struct domain *dom)
@@ -107,7 +107,7 @@ int h3c_domain_unpack(struct domain *dom, struct lip_file *f)
 
     if ((rc = h3c_alidisplay_unpack(&dom->ad, f))) goto cleanup;
 
-    return H3C_OK;
+    return 0;
 
 cleanup:
     h3c_domain_cleanup(dom);

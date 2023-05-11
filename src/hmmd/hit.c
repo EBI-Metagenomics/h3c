@@ -29,7 +29,7 @@ static int parse_strings(struct hmmd_hit *hit, uint8_t presence, size_t size,
     unsigned n = 1 + !!(presence & ACC_PRESENT) + !!(presence & DESC_PRESENT);
     if (!h3c_expect_n_strings(size, (char const *)*ptr, n)) return H3C_EPARSE;
 
-    int rc = H3C_OK;
+    int rc = 0;
 
     if ((rc = h3c_eatstr(&hit->name, ptr))) return rc;
 
@@ -43,13 +43,13 @@ static int parse_strings(struct hmmd_hit *hit, uint8_t presence, size_t size,
         if ((rc = h3c_eatstr(&hit->desc, ptr))) return rc;
     }
 
-    return H3C_OK;
+    return 0;
 }
 
 int h3c_hmmd_hit_parse(struct hmmd_hit *hit, unsigned char const **ptr,
                        unsigned char const *end)
 {
-    int rc = H3C_OK;
+    int rc = 0;
 
     ESCAPE_OVERRUN(rc, *ptr, end, 2 * sizeof(uint32_t));
 
@@ -120,7 +120,7 @@ int h3c_hmmd_hit_parse(struct hmmd_hit *hit, unsigned char const **ptr,
         if ((rc = h3c_hmmd_domain_parse(hit->dcl + i, ptr, end))) goto cleanup;
     }
 
-    return H3C_OK;
+    return 0;
 
 cleanup:
     h3c_hmmd_hit_cleanup(hit);

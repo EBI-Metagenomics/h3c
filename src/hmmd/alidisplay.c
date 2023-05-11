@@ -64,7 +64,7 @@ int h3c_hmmd_alidisplay_parse(struct hmmd_alidisplay *ali,
                               unsigned char const **ptr,
                               unsigned char const *end)
 {
-    int rc = H3C_OK;
+    int rc = 0;
 
     ESCAPE_OVERRUN(rc, *ptr, end, sizeof(uint32_t));
 
@@ -106,7 +106,7 @@ int h3c_hmmd_alidisplay_parse(struct hmmd_alidisplay *ali,
         goto cleanup;
     }
 
-    return H3C_OK;
+    return 0;
 
 cleanup:
     h3c_hmmd_alidisplay_cleanup(ali);

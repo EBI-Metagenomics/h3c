@@ -1,5 +1,5 @@
 #include "hmmd/domain.h"
-#include "h3c/code.h"
+#include "h3c/errno.h"
 #include "hmmd/alidisplay.h"
 #include "utils.h"
 #include <assert.h>
@@ -26,7 +26,7 @@ static_assert(sizeof(double) == 8, "sizeof(double) == 8");
 int h3c_hmmd_domain_parse(struct hmmd_domain *dom, unsigned char const **ptr,
                           unsigned char const *end)
 {
-    int rc = H3C_OK;
+    int rc = 0;
 
     ESCAPE_OVERRUN(rc, *ptr, end, sizeof(uint32_t) + 6 * sizeof(uint64_t));
 
@@ -76,7 +76,7 @@ int h3c_hmmd_domain_parse(struct hmmd_domain *dom, unsigned char const **ptr,
 
     if ((rc = h3c_hmmd_alidisplay_parse(&dom->ad, ptr, end))) goto cleanup;
 
-    return H3C_OK;
+    return 0;
 
 cleanup:
     h3c_hmmd_domain_cleanup(dom);

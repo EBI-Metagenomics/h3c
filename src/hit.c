@@ -1,6 +1,6 @@
 #include "hit.h"
 #include "domain.h"
-#include "h3c/code.h"
+#include "h3c/errno.h"
 #include "lip/lip.h"
 #include "utils.h"
 #include <stdlib.h>
@@ -14,7 +14,7 @@ int h3c_hit_init(struct hit *hit)
     if (!(hit->acc = calloc(1, sizeof(char)))) goto cleanup;
     if (!(hit->desc = calloc(1, sizeof(char)))) goto cleanup;
 
-    return H3C_OK;
+    return 0;
 
 cleanup:
     h3c_hit_cleanup(hit);
@@ -34,7 +34,7 @@ static int grow(struct hit *hit, unsigned ndomains)
         ++hit->ndomains;
     }
 
-    return H3C_OK;
+    return 0;
 
 cleanup:
     h3c_hit_cleanup(hit);
@@ -53,7 +53,7 @@ int h3c_hit_setup(struct hit *hit, unsigned ndomains)
 {
     if (hit->ndomains < ndomains) return grow(hit, ndomains);
     shrink(hit, ndomains);
-    return H3C_OK;
+    return 0;
 }
 
 void h3c_hit_cleanup(struct hit *hit)
@@ -107,7 +107,7 @@ int h3c_hit_pack(struct hit const *hit, struct lip_file *f)
         if (rc) return rc;
     }
 
-    return lip_file_error(f) ? H3C_EPACK : H3C_OK;
+    return lip_file_error(f) ? H3C_EPACK : 0;
 }
 
 int h3c_hit_unpack(struct hit *hit, struct lip_file *f)
@@ -153,7 +153,7 @@ int h3c_hit_unpack(struct hit *hit, struct lip_file *f)
         if ((rc = h3c_domain_unpack(hit->domains + i, f))) goto cleanup;
     }
 
-    return H3C_OK;
+    return 0;
 
 cleanup:
     h3c_hit_cleanup(hit);

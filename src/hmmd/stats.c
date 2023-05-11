@@ -21,7 +21,7 @@ void h3c_hmmd_stats_cleanup(struct hmmd_stats *stats)
 static int parse_first_part(struct hmmd_stats *stats, unsigned char const **ptr,
                             unsigned char const *end)
 {
-    int rc = H3C_OK;
+    int rc = 0;
 
     ESCAPE_OVERRUN(rc, *ptr, end, 14 * sizeof(uint64_t) + 2);
 
@@ -55,7 +55,7 @@ cleanup:
 int h3c_hmmd_stats_parse(struct hmmd_stats *stats, unsigned char const **ptr,
                          unsigned char const *end)
 {
-    int rc = H3C_OK;
+    int rc = 0;
 
     if ((rc = parse_first_part(stats, ptr, end))) goto cleanup;
 
@@ -69,7 +69,7 @@ int h3c_hmmd_stats_parse(struct hmmd_stats *stats, unsigned char const **ptr,
     }
 
     size_t size = stats->nhits * sizeof(uint64_t);
-    if (hit_offset == UINT64_MAX || size == 0) return H3C_OK;
+    if (hit_offset == UINT64_MAX || size == 0) return 0;
 
     stats->hit_offsets = zc_reallocf(stats->hit_offsets, size);
     if (!stats->hit_offsets)
@@ -83,7 +83,7 @@ int h3c_hmmd_stats_parse(struct hmmd_stats *stats, unsigned char const **ptr,
     for (uint64_t i = 1; i < stats->nhits; i++)
         stats->hit_offsets[i] = h3c_eatu64(ptr);
 
-    return H3C_OK;
+    return 0;
 
 cleanup:
     h3c_hmmd_stats_cleanup(stats);
