@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 project(
   h3c
-  VERSION 0.11.0
+  VERSION 0.11.1
   LANGUAGES C)
 
 include(cmake/warnings.cmake)
@@ -14,7 +14,7 @@ cpmaddpackage(
   OPTIONS "NNG_TESTS OFF"
           "NNG_TOOLS OFF"
           "NNG_ENABLE_NNGCAT OFF")
-cpmaddpackage("gh:EBI-Metagenomics/lip@0.5.1")
+cpmaddpackage("gh:EBI-Metagenomics/lip@0.5.2")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_C_STANDARD 11)
