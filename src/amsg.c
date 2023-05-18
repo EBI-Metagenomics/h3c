@@ -69,7 +69,7 @@ static struct amsg *alloc(nng_stream *s,
 
     int duration = h3c_timeout(deadline);
     nng_aio_set_timeout(x->upper_aio, duration);
-    nng_aio_set_timeout(x->lower_aio, duration < 1000 ? duration : 1000);
+    nng_aio_set_timeout(x->lower_aio, duration);
 
     nng_aio_begin(x->upper_aio);
 

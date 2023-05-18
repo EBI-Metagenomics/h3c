@@ -4,7 +4,7 @@
 
 int h3c_timeout(long deadline)
 {
-    int timeout = deadline - nng_clock();
+    long timeout = deadline - nng_clock();
     if (timeout < 0) timeout = 0;
-    return timeout;
+    return (int)timeout;
 }
